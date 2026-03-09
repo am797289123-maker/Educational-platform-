@@ -609,12 +609,37 @@ select.inp{cursor:pointer;}
         <div class="ps"><div class="ps-v" id="profAcc">0%</div><div class="ps-l">الدقة</div></div>
       </div>
     </div>
-    <!-- Student QR Card -->
-    <div class="hist-section" style="text-align:center">
-      <div class="hist-hd" style="justify-content:center">📱 بطاقة التعريف — شاركها مع معلمك</div>
+    <!-- QR Card (shared for both roles) -->
+    <div class="hist-section" style="text-align:center" id="profQrSection">
+      <div class="hist-hd" style="justify-content:center" id="profQrHd">📱 بطاقة التعريف</div>
       <div id="studentQrDiv" style="margin:10px auto 12px;width:fit-content"></div>
       <div style="font-size:.72rem;color:var(--text2);margin-bottom:8px" id="profQrLabel"></div>
       <button onclick="copyStudentCode()" style="padding:8px 20px;border-radius:10px;border:1px solid rgba(245,197,24,.3);background:rgba(245,197,24,.08);color:var(--gold2);font-family:Tajawal,sans-serif;font-size:.78rem;font-weight:700;cursor:pointer">📋 نسخ الرقم</button>
+    </div>
+
+    <!-- Friends List Section -->
+    <div class="hist-section" id="profFriendsSection">
+      <div class="hist-hd">
+        👥 أصدقائي ومعلميّ
+        <span style="font-size:.7rem;color:var(--text2);font-weight:normal" id="friendsCount"></span>
+        <button onclick="requestNotifPermission();toast('سيتم إشعارك عند الرسائل الجديدة','ok')" 
+          style="font-size:.62rem;padding:3px 8px;border-radius:6px;border:1px solid var(--border);
+          background:var(--bg3);color:var(--text2);cursor:pointer;font-family:Tajawal,sans-serif"
+          title="تفعيل الإشعارات">🔔</button>
+      </div>
+      <!-- Add friend -->
+      <div style="display:flex;gap:7px;margin-bottom:10px;align-items:center">
+        <input class="inp" id="profAddPhone" placeholder="رقم الهاتف" type="tel" style="flex:1;margin-bottom:0">
+        <button onclick="sendFriendRequestFromProfile()" style="padding:9px 12px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.8rem;cursor:pointer">➕</button>
+        <label style="padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:.82rem" title="مسح QR">
+          📷
+          <input type="file" accept="image/*" style="display:none" onchange="scanContactQRProfile(this)">
+        </label>
+      </div>
+      <!-- Pending requests -->
+      <div id="profPendingReqs"></div>
+      <!-- Friends list -->
+      <div id="profContactsList"></div>
     </div>
     <div class="hist-section">
       <div class="hist-hd">
@@ -943,7 +968,6 @@ select.inp{cursor:pointer;}
       <button class="stab ah" id="tab-h" onclick="swTab('h')">📜 تاريخ</button>
       <button class="stab" id="tab-g" onclick="swTab('g')">🗺️ جغرافيا</button>
       <button class="stab" id="tab-q" onclick="swTab('q')">📷 QR</button>
-      <button class="stab" id="tab-c" onclick="swTab('c')">👥 أصدقاء</button>
     </div>
     <div class="panel active" id="pnl-h">
       <div id="elmiMsgH" style="display:none;flex-direction:column;align-items:center;
@@ -1038,8 +1062,8 @@ select.inp{cursor:pointer;}
         </div>
       </div>
     </div>
-    <!-- ══ CONTACTS PANEL ══ -->
-    <div class="panel" id="pnl-c">
+    <!-- ══ CONTACTS PANEL (legacy - friends now in profile) ══ -->
+    <div class="panel" id="pnl-c" style="display:none">
       <div class="sec-hd">👥 أصدقائي ومعلميّ</div>
 
       <!-- Add person row -->
@@ -1069,6 +1093,7 @@ select.inp{cursor:pointer;}
       <div class="hdr-sub" id="tName"></div>
     </div>
     <div class="hdr-badge t">معلم</div>
+    <button class="hdr-back" onclick="goProfile()" title="ملفي">👤</button>
     <button class="hdr-back" onclick="openSettings()" title="إعدادات">⚙️</button>
     <button class="hdr-back" onclick="logout()" title="خروج">🚪</button>
   </div>
@@ -1957,7 +1982,6 @@ function swTab(t){
   if(t==='h')$('tab-h').classList.add('ah');
   if(t==='g')$('tab-g').classList.add('ag');
   if(t==='q')$('tab-q').classList.add('aq');
-  if(t==='c'){$('tab-c').classList.add('ac');renderContacts();}
   if(t!=='q') stopCamera();
 }
 
@@ -4086,18 +4110,87 @@ function goProfile(){
   $('profQcor').textContent=qc;
   $('profAcc').textContent=qa>0?Math.round(qc/qa*100)+'%':'0%';
   renderHistory();
-  // Show student QR card
+  // QR card - show for both roles
+  var sqr=$('studentQrDiv'), lbl=$('profQrLabel'), hd=$('profQrHd');
+  if(sqr){sqr.innerHTML='';}
   if(role==='s'){
-    var sqr=$('studentQrDiv'),lbl=$('profQrLabel');
-    if(sqr){sqr.innerHTML='';showStudentQR(sqr,userName,userPhone);}
-    if(lbl)lbl.textContent=userName+' • '+userPhone;
-    var qrSect=document.querySelector('#profileScreen .hist-section:last-child');
-    if(qrSect)qrSect.style.display='block';
+    if(hd) hd.textContent='📱 بطاقة التعريف — شاركها مع معلمك';
+    showStudentQR(sqr,userName,userPhone);
+    if(lbl) lbl.textContent=userName+' • '+userPhone;
   } else {
-    var qrSect2=document.querySelector('#profileScreen .hist-section:last-child');
-    if(qrSect2)qrSect2.style.display='none';
+    // Teacher QR for adding friends
+    if(hd) hd.textContent='📱 QR الشخصي — شاركه لإضافتك';
+    var code=genStudentCode(userName,userPhone);
+    generateQR(code,sqr);
+    if(lbl) lbl.textContent=userName+' • معلم';
   }
+  // Friends section - show for both roles
+  renderProfileFriends();
+  // Hide stats section for teacher
+  var statsEl=document.querySelector('#profileScreen .prof-stats-grid');
+  if(statsEl) statsEl.closest('.prof-card').style.display=role==='t'?'':'block';
   goScreen('profileScreen');
+}
+
+function renderProfileFriends(){
+  // Render pending requests in profile
+  var pendEl=$('profPendingReqs');
+  var listEl=$('profContactsList');
+  var countEl=$('friendsCount');
+  if(!pendEl||!listEl) return;
+
+  // Pending requests
+  var pend=[];
+  try{pend=JSON.parse(localStorage.getItem('y3_pending_from_'+userPhone)||'[]');}catch(e){}
+  if(pend.length){
+    var pendHtml='<div style="font-size:.72rem;font-weight:bold;color:var(--gold2);margin-bottom:6px">📬 طلبات واردة ('+pend.length+')</div>';
+    pend.forEach(function(r){
+      var icon=r.fromRole==='t'?'👨‍🏫':'👤';
+      pendHtml+='<div style="display:flex;align-items:center;gap:8px;background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.2);border-radius:12px;padding:10px;margin-bottom:6px">'+
+        '<div style="font-size:1.2rem">'+icon+'</div>'+
+        '<div style="flex:1"><div style="font-size:.82rem;font-weight:bold">'+safeHtml(r.fromName||r.fromPhone)+'</div><div style="font-size:.62rem;color:var(--text2)">'+r.fromPhone+'</div></div>'+
+        '<button data-ph="'+r.fromPhone+'" data-nm="'+(r.fromName||'شخص')+'" data-rl="'+(r.fromRole||'s')+'" onclick="acceptFriendReq(this.dataset.ph,this.dataset.nm,this.dataset.rl);renderProfileFriends()" style="padding:5px 10px;border-radius:8px;border:none;background:var(--green2);color:#fff;font-size:.7rem;cursor:pointer;font-family:Tajawal,sans-serif">قبول</button>'+
+        '<button data-ph="'+r.fromPhone+'" onclick="rejectFriendReq(this.dataset.ph);renderProfileFriends()" style="padding:5px 10px;border-radius:8px;border:none;background:rgba(231,76,60,.1);color:var(--hist2);font-size:.7rem;cursor:pointer;font-family:Tajawal,sans-serif;margin-right:4px">رفض</button>'+
+      '</div>';
+    });
+    pendEl.innerHTML=pendHtml;
+  } else { pendEl.innerHTML=''; }
+
+  // Contacts
+  var contacts=getContacts();
+  if(countEl) countEl.textContent=contacts.length?'('+contacts.length+')':'';
+  if(!contacts.length){
+    listEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);font-size:.8rem">لا يوجد أصدقاء بعد — أضف رقم أو امسح QR</div>';
+    return;
+  }
+  contacts.sort(function(a,b){return (b.online?1:0)-(a.online?1:0);});
+  listEl.innerHTML=contacts.map(function(p){
+    var icon=p.role==='t'?'👨‍🏫':'👤';
+    var clr=p.role==='t'?'var(--geo2)':'var(--green2)';
+    return '<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:12px;padding:10px 12px;margin-bottom:7px">'+
+      '<div style="width:38px;height:38px;border-radius:50%;background:'+clr+';display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;position:relative">'+
+        icon+'<span style="position:absolute;bottom:0;left:0;width:10px;height:10px;border-radius:50%;background:'+(p.online?'var(--green2)':'#555')+';border:2px solid var(--bg3)"></span>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:.83rem;font-weight:bold">'+safeHtml(p.name)+'</div>'+
+        '<div style="font-size:.62rem;color:var(--text2)">'+(p.online?'🟢 متصل':'⚫ غير متصل')+' • '+(p.role==='t'?'معلم':'طالب')+'</div>'+
+      '</div>'+
+      '<button data-ph="'+p.phone+'" data-nm="'+safeHtml(p.name)+'" data-rl="'+p.role+'" onclick="openPrivateChat(this.dataset.ph,this.dataset.nm,this.dataset.rl)" style="padding:5px 10px;border-radius:8px;border:none;background:var(--geo2);color:#fff;font-size:.7rem;cursor:pointer;font-family:Tajawal,sans-serif">💬</button>'+
+      '<button data-rph="'+p.phone+'" onclick="removeContact(this.dataset.rph);renderProfileFriends()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:.7rem;cursor:pointer;margin-right:4px">✕</button>'+
+    '</div>';
+  }).join('');
+}
+
+function sendFriendRequestFromProfile(){
+  var inp=$('profAddPhone');
+  var phone=(inp?inp.value:'').trim();
+  if(inp) {$('addPersonPhone').value=phone;} // sync to main input
+  sendFriendRequest();
+  if(inp) inp.value='';
+}
+
+function scanContactQRProfile(input){
+  scanContactQR(input);
 }
 
 function renderHistory(){
@@ -4196,7 +4289,7 @@ function toggleChat(){
   chatOpen=!chatOpen;
   panel.classList.toggle('open',chatOpen);
   if(chatOpen){
-    chatUnread=0;updChatBadge();
+    chatUnread=0;updChatBadge();clearNotifBadge();
     if(!chatCfg) chatCfg=loadChatConfig();
     if(!chatCfg){showChatNotCfg();return;}
     if(!chatInitialized){connectChat();}
@@ -4693,6 +4786,60 @@ function initSocialFeatures(){
     startPresence();
     startFriendReqPoll();
   }
+  // Request notification permission
+  requestNotifPermission();
+}
+
+function requestNotifPermission(){
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+}
+
+function sendBrowserNotif(title, body, icon){
+  if(!('Notification' in window)) return;
+  if(Notification.permission!=='granted') return;
+  try{
+    var n=new Notification(title,{
+      body:body||'',
+      icon:icon||'',
+      badge:'',
+      tag:'y3_notif_'+Date.now(),
+      renotify:true,
+      requireInteraction:false
+    });
+    n.onclick=function(){window.focus();n.close();};
+    setTimeout(function(){n.close();},8000);
+  }catch(e){}
+}
+
+// Badge counter on chat FAB
+var _notifCount=0;
+function addNotifBadge(count){
+  _notifCount+=count;
+  updateNotifBadge();
+}
+function clearNotifBadge(){
+  _notifCount=0;
+  updateNotifBadge();
+}
+function updateNotifBadge(){
+  var fab=$('chatFab'); if(!fab) return;
+  var badge=fab.querySelector('.notif-badge');
+  if(_notifCount>0){
+    if(!badge){
+      badge=document.createElement('span');
+      badge.className='notif-badge';
+      badge.style.cssText='position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;'+
+        'border-radius:50%;width:18px;height:18px;font-size:.65rem;display:flex;align-items:center;'+
+        'justify-content:center;font-weight:bold;font-family:Tajawal,sans-serif;pointer-events:none';
+      fab.style.position='relative';
+      fab.appendChild(badge);
+    }
+    badge.textContent=_notifCount>99?'99+':_notifCount;
+  } else {
+    if(badge) badge.remove();
+  }
 }
 
 
@@ -4997,6 +5144,9 @@ function pollFriendRequests(){
             var alreadyPend=pend.find(function(p){return p.fromPhone===data.fromPhone;});
             if(!already&&!alreadyPend&&!isBlocked(data.fromPhone)){
               pend.push({fromPhone:data.fromPhone,fromName:data.fromName||'شخص',fromRole:m.role||'s',ts:m.ts});
+              // Notify
+              sendBrowserNotif('📬 طلب إضافة جديد', (data.fromName||'شخص')+' يريد إضافتك كصديق');
+              addNotifBadge(1);
             }
           }
           if(data.type==='friend_accept'&&data.to===userPhone){
@@ -5006,6 +5156,8 @@ function pollFriendRequests(){
               contacts.push({phone:data.fromPhone,name:data.fromName||'شخص',role:m.role||'s',
                 addedAt:new Date().toLocaleDateString('ar-EG'),online:false});
               saveContacts(contacts);
+              sendBrowserNotif('🎉 قبول طلب الإضافة', data.fromName+' قبل طلبك!');
+              addNotifBadge(1);
               toast('🎉 '+data.fromName+' قبل طلب الإضافة!','ok');
               renderContacts();
             }
@@ -5014,6 +5166,7 @@ function pollFriendRequests(){
       });
       localStorage.setItem('y3_pending_from_'+userPhone,JSON.stringify(pend));
       renderPendingRequests();
+      renderProfileFriends();
     }).catch(function(){});
 }
 
@@ -5189,7 +5342,14 @@ function pollPrivateMsgs(){
       msgs.forEach(function(m){appendPcMsg(m);});
       pcLastTs=msgs[msgs.length-1].ts||0;
       scrollPcMsgs();
-      if(msgs.some(function(m){return m.phone!==userPhone;})) playMsgSound();
+      var newFromOther=msgs.filter(function(m){return m.phone!==userPhone;});
+    if(newFromOther.length){
+      playMsgSound();
+      if(!chatOpen||currentPcPhone!==newFromOther[0].phone){
+        sendBrowserNotif('💬 رسالة خاصة جديدة', (newFromOther[0].name||'شخص')+': '+newFromOther[0].msg.substring(0,60));
+        addNotifBadge(newFromOther.length);
+      }
+    }
     }).catch(function(){});
 }
 function sendPrivateMsg(){
