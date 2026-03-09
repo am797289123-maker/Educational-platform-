@@ -576,6 +576,9 @@ select.inp{cursor:pointer;}
   background:var(--bg3);color:var(--text);font-family:Tajawal,sans-serif;font-size:.82rem;direction:rtl;outline:none;}
 .chat-date-sep{text-align:center;font-size:.62rem;color:var(--text2);margin:4px 0;}
 
+.backup-freq-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);
+  background:var(--bg3);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.72rem;cursor:pointer;}
+.backup-freq-btn.sel{background:var(--geo2);color:#fff;border-color:var(--geo2);}
 </style>
 
 </head>
@@ -710,7 +713,26 @@ select.inp{cursor:pointer;}
       <div style="text-align:center;font-size:.7rem;color:var(--text2)" id="settingsQrLabel"></div>
       <button onclick="copyStudentCode()" style="display:block;width:100%;margin-top:8px;padding:9px;border-radius:10px;border:1px solid rgba(245,197,24,.3);background:rgba(245,197,24,.08);color:var(--gold2);font-family:Tajawal,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">📋 نسخ الرقم</button>
     </div>
-    <div class="set-section" id="exportSection" style="display:none">
+    <!-- Backup Section -->
+<div class="set-section" id="backupSection" style="display:none">
+  <div class="set-hd">☁️ النسخ الاحتياطي</div>
+  <div style="font-size:.75rem;color:var(--text2);margin-bottom:10px">أرسل نسخة من بياناتك على إيميلك تلقائياً</div>
+  <label class="lbl" style="font-size:.75rem">📧 إيميلك</label>
+  <input id="backupEmail" type="email" placeholder="example@gmail.com" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Tajawal,sans-serif;font-size:.85rem;margin-bottom:10px;box-sizing:border-box">
+  <label class="lbl" style="font-size:.75rem">🗓️ تكرار النسخ</label>
+  <div style="display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap">
+    <button id="bkDay" onclick="setBkFreq('daily')" style="flex:1;padding:8px;border-radius:9px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Tajawal,sans-serif;font-size:.78rem;cursor:pointer">يومي</button>
+    <button id="bkMonth" onclick="setBkFreq('monthly')" style="flex:1;padding:8px;border-radius:9px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Tajawal,sans-serif;font-size:.78rem;cursor:pointer">شهري</button>
+    <button id="bkYear" onclick="setBkFreq('yearly')" style="flex:1;padding:8px;border-radius:9px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Tajawal,sans-serif;font-size:.78rem;cursor:pointer">سنوي</button>
+  </div>
+  <div id="bkStatus" style="font-size:.7rem;color:var(--text2);margin-bottom:8px;min-height:16px"></div>
+  <div style="display:flex;gap:8px">
+    <button onclick="saveBackupSettings()" style="flex:1;padding:9px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.82rem;cursor:pointer">💾 حفظ الإعدادات</button>
+    <button onclick="sendBackupNow()" style="flex:1;padding:9px;border-radius:10px;border:1px solid var(--geo2);background:transparent;color:var(--geo2);font-family:Tajawal,sans-serif;font-size:.82rem;cursor:pointer">📤 إرسال الآن</button>
+  </div>
+</div>
+
+<div class="set-section" id="exportSection" style="display:none">
       <div class="set-hd">💾 بياناتي</div>
       <div class="set-row">
         <div><div class="set-lbl">تصدير بياناتك</div><div class="set-sub">إحصائيات، سجل الجلسات، اختباراتك</div></div>
@@ -1190,6 +1212,7 @@ select.inp{cursor:pointer;}
       <div class="g-prog" id="gProg"></div>
     </div>
     <button id="stopInfBtn" onclick="stopInfiniteAndShow()" style="display:none;padding:5px 10px;border-radius:9px;border:1px solid rgba(201,148,10,.3);background:rgba(201,148,10,.08);color:var(--gold2);font-size:.65rem;font-weight:700;font-family:Tajawal,sans-serif;cursor:pointer">🏁 إنهاء</button>
+    <button id="finishExamBtn" onclick="confirmFinishExam()" style="display:none;padding:5px 10px;border-radius:9px;border:1px solid rgba(231,76,60,.3);background:rgba(231,76,60,.08);color:var(--hist2);font-size:.65rem;font-weight:700;font-family:Tajawal,sans-serif;cursor:pointer">🏁 إنهاء الامتحان</button>
     <div class="tmr">⏱ <span class="tmr-v" id="tmrV">30ث</span></div>
   </div>
   <div class="sc-bar">
@@ -1204,6 +1227,9 @@ select.inp{cursor:pointer;}
       <div class="q-num" id="qNum"></div>
       <div class="q-card">
         <div class="q-txt" id="qTxt"></div>
+        <div id="qImgWrap" style="display:none;margin:8px 0;text-align:center">
+          <img id="qImg" src="" style="max-width:100%;max-height:220px;border-radius:10px;border:1px solid var(--border)">
+        </div>
         <div class="q-hint" id="qHint"></div>
         <div class="q-exp" id="qExp"></div>
       </div>
@@ -2016,42 +2042,67 @@ function stopCamera(){
   $('camStatus').textContent='';
 }
 function scanFromImage(input){
-  var file=input.files&&input.files[0];if(!file)return;
-  $('camStatus').textContent='⏳ جاري تحليل الصورة...';
-  // Try BarcodeDetector first (native, fast)
-  if(_barcodeDetector){
-    _barcodeDetector.detect(file).then(function(codes){
-      if(codes&&codes.length>0){
-        $('camStatus').textContent='✅ تم قراءة الصورة!';
-        handleQRData(codes[0].rawValue);
-      } else {
-        $('camStatus').textContent='⚠️ لم يُعثر على QR في الصورة';
-      }
-    }).catch(function(){
-      // Fallback to jsQR
-      scanFromImageJsQR(input,file);
-    });
-    input.value='';return;
+  var file=input.files&&input.files[0]; if(!file) return;
+  var status=$('camStatus');
+  status.textContent='⏳ جاري تحليل الصورة...';
+  if(input) input.value='';
+
+  function processImageData(imgData, w, h){
+    var found=null;
+    if(typeof jsQR!=='undefined'){
+      found=jsQR(imgData.data,w,h,{inversionAttempts:'attemptBoth'});
+    }
+    return found;
   }
-  scanFromImageJsQR(input,file);
-}
-function scanFromImageJsQR(input,file){
-  var reader=new FileReader();
-  reader.onload=function(e){
+
+  function scanWithCanvas(src){
     var img=new Image();
     img.onload=function(){
-      var canvas=document.createElement('canvas');
-      canvas.width=img.width;canvas.height=img.height;
-      var ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);
-      var imgData=ctx.getImageData(0,0,img.width,img.height);
-      if(typeof jsQR==='undefined'){$('camStatus').textContent='⚠️ مكتبة المسح لم تُحمَّل';return;}
-      var code=jsQR(imgData.data,img.width,img.height,{inversionAttempts:'attemptBoth'});
-      if(code&&code.data){$('camStatus').textContent='✅ تم قراءة الصورة!';handleQRData(code.data);}
-      else $('camStatus').textContent='⚠️ لم يُعثر على QR في الصورة — جرب صورة أوضح';
+      // Try multiple scales for better detection
+      var scales=[1, 0.5, 2];
+      var found=null;
+      for(var s=0;s<scales.length&&!found;s++){
+        var canvas=document.createElement('canvas');
+        canvas.width=Math.floor(img.width*scales[s]);
+        canvas.height=Math.floor(img.height*scales[s]);
+        var ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        found=processImageData(ctx.getImageData(0,0,canvas.width,canvas.height),canvas.width,canvas.height);
+      }
+      if(found&&found.data){
+        status.textContent='✅ تم قراءة الصورة!';
+        handleQRData(found.data);
+      } else {
+        status.textContent='⚠️ لم يُعثر على QR — جرب صورة أوضح أو الصق الكود';
+      }
     };
-    img.src=e.target.result;
-  };
-  reader.readAsDataURL(file);if(input)input.value='';
+    img.onerror=function(){status.textContent='⚠️ تعذّر قراءة الصورة';};
+    img.src=src;
+  }
+
+  // Try BarcodeDetector first
+  if(_barcodeDetector){
+    var imgEl=new Image();
+    var reader0=new FileReader();
+    reader0.onload=function(e){
+      imgEl.onload=function(){
+        _barcodeDetector.detect(imgEl).then(function(codes){
+          if(codes&&codes.length>0&&codes[0].rawValue){
+            status.textContent='✅ تم قراءة الصورة!';
+            handleQRData(codes[0].rawValue);
+          } else { scanWithCanvas(e.target.result); }
+        }).catch(function(){ scanWithCanvas(e.target.result); });
+      };
+      imgEl.src=e.target.result;
+    };
+    reader0.readAsDataURL(file);
+    return;
+  }
+
+  // jsQR fallback
+  var reader=new FileReader();
+  reader.onload=function(e){ scanWithCanvas(e.target.result); };
+  reader.readAsDataURL(file);
 }
 // BarcodeDetector — init lazily when camera starts
 var _barcodeDetector=null;
@@ -2173,9 +2224,20 @@ function loadCustomExam(exam){
   S.examCode=exam.code||exam.title||('ex_'+Date.now());
   S.qs=shuf((exam.qs||[]).map(function(q){return Object.assign({},q,{_g:false});}));
   S.label='📋 '+exam.title;
-  currentExam=exam; // store for visibility access
+  currentExam=exam;
   $('gTitle').textContent=S.label;
+  // Show finish button for custom exams
+  var fb=$('finishExamBtn');
+  if(fb) fb.style.display='inline-flex';
+  var si=$('stopInfBtn');
+  if(si) si.style.display='none';
   resetPlay();
+}
+function confirmFinishExam(){
+  if(!confirm('هل تريد إنهاء الامتحان الآن؟\nسيتم احتساب النتيجة على الأسئلة التي أجبت عليها.')) return;
+  clearInterval(S.timer);
+  var fb=$('finishExamBtn');if(fb)fb.style.display='none';
+  showResults();
 }
 
 // ══════════════════════════════════════════
@@ -2234,6 +2296,8 @@ function saveDraft(){
       if($('c'+id+'_'+i)&&$('c'+id+'_'+i).classList.contains('on'))ans=i;
     }
     if(ans===-1)ans=0;
+    var qimg=$('qimg'+id);
+    var qImgData=qimg?qimg.value:'';
     var qtog=$('tog_q'+id);
     var qShowAns=qtog?qtog.getAttribute('data-on')==='1':true;
     var qExp=($('qe'+id)||{}).value||'';
@@ -2349,10 +2413,25 @@ function addQ(prefill){
   var hval=prefill&&prefill.h?prefill.h:'';
   var eval_=prefill&&prefill.e?prefill.e:'';
   var showAnsOn=(prefill&&prefill.showAns===false)?'':'1';
+  var imgVal=prefill&&prefill.img?prefill.img:'';
   var d=document.createElement('div');d.className='q-block';d.id='qb'+id;
   d.innerHTML='<div class="qb-num">سؤال #'+(id+1)+'</div>' +
     '<button class="del-q-btn" onclick="delQ('+id+')">✕ حذف</button>' +
-    '<input class="inp" id="qt'+id+'" placeholder="نص السؤال" value="'+escHtml(qval)+'" style="margin-top:22px">' +
+    '<input class="inp" id="qt'+id+'" placeholder="نص السؤال (اختياري لو فيه صورة)" value="'+escHtml(qval)+'" style="margin-top:22px">' +
+    // Image upload for question
+    '<div style="margin-bottom:8px">' +
+      '<div style="font-size:.72rem;color:var(--text2);margin-bottom:4px">🖼️ صورة السؤال (اختياري)</div>' +
+      (imgVal?'<img id="qimg_prev'+id+'" src="'+imgVal+'" style="max-width:100%;max-height:160px;border-radius:8px;margin-bottom:6px;display:block">':
+               '<div id="qimg_prev'+id+'" style="display:none"></div>') +
+      '<div style="display:flex;gap:6px;align-items:center">' +
+        '<label style="padding:6px 12px;border-radius:8px;border:1px dashed var(--border);font-size:.72rem;cursor:pointer;color:var(--text2);white-space:nowrap">' +
+          '📷 رفع صورة' +
+          '<input type="file" accept="image/*" style="display:none" onchange="uploadQImg(this,'+id+')">' +
+        '</label>' +
+        '<button type="button" onclick="clearQImg('+id+')" id="qimg_clr'+id+'" style="display:'+(imgVal?'inline-flex':'none')+';padding:5px 10px;border-radius:8px;border:1px solid rgba(231,76,60,.3);background:rgba(231,76,60,.08);color:var(--hist2);font-size:.68rem;cursor:pointer">✕ حذف الصورة</button>' +
+      '</div>' +
+    '</div>' +
+    '<input type="hidden" id="qimg'+id+'" value="'+escHtml(imgVal)+'">' +
     '<input class="inp" id="qh'+id+'" placeholder="💡 تلميح (اختياري)" value="'+escHtml(hval)+'">' +
     '<input class="inp" id="qe'+id+'" placeholder="📖 شرح الإجابة (اختياري)" value="'+escHtml(eval_)+'">' +
     opts +
@@ -2361,6 +2440,40 @@ function addQ(prefill){
       '<div class="toggle-sw" id="tog_q'+id+'" data-on="'+showAnsOn+'" onclick="togQAns(this)"><div class="toggle-knob"></div></div>' +
     '</div>';
   $('qWrap').appendChild(d);
+}
+
+function uploadQImg(input, id){
+  var file=input.files&&input.files[0]; if(!file) return;
+  if(file.size>2*1024*1024){toast('الصورة أكبر من 2MB — اختر صورة أصغر','err');return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var data=e.target.result;
+    // Compress image
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      var MAX=800;
+      var ratio=Math.min(MAX/img.width, MAX/img.height, 1);
+      canvas.width=Math.floor(img.width*ratio);
+      canvas.height=Math.floor(img.height*ratio);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      var compressed=canvas.toDataURL('image/jpeg',0.75);
+      // Store in hidden input
+      var hi=$('qimg'+id); if(hi) hi.value=compressed;
+      // Show preview
+      var prev=$('qimg_prev'+id);
+      if(prev){prev.src=compressed;prev.style.display='block';}
+      var clr=$('qimg_clr'+id); if(clr) clr.style.display='inline-flex';
+    };
+    img.src=data;
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+function clearQImg(id){
+  var hi=$('qimg'+id); if(hi) hi.value='';
+  var prev=$('qimg_prev'+id); if(prev){prev.src='';prev.style.display='none';}
+  var clr=$('qimg_clr'+id); if(clr) clr.style.display='none';
 }
 function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 function selAns(id,opt){for(var i=0;i<4;i++){var e=$('c'+id+'_'+i);if(e)e.className='chk-mark';}var t=$('c'+id+'_'+opt);if(t)t.className='chk-mark on';}
@@ -2385,7 +2498,8 @@ function saveExam(){
     var qtog=$('tog_q'+id);
     var qShowAns=qtog?qtog.getAttribute('data-on')==='1':true;
     var qExp=($('qe'+id)||{}).value||'';
-    qs.push({q:qtxt,o:opts,a:ans,h:($('qh'+id)||{}).value||'',e:qExp,showAns:qShowAns});
+    var qImgData2=($('qimg'+id)||{}).value||'';
+    qs.push({q:qtxt,o:opts,a:ans,h:($('qh'+id)||{}).value||'',e:qExp,showAns:qShowAns,img:qImgData2});
   });
   if(!qs.length){toast('أضف سؤالاً على الأقل ❗','err');return;}
   // Collect exam-level visibility settings
@@ -2407,7 +2521,7 @@ function saveExam(){
 function generateCode(exam){
   try{
     var mini={t:exam.title,s:exam.subj||'h',l:exam.timeLimit||30,
-      q:(exam.qs||[]).map(function(q){return [q.q,q.o,q.a,q.h||'',q.e||''];})};
+      q:(exam.qs||[]).map(function(q){return [q.q,q.o,q.a,q.h||'',q.e||'',q.img||''];})};
     var json=JSON.stringify(mini);
     var b64=btoa(unescape(encodeURIComponent(json)));
     return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
@@ -2424,7 +2538,7 @@ function decodeCode(code){
     if(!mini||!mini.q||!mini.q.length) return null;
     return {
       title:mini.t||'امتحان',subj:mini.s||'h',timeLimit:mini.l||30,
-      qs:mini.q.map(function(r){return {q:r[0],o:r[1],a:r[2],h:r[3]||'',e:r[4]||''};}),
+      qs:mini.q.map(function(r){return {q:r[0],o:r[1],a:r[2],h:r[3]||'',e:r[4]||'',img:r[5]||''};}),
       code:code
     };
   }catch(e){return null;}
@@ -2557,6 +2671,13 @@ function loadQ(){
   else if(isG){badge.textContent='🗺️ جغرافيا';badge.className='q-badge bg';}
   else{badge.textContent='📜 تاريخ';badge.className='q-badge bh';}
   $('qTxt').textContent=q.q;
+  // Show question image if exists
+  var qiw=$('qImgWrap'), qim=$('qImg');
+  if(q.img&&qiw&&qim){
+    qim.src=q.img; qiw.style.display='block';
+  } else if(qiw){
+    qiw.style.display='none'; if(qim) qim.src='';
+  }
   $('qHint').textContent='💡 '+(q.h||'');$('qHint').classList.remove('show');
   $('qExp').classList.remove('show');$('qExp').textContent='';
   $('hintBtn').disabled=false;$('hintBtn').style.opacity='1';
@@ -3139,6 +3260,93 @@ function updateDeleteUI(){
 }
 
 // ── FULL DATA EXPORT / BACKUP ──
+// ══ BACKUP SYSTEM ══
+var _bkFreq='monthly';
+function loadBackupSettings(){
+  try{
+    var cfg=JSON.parse(localStorage.getItem('y3_backup_cfg_'+userPhone)||'{}');
+    var email=cfg.email||'';
+    var freq=cfg.freq||'monthly';
+    _bkFreq=freq;
+    var ei=$('backupEmail'); if(ei) ei.value=email;
+    setBkFreq(freq,true);
+    // Check if backup due
+    checkBackupDue(cfg);
+  }catch(e){}
+}
+function setBkFreq(freq, silent){
+  _bkFreq=freq;
+  ['daily','monthly','yearly'].forEach(function(f){
+    var btn=$('bk'+({daily:'Day',monthly:'Month',yearly:'Year'}[f]));
+    if(btn) btn.style.cssText=f===freq?
+      'flex:1;padding:8px;border-radius:9px;border:2px solid var(--geo2);background:rgba(33,150,243,.12);color:var(--geo2);font-family:Tajawal,sans-serif;font-size:.78rem;cursor:pointer;font-weight:bold':
+      'flex:1;padding:8px;border-radius:9px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Tajawal,sans-serif;font-size:.78rem;cursor:pointer';
+  });
+}
+function saveBackupSettings(){
+  var email=($('backupEmail')||{}).value||'';
+  if(!email||!email.includes('@')){toast('أدخل إيميل صحيح','err');return;}
+  try{
+    var cfg={email:email,freq:_bkFreq,savedAt:Date.now()};
+    localStorage.setItem('y3_backup_cfg_'+userPhone,JSON.stringify(cfg));
+    toast('✅ تم حفظ إعدادات النسخ الاحتياطي','ok');
+    var st=$('bkStatus'); if(st) st.textContent='✅ محفوظ — التالي: '+getNextBackupLabel(_bkFreq);
+  }catch(e){toast('خطأ في الحفظ','err');}
+}
+function getNextBackupLabel(freq){
+  var now=new Date();
+  if(freq==='daily') return 'الغد';
+  if(freq==='monthly') return 'بداية الشهر القادم';
+  return 'العام القادم';
+}
+function checkBackupDue(cfg){
+  if(!cfg||!cfg.email||!cfg.lastBackup) return;
+  var now=Date.now(), last=cfg.lastBackup, freq=cfg.freq||'monthly';
+  var diff=now-last;
+  var due=false;
+  if(freq==='daily'&&diff>86400000) due=true;
+  else if(freq==='monthly'&&diff>30*86400000) due=true;
+  else if(freq==='yearly'&&diff>365*86400000) due=true;
+  if(due) setTimeout(function(){sendBackupNow(true);},3000);
+}
+function sendBackupNow(auto){
+  var cfg=JSON.parse(localStorage.getItem('y3_backup_cfg_'+userPhone)||'{}');
+  var email=cfg.email||($('backupEmail')||{}).value||'';
+  if(!email||!email.includes('@')){
+    if(!auto) toast('أدخل إيميلك أولاً','err');
+    return;
+  }
+  // Collect all data
+  var data={};
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&k.indexOf('y3_')===0) data[k]=localStorage.getItem(k);
+    }
+  }catch(e){}
+  var json=JSON.stringify(data,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var date=new Date().toLocaleDateString('ar-EG');
+  // Generate mailto link
+  var subject=encodeURIComponent('نسخ احتياطي — منصة ثالثة ثانوي — '+date);
+  var body=encodeURIComponent('نسخة احتياطية - '+userName+' - '+date);
+  // Download the file + open mail
+  var a=document.createElement('a');
+  a.href=url; a.download='backup_'+userPhone+'_'+Date.now()+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+  window.location.href='mailto:'+email+'?subject='+subject+'&body='+body;
+  // Save last backup time
+  try{
+    cfg.lastBackup=Date.now();
+    localStorage.setItem('y3_backup_cfg_'+userPhone,JSON.stringify(cfg));
+  }catch(e){}
+  var st=$('bkStatus');
+  if(st) st.textContent='✅ تم إرسال النسخة بتاريخ '+date;
+  if(!auto) toast('📤 جاري فتح تطبيق الإيميل + تنزيل الملف','ok');
+}
+
 function exportMyData(){
   try{
     var data={
@@ -3505,13 +3713,71 @@ function stuView(phone){
   var s=getStudentRegistry().find(function(x){return x.phone===phone;});
   if(!s) return;
   var acc=s.totalQ>0?Math.round((s.totalCorrect||0)/s.totalQ*100):0;
-  var info='👤 '+s.name+'\n📱 '+s.phone+
-    '\n\nإجمالي الأسئلة: '+(s.totalQ||0)+
-    '\nإجابات صح: '+(s.totalCorrect||0)+
-    '\nدقة: '+acc+'%'+
-    '\nآخر ظهور: '+s.lastSeen+
-    (s.banned?'\n\n🚫 محظور منذ: '+s.bannedAt:'');
-  alert(info);
+  // Collect exam results for this student across all exams
+  var examResults=[];
+  try{
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&k.indexOf('y3_res_')===0){
+        var arr=JSON.parse(localStorage.getItem(k)||'[]');
+        var found=arr.find(function(r){return r.phone===phone;});
+        if(found) examResults.push(found);
+      }
+    }
+  }catch(e){}
+  // Build popup
+  var html='<div style="padding:4px">' +
+    '<div style="font-size:1rem;font-weight:bold;margin-bottom:4px">👤 '+s.name+'</div>' +
+    '<div style="font-size:.8rem;color:var(--text2);margin-bottom:12px">📱 '+s.phone+'</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">' +
+      '<div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">' +
+        '<div style="font-size:1.1rem;font-weight:bold">'+acc+'%</div>' +
+        '<div style="font-size:.65rem;color:var(--text2)">الدقة الكلية</div>' +
+      '</div>' +
+      '<div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">' +
+        '<div style="font-size:1.1rem;font-weight:bold">'+(s.totalQ||0)+'</div>' +
+        '<div style="font-size:.65rem;color:var(--text2)">إجمالي الأسئلة</div>' +
+      '</div>' +
+    '</div>';
+  if(examResults.length){
+    html+='<div style="font-size:.75rem;font-weight:bold;margin-bottom:6px;color:var(--text2)">📋 نتائج الاختبارات</div>';
+    html+='<div style="max-height:200px;overflow-y:auto">';
+    examResults.sort(function(a,b){return (b.pct||0)-(a.pct||0);});
+    examResults.forEach(function(r){
+      var color=r.pct>=80?'var(--green2)':r.pct>=60?'var(--gold2)':'var(--hist2)';
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;'+
+        'background:var(--bg3);border-radius:8px;margin-bottom:5px">' +
+        '<div style="flex:1;margin-left:8px">' +
+          '<div style="font-size:.78rem;font-weight:bold">'+(r.examTitle||'اختبار')+'</div>' +
+          '<div style="font-size:.62rem;color:var(--text2)">'+(r.date||r.time||'')+'</div>' +
+        '</div>' +
+        '<div style="font-size:.9rem;font-weight:bold;color:'+color+'">'+r.pct+'%</div>' +
+        '</div>';
+    });
+    html+='</div>';
+  } else {
+    html+='<div style="text-align:center;color:var(--text2);font-size:.8rem;padding:10px">لم يؤدِ أي اختبار بعد</div>';
+  }
+  if(s.banned) html+='<div style="margin-top:10px;color:var(--hist2);font-size:.75rem">🚫 محظور منذ: '+s.bannedAt+'</div>';
+  html+='<div style="font-size:.65rem;color:var(--text2);margin-top:8px">آخر ظهور: '+s.lastSeen+'</div>';
+  html+='</div>';
+  showPopup('تفاصيل الطالب', html);
+}
+function showPopup(title, html){
+  var existing=$('genericPopup');
+  if(existing) existing.remove();
+  var overlay=document.createElement('div');
+  overlay.id='genericPopup';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML='<div style="background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:20px;max-width:360px;width:100%;max-height:85vh;overflow-y:auto">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">' +
+      '<div style="font-weight:bold;font-size:.95rem">'+title+'</div>' +
+      '<button onclick="document.getElementById(\'genericPopup\').remove()" style"background:var(--bg3);border:none;border-radius:8px;padding:4px 10px;cursor:pointer;color:var(--text);font-size:.85rem">✕</button>' +
+    '</div>' +
+    html +
+  '</div>';
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  document.body.appendChild(overlay);
 }
 
 function isStudentBanned(){
@@ -3680,6 +3946,9 @@ function openSettings(){
   // Show export + device section only when logged in
   var expSec=$('exportSection');
   if(expSec) expSec.style.display=(role?'block':'none');
+  var bkSec=$('backupSection');
+  if(bkSec) bkSec.style.display=(role?'block':'none');
+  if(role) loadBackupSettings();
   if(role){
     var dnl=$('deviceNameLabel'),dil=$('deviceIdLabel');
     if(dnl) dnl.textContent=getDeviceName();
@@ -3689,6 +3958,8 @@ function openSettings(){
   document.querySelectorAll('.theme-swatch').forEach(function(el){el.classList.remove('sel');});
   var cur=document.getElementById('th-'+currentTheme);
   if(cur) cur.classList.add('sel');
+  // Load backup settings
+  try{loadBackupSettings();}catch(e){}
   goScreen('settingsScreen');
 }
 
@@ -4260,6 +4531,123 @@ loadTheme();
     applyLang();
   }catch(e){}
 })();
+
+// ══════════════════════════════════════════
+// BACKUP SYSTEM
+// ══════════════════════════════════════════
+var currentBackupFreq='off';
+
+function setBackupFreq(freq){
+  currentBackupFreq=freq;
+  ['off','daily','monthly','yearly'].forEach(function(f){
+    var btn=$('bfreq_'+f);
+    if(btn) btn.className='backup-freq-btn'+(f===freq?' sel':'');
+  });
+  updateBackupNextInfo();
+}
+
+function updateBackupNextInfo(){
+  var info=$('backupNextInfo'); if(!info) return;
+  if(currentBackupFreq==='off'){info.textContent='النسخ الاحتياطي التلقائي: متوقف';return;}
+  var last=null;
+  try{var bs=JSON.parse(localStorage.getItem('y3_backup_settings')||'{}');last=bs.lastBackup;}catch(e){}
+  var labels={daily:'يومي',monthly:'شهري',yearly:'سنوي'};
+  info.textContent='التكرار: '+labels[currentBackupFreq]+(last?' • آخر نسخة: '+last:'');
+}
+
+function loadBackupSettings(){
+  try{
+    var bs=JSON.parse(localStorage.getItem('y3_backup_settings')||'{}');
+    var email=$('backupEmail'); if(email&&bs.email) email.value=bs.email;
+    setBackupFreq(bs.freq||'off');
+  }catch(e){}
+}
+
+function saveBackupSettings(){
+  var email=($('backupEmail')||{}).value||'';
+  if(currentBackupFreq!=='off'&&!email){
+    toast('أدخل البريد الإلكتروني أولاً','err');return;
+  }
+  if(email&&!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){
+    toast('البريد الإلكتروني غير صحيح','err');return;
+  }
+  try{
+    localStorage.setItem('y3_backup_settings',JSON.stringify({
+      email:email, freq:currentBackupFreq,
+      savedAt:new Date().toLocaleDateString('ar-EG')
+    }));
+    toast('✅ تم حفظ إعدادات النسخ الاحتياطي','ok');
+    updateBackupNextInfo();
+    // Schedule check
+    scheduleBackupCheck();
+  }catch(e){toast('خطأ في الحفظ','err');}
+}
+
+function buildBackupData(){
+  var data={exportedAt:new Date().toISOString(),user:{name:userName,phone:userPhone,role:role},data:{}};
+  for(var i=0;i<localStorage.length;i++){
+    var k=localStorage.key(i);
+    if(k&&k.indexOf('y3_')===0){
+      try{data.data[k]=JSON.parse(localStorage.getItem(k));}catch(e){data.data[k]=localStorage.getItem(k);}
+    }
+  }
+  return data;
+}
+
+function backupNow(){
+  var statusEl=$('backupStatus');
+  var email=($('backupEmail')||{}).value||'';
+  if(!email){toast('أدخل البريد الإلكتروني أولاً','err');return;}
+  // Build JSON
+  var data=buildBackupData();
+  var json=JSON.stringify(data,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var date=new Date().toLocaleDateString('ar-EG').replace(/\//g,'-');
+  var filename='backup_'+userName+'_'+date+'.json';
+  // Download file
+  var a=document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+  // Open email client with instructions
+  var subject=encodeURIComponent('نسخة احتياطية - منصة ثالثة ثانوي - '+date);
+  var body=encodeURIComponent('نسخة احتياطية - '+userName+' - '+date+' - ارفق الملف المحمل');
+  window.open('mailto:'+email+'?subject='+subject+'&body='+body);
+  // Save last backup date
+  try{
+    var bs=JSON.parse(localStorage.getItem('y3_backup_settings')||'{}');
+    bs.lastBackup=new Date().toLocaleDateString('ar-EG');
+    localStorage.setItem('y3_backup_settings',JSON.stringify(bs));
+  }catch(e){}
+  if(statusEl) statusEl.textContent='✅ تم تحميل الملف وفتح الإيميل — أرفق الملف وأرسله';
+  updateBackupNextInfo();
+}
+
+function scheduleBackupCheck(){
+  // Check if auto-backup is due (runs on app open)
+  try{
+    var bs=JSON.parse(localStorage.getItem('y3_backup_settings')||'{}');
+    if(!bs.freq||bs.freq==='off'||!bs.email) return;
+    var last=bs.lastBackup?new Date(bs.lastBackup.split('/').reverse().join('-')):null;
+    var now=new Date();
+    var due=false;
+    if(!last) due=true;
+    else{
+      var diff=Math.floor((now-last)/(1000*60*60*24));
+      if(bs.freq==='daily'&&diff>=1) due=true;
+      else if(bs.freq==='monthly'&&diff>=30) due=true;
+      else if(bs.freq==='yearly'&&diff>=365) due=true;
+    }
+    if(due){
+      setTimeout(function(){
+        toast('⏰ حان وقت النسخ الاحتياطي — افتح الإعدادات واضغط "نسخ الآن"','ok');
+      },3000);
+    }
+  }catch(e){}
+}
+
+// Run backup check on startup
+setTimeout(scheduleBackupCheck, 5000);
 </script>
 
 <!-- ═══ CHAT FAB + PANEL ═══ -->
