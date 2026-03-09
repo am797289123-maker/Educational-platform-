@@ -135,7 +135,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 #camVideo{width:100%;height:100%;object-fit:cover;display:block;}
 #camCanvas{display:none;}
 .cam-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-.cam-frame{width:65%;aspect-ratio:1;border:2.5px solid var(--gold2);border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.45);animation:camPulse 1.5s ease-in-out infinite;}
+.cam-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:65%;padding-bottom:65%;border:3px solid #00e676;border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.45);}
 @keyframes camPulse{0%,100%{border-color:var(--gold2)}50%{border-color:#fff;box-shadow:0 0 0 9999px rgba(0,0,0,.45),0 0 8px 4px rgba(245,197,24,.3)}}
 .cam-status{font-size:.7rem;color:var(--text2);text-align:center;margin-bottom:10px;min-height:18px;}
 .btn-cam{display:inline-flex;align-items:center;gap:7px;padding:11px 20px;border-radius:11px;border:none;
@@ -152,7 +152,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 .btn-load{padding:12px 18px;border-radius:11px;border:none;background:var(--geo2);color:#fff;
   font-family:'Tajawal',Tahoma,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;}
 .scan-result{margin-top:13px;background:rgba(39,174,96,.09);border:1px solid rgba(39,174,96,.2);
-  border-radius:12px;padding:13px;display:none;}
+  border-radius:12px;padding:13px;display:none;transition:all .3s;}
 .sr-ok{font-size:.73rem;color:var(--green2);font-weight:700;margin-bottom:5px;}
 .sr-name{font-size:.88rem;font-weight:700;margin-bottom:3px;}
 .sr-meta{font-size:.7rem;color:var(--text2);margin-bottom:10px;}
@@ -959,7 +959,13 @@ select.inp{cursor:pointer;}
         <div class="cam-wrap" id="camWrap" style="display:none">
           <video id="camVideo" autoplay playsinline muted></video>
           <canvas id="camCanvas"></canvas>
-          <div class="cam-overlay"><div class="cam-frame"></div></div>
+          <div class="cam-overlay">
+            <div class="cam-frame"></div>
+            <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center;
+              color:#fff;font-size:.7rem;text-shadow:0 1px 3px #000;opacity:.85">
+              وجّه QR Code داخل الإطار
+            </div>
+          </div>
         </div>
         <div class="cam-status" id="camStatus"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -980,6 +986,28 @@ select.inp{cursor:pointer;}
           <div class="sr-name" id="srName"></div>
           <div class="sr-meta" id="srMeta"></div>
           <button class="btn-start-exam" onclick="startScannedExam()">▶ ابدأ الامتحان</button>
+        </div>
+
+        <!-- Exam Found Popup -->
+        <div id="examFoundPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+          z-index:9999;align-items:center;justify-content:center;padding:20px">
+          <div style="background:var(--bg2);border:2px solid var(--green2);border-radius:20px;
+            padding:28px;max-width:340px;width:100%;text-align:center">
+            <div style="font-size:3rem;margin-bottom:8px">📋</div>
+            <div style="font-size:1.1rem;font-weight:bold;color:var(--green2);margin-bottom:6px">تم العثور على الامتحان!</div>
+            <div id="popupExamName" style="font-size:1rem;font-weight:bold;margin-bottom:4px"></div>
+            <div id="popupExamMeta" style="font-size:.8rem;color:var(--text2);margin-bottom:20px"></div>
+            <button onclick="startScannedExam();closeExamPopup();" style="width:100%;padding:14px;
+              border-radius:12px;border:none;background:var(--green2);color:#fff;
+              font-size:1rem;font-weight:bold;cursor:pointer;margin-bottom:10px">
+              ▶ ابدأ الامتحان الآن
+            </button>
+            <button onclick="closeExamPopup()" style="width:100%;padding:10px;border-radius:12px;
+              border:1px solid var(--border);background:transparent;color:var(--text2);
+              font-size:.85rem;cursor:pointer">
+              إلغاء
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1916,24 +1944,68 @@ function quickExam(subj,mode){
 // CAMERA (scan)
 // ══════════════════════════════════════════
 function startCamera(){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    $('camStatus').textContent='⚠️ الكاميرا غير متاحة. استخدم الكود النصي.';return;
+  var statusEl=$('camStatus');
+  // Must be HTTPS
+  if(location.protocol!=='https:'&&location.hostname!=='localhost'){
+    statusEl.textContent='⚠️ الكاميرا تحتاج HTTPS — افتح الرابط من GitHub Pages';return;
   }
-  $('camStatus').textContent='⏳ جاري تشغيل الكاميرا...';
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}},audio:false})
-    .then(function(stream){
-      camStream=stream;
-      var vid=$('camVideo');vid.srcObject=stream;
-      $('camWrap').style.display='block';
-      $('btnStartCam').style.display='none';$('btnStopCam').style.display='inline-flex';
-      $('camStatus').textContent='📷 وجّه الكاميرا نحو رمز QR';
-      cameraGranted=true;
-      vid.onloadedmetadata=function(){vid.play();setTimeout(function(){scanInterval=setInterval(scanFrame,250);},500);};
-      if(vid.readyState>=1){vid.play();setTimeout(function(){if(!scanInterval)scanInterval=setInterval(scanFrame,250);},500);}
-    })
-    .catch(function(err){
-      var msg=err.name==='NotAllowedError'?'🔒 يجب السماح بالكاميرا من إعدادات المتصفح':'⚠️ تعذّر الوصول للكاميرا';
-      $('camStatus').textContent=msg+'. استخدم الكود النصي.';
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    statusEl.textContent='⚠️ المتصفح لا يدعم الكاميرا — استخدم Chrome';return;
+  }
+  // Reset state
+  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+  statusEl.textContent='⏳ جاري فتح الكاميرا...';
+  $('camWrap').style.display='block';
+  $('btnStartCam').style.display='none';
+  $('btnStopCam').style.display='inline-flex';
+  var vid=$('camVideo');
+  // Init BarcodeDetector
+  initBarcodeDetector();
+
+  function onStream(stream){
+    camStream=stream;
+    cameraGranted=true;
+    vid.srcObject=stream;
+    // Force attributes
+    vid.autoplay=true; vid.playsInline=true; vid.muted=true;
+    vid.setAttribute('autoplay','true');
+    vid.setAttribute('playsinline','true');
+    vid.setAttribute('muted','true');
+    // Single handler to start scan
+    var _scanStarted=false;
+    function startScan(){
+      if(_scanStarted)return;
+      _scanStarted=true;
+      statusEl.textContent='🔍 وجّه الـ QR نحو الإطار الأخضر';
+      scanInterval=setInterval(scanFrame,300);
+    }
+    vid.onplaying=startScan;
+    // Fallback timers
+    setTimeout(function(){vid.play().catch(function(){});},100);
+    setTimeout(function(){if(!_scanStarted)startScan();},2000);
+    setTimeout(function(){if(!_scanStarted)startScan();},4000);
+  }
+
+  function onError(err){
+    $('camWrap').style.display='none';
+    $('btnStartCam').style.display='inline-flex';
+    $('btnStopCam').style.display='none';
+    camStream=null;
+    if(err&&(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')){
+      statusEl.innerHTML='🔒 <b>الكاميرا محجوبة</b><br><small>افتح إعدادات Chrome ← الموقع ← الكاميرا ← سماح</small>';
+    } else {
+      statusEl.textContent='❌ تعذّر فتح الكاميرا — جرب "رفع صورة QR" أو الصق الكود';
+    }
+  }
+
+  // Try back camera first, then any
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'}},audio:false})
+    .then(onStream).catch(function(){
+      navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+        .then(onStream).catch(function(){
+          navigator.mediaDevices.getUserMedia({video:true,audio:false})
+            .then(onStream).catch(onError);
+        });
     });
 }
 function stopCamera(){
@@ -1946,53 +2018,99 @@ function stopCamera(){
 function scanFromImage(input){
   var file=input.files&&input.files[0];if(!file)return;
   $('camStatus').textContent='⏳ جاري تحليل الصورة...';
+  // Try BarcodeDetector first (native, fast)
+  if(_barcodeDetector){
+    _barcodeDetector.detect(file).then(function(codes){
+      if(codes&&codes.length>0){
+        $('camStatus').textContent='✅ تم قراءة الصورة!';
+        handleQRData(codes[0].rawValue);
+      } else {
+        $('camStatus').textContent='⚠️ لم يُعثر على QR في الصورة';
+      }
+    }).catch(function(){
+      // Fallback to jsQR
+      scanFromImageJsQR(input,file);
+    });
+    input.value='';return;
+  }
+  scanFromImageJsQR(input,file);
+}
+function scanFromImageJsQR(input,file){
   var reader=new FileReader();
   reader.onload=function(e){
     var img=new Image();
     img.onload=function(){
-      var canvas=document.createElement('canvas');canvas.width=img.width;canvas.height=img.height;
+      var canvas=document.createElement('canvas');
+      canvas.width=img.width;canvas.height=img.height;
       var ctx=canvas.getContext('2d');ctx.drawImage(img,0,0);
       var imgData=ctx.getImageData(0,0,img.width,img.height);
       if(typeof jsQR==='undefined'){$('camStatus').textContent='⚠️ مكتبة المسح لم تُحمَّل';return;}
       var code=jsQR(imgData.data,img.width,img.height,{inversionAttempts:'attemptBoth'});
       if(code&&code.data){$('camStatus').textContent='✅ تم قراءة الصورة!';handleQRData(code.data);}
-      else $('camStatus').textContent='⚠️ لم يُعثر على QR في الصورة';
+      else $('camStatus').textContent='⚠️ لم يُعثر على QR في الصورة — جرب صورة أوضح';
     };
     img.src=e.target.result;
   };
-  reader.readAsDataURL(file);input.value='';
+  reader.readAsDataURL(file);if(input)input.value='';
 }
+// BarcodeDetector — init lazily when camera starts
+var _barcodeDetector=null;
+function initBarcodeDetector(){
+  if(_barcodeDetector) return;
+  if('BarcodeDetector' in window){
+    try{_barcodeDetector=new BarcodeDetector({formats:['qr_code']});}catch(e){_barcodeDetector=null;}
+  }
+}
+
+var _scanBusy=false;
 function scanFrame(){
-  if(!camStream)return;
+  if(!camStream||_scanBusy)return;
   var vid=$('camVideo');
-  if(!vid.videoWidth||!vid.videoHeight||vid.readyState<2)return;
-  if(typeof jsQR==='undefined'){
-    // Try to reload jsQR
-    if(!window._jsqrLoading){
-      window._jsqrLoading=true;
-      var s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js';
-      s.onload=function(){window._jsqrLoading=false;};
-      document.head.appendChild(s);
-    }
+  if(!vid||!vid.videoWidth||!vid.videoHeight||vid.readyState<2)return;
+  _scanBusy=true;
+
+  function onFound(data){
+    clearInterval(scanInterval);scanInterval=null;
+    _scanBusy=false;
+    $('camStatus').textContent='✅ تم المسح بنجاح!';
+    stopCamera();
+    setTimeout(function(){handleQRData(data);},200);
+  }
+
+  // Method 1: BarcodeDetector (native Android/Chrome)
+  if(_barcodeDetector){
+    _barcodeDetector.detect(vid)
+      .then(function(codes){
+        _scanBusy=false;
+        if(codes&&codes.length>0&&codes[0].rawValue) onFound(codes[0].rawValue);
+      })
+      .catch(function(){
+        // BarcodeDetector failed — disable it and use jsQR
+        _barcodeDetector=null;
+        _scanBusy=false;
+      });
     return;
   }
+
+  // Method 2: jsQR canvas scan
   try{
     var canvas=$('camCanvas');
-    var W=vid.videoWidth, H=vid.videoHeight;
-    canvas.width=W; canvas.height=H;
+    var W=vid.videoWidth,H=vid.videoHeight;
+    if(!W||!H){_scanBusy=false;return;}
+    canvas.width=W;canvas.height=H;
     var ctx=canvas.getContext('2d');
     ctx.drawImage(vid,0,0,W,H);
-    var imgData=ctx.getImageData(0,0,W,H);
-    var code=jsQR(imgData.data,W,H,{inversionAttempts:'attemptBoth'});
-    if(code&&code.data&&code.data.length>3){
-      $('camStatus').textContent='✅ تم المسح!';
-      stopCamera();
-      handleQRData(code.data);
+    var found=null;
+    if(typeof jsQR!=='undefined'){
+      found=jsQR(ctx.getImageData(0,0,W,H).data,W,H,{inversionAttempts:'attemptBoth'});
+      if(!found){
+        var cx=Math.floor(W*.15),cy=Math.floor(H*.15),cw=Math.floor(W*.7),ch=Math.floor(H*.7);
+        found=jsQR(ctx.getImageData(cx,cy,cw,ch).data,cw,ch,{inversionAttempts:'attemptBoth'});
+      }
     }
-  }catch(err){
-    // silently ignore frame errors
-  }
+    _scanBusy=false;
+    if(found&&found.data&&found.data.length>3) onFound(found.data);
+  }catch(e){_scanBusy=false;}
 }
 function handleQRData(data){
   data=(data||'').trim();if(!data)return;
@@ -2012,7 +2130,14 @@ function handleQRData(data){
   if(ex3){showScannedExam(ex3);return;}
   // 3) JSON fallback
   try{var ex4=JSON.parse(data);if(ex4&&ex4.qs){showScannedExam(ex4);return;}}catch(e){}
-  $('camStatus').textContent='⚠️ لم يُقرأ الكود — جرب لصق الكود النصي يدوياً';
+  // Try as plain exam link with ?c= 
+  try{
+    var urlTry=new URL('https://x.com/?c='+data);
+    var ex5=decodeCode(data);
+    if(ex5){showScannedExam(ex5);return;}
+  }catch(e){}
+  $('camStatus').textContent='⚠️ لم يُقرأ الكود — الصق الكود النصي في الخانة أدناه';
+  toast('⚠️ QR غير صالح — جرب نسخ الكود من المعلم ولصقه','err');
 }
 function loadByCode(){
   var raw=($('codeInp').value||'').trim();
@@ -2025,9 +2150,22 @@ function loadByCode(){
 }
 function showScannedExam(exam){
   scannedExam=exam;
-  $('srName').textContent=exam.title||'امتحان';
-  $('srMeta').textContent=(exam.qs?exam.qs.length:0)+' سؤال • '+(exam.timeLimit||30)+'ث للسؤال';
-  $('scanResult').style.display='block';
+  var title=exam.title||'امتحان';
+  var meta=(exam.qs?exam.qs.length:0)+' سؤال • '+(exam.timeLimit||30)+' ث للسؤال';
+  // Update small result div
+  $('srName').textContent=title;
+  $('srMeta').textContent=meta;
+  var el=$('scanResult');
+  el.style.cssText='display:block!important;margin-top:13px;background:rgba(39,174,96,.09);border:1px solid rgba(39,174,96,.25);border-radius:12px;padding:16px;';
+  // Show popup overlay
+  $('popupExamName').textContent=title;
+  $('popupExamMeta').textContent=meta;
+  var popup=$('examFoundPopup');
+  popup.style.display='flex';
+}
+function closeExamPopup(){
+  var popup=$('examFoundPopup');
+  if(popup) popup.style.display='none';
 }
 function startScannedExam(){if(!scannedExam)return;$('scanResult').style.display='none';loadCustomExam(scannedExam);}
 function loadCustomExam(exam){
@@ -3101,19 +3239,54 @@ function copyStudentCode(){
 var tScanStream=null, tScanInterval=null;
 
 function startTeacherScan(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    $('tScanStatus').textContent='⚠️ المتصفح لا يدعم الكاميرا';return;
+  }
+  if(tScanInterval){clearInterval(tScanInterval);tScanInterval=null;}
   $('btnStartTScan').style.display='none';
   $('btnStopTScan').style.display='flex';
   $('tScanWrap').style.display='block';
-  $('tScanStatus').textContent='جاري تشغيل الكاميرا...';
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
-    .then(function(stream){
-      tScanStream=stream;
-      var vid=$('tScanVideo');
-      vid.srcObject=stream;
-      vid.onloadedmetadata=function(){vid.play();setTimeout(function(){tScanInterval=setInterval(teacherScanFrame,300);},500);};
-      $('tScanStatus').textContent='📷 وجّه الكاميرا على QR الطالب';
-    })
-    .catch(function(){$('tScanStatus').textContent='❌ تعذّر فتح الكاميرا — استخدم إدخال الرقم يدوياً';stopTeacherScan();});
+  $('tScanStatus').textContent='⏳ جاري فتح الكاميرا...';
+  initBarcodeDetector();
+  var vid=$('tScanVideo');
+
+  function onStream(stream){
+    tScanStream=stream;
+    vid.srcObject=stream;
+    vid.autoplay=true; vid.playsInline=true; vid.muted=true;
+    vid.setAttribute('autoplay','true');
+    vid.setAttribute('playsinline','true');
+    vid.setAttribute('muted','true');
+    $('tScanStatus').textContent='📷 وجّه الكاميرا على QR الطالب';
+    var _started=false;
+    function startScan(){
+      if(_started)return; _started=true;
+      tScanInterval=setInterval(teacherScanFrame,300);
+    }
+    vid.onplaying=startScan;
+    setTimeout(function(){vid.play().catch(function(){});},100);
+    setTimeout(function(){if(!_started)startScan();},2000);
+    setTimeout(function(){if(!_started)startScan();},4000);
+  }
+
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'}},audio:false})
+    .then(onStream).catch(function(){
+      navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+        .then(onStream).catch(function(){
+          navigator.mediaDevices.getUserMedia({video:true,audio:false})
+            .then(onStream).catch(function(err){
+              $('tScanWrap').style.display='none';
+              $('btnStartTScan').style.display='inline-flex';
+              $('btnStopTScan').style.display='none';
+              tScanStream=null;
+              if(err&&(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')){
+                $('tScanStatus').textContent='🔒 اسمح بالكاميرا من إعدادات المتصفح';
+              } else {
+                $('tScanStatus').textContent='❌ تعذّر فتح الكاميرا — استخدم إدخال الرقم يدوياً';
+              }
+            });
+        });
+    });
 }
 
 function stopTeacherScan(){
@@ -3128,23 +3301,39 @@ function teacherScanFrame(){
   if(!tScanStream) return;
   var vid=$('tScanVideo');
   if(!vid.videoWidth||!vid.videoHeight||vid.readyState<2) return;
+
+  function handleCode(data){
+    $('tScanStatus').textContent='✅ تم المسح!';
+    clearInterval(tScanInterval);tScanInterval=null;
+    stopTeacherScan();
+    var stu=decodeStudentCode(data);
+    if(stu&&stu.n&&stu.p){
+      setTimeout(function(){addStudentToRegistry(stu.n,stu.p);},200);
+    } else {
+      $('tScanStatus').textContent='⚠️ QR غير صحيح';
+    }
+  }
+
+  if(_barcodeDetector){
+    _barcodeDetector.detect(vid).then(function(codes){
+      if(codes&&codes.length>0) handleCode(codes[0].rawValue);
+    }).catch(function(){});
+    return;
+  }
   if(typeof jsQR==='undefined') return;
   try{
     var canvas=$('tScanCanvas');
-    canvas.width=vid.videoWidth;canvas.height=vid.videoHeight;
+    var W=vid.videoWidth,H=vid.videoHeight;
+    canvas.width=W;canvas.height=H;
     var ctx=canvas.getContext('2d');
-    ctx.drawImage(vid,0,0);
-    var img=ctx.getImageData(0,0,canvas.width,canvas.height);
-    var code=jsQR(img.data,canvas.width,canvas.height,{inversionAttempts:'attemptBoth'});
-    if(code&&code.data){
-      var stu=decodeStudentCode(code.data);
-      if(stu&&stu.n&&stu.p){
-        stopTeacherScan();
-        addStudentToRegistry(stu.n,stu.p);
-      } else {
-        $('tScanStatus').textContent='⚠️ QR غير صحيح — جرب QR طالب آخر';
-      }
+    ctx.drawImage(vid,0,0,W,H);
+    var d=ctx.getImageData(0,0,W,H);
+    var code=jsQR(d.data,W,H,{inversionAttempts:'attemptBoth'});
+    if(!code){
+      var cx=Math.floor(W*.2),cy=Math.floor(H*.2),cw=Math.floor(W*.6),ch=Math.floor(H*.6);
+      code=jsQR(ctx.getImageData(cx,cy,cw,ch).data,cw,ch,{inversionAttempts:'attemptBoth'});
     }
+    if(code&&code.data) handleCode(code.data);
   }catch(e){}
 }
 
@@ -3453,6 +3642,17 @@ function openSettings(){
     var rb=$('setUserRole');
     rb.textContent=role==='t'?'معلم':'طالب';
     rb.className='hdr-badge '+(role==='t'?'t':'s');
+    // Force-save correct role to identity every time settings opens
+    try{
+      var ikey='y3_identity_'+userPhone;
+      var idata=JSON.parse(localStorage.getItem(ikey)||'{}');
+      idata.role=role; idata.name=userName; idata.phone=userPhone;
+      idata.gender=userGender; idata.stream=userStream; idata.teacherSubject=teacherSubject;
+      localStorage.setItem(ikey,JSON.stringify(idata));
+      // Also re-save session
+      localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,role:role,
+        gender:userGender,stream:userStream,teacherSubject:teacherSubject,lang:appLang}));
+    }catch(e){}
     // Show role-specific sections
     var tSec=$('teacherScanSection'), sSec=$('studentQrSection');
     var tChat=$('teacherChatSection');
@@ -4000,11 +4200,17 @@ loadTheme();
   try{
     var sess=JSON.parse(localStorage.getItem('y3_session')||'null');
     if(!sess||!sess.name||!sess.phone||!sess.role) return;
-    // Restore session
-    userName=sess.name; userPhone=sess.phone; role=sess.role; pickedRole=sess.role;
-    userGender=sess.gender||'m';
-    userStream=sess.stream||'adabi';
-    teacherSubject=sess.teacherSubject||'h';
+    // Restore session — cross-check with identity lock
+    var savedIdent=null;
+    try{savedIdent=JSON.parse(localStorage.getItem('y3_identity_'+sess.phone)||'null');}catch(e){}
+    // Trust identity role over session role (identity is permanent)
+    var restoredRole = (savedIdent&&savedIdent.role) ? savedIdent.role : sess.role;
+    userName=sess.name; userPhone=sess.phone; role=restoredRole; pickedRole=restoredRole;
+    userGender=sess.gender||(savedIdent&&savedIdent.gender)||'m';
+    userStream=sess.stream||(savedIdent&&savedIdent.stream)||(restoredRole==='t'?'':'adabi');
+    teacherSubject=sess.teacherSubject||(savedIdent&&savedIdent.teacherSubject)||(restoredRole==='t'?'h':'');
+    // Update session with corrected role
+    try{localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,role:restoredRole,gender:userGender,stream:userStream,teacherSubject:teacherSubject}));}catch(e){}
     appLang=sess.lang||'ar';
     try{applyLang();}catch(e){}
     loadStats(); loadDrafts();
@@ -4024,6 +4230,24 @@ loadTheme();
       $('tName').textContent=userName+' — '+userPhone;
       renderTeacherStudents();
       goScreen('teacherHome');
+    }
+  }catch(e){}
+})();
+
+// ── Role integrity check on startup ──
+(function(){
+  try{
+    var sess=JSON.parse(localStorage.getItem('y3_session')||'null');
+    if(!sess||!sess.phone||!sess.role) return;
+    var key='y3_identity_'+sess.phone;
+    var ident=JSON.parse(localStorage.getItem(key)||'{}');
+    // Only add role to identity if identity has NO role (first time)
+    // Never override existing identity role
+    if(!ident.role && sess.role){
+      ident.role=sess.role;
+      ident.name=sess.name||ident.name||'';
+      ident.phone=sess.phone;
+      localStorage.setItem(key,JSON.stringify(ident));
     }
   }catch(e){}
 })();
