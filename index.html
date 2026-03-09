@@ -485,6 +485,13 @@ select.inp{cursor:pointer;}
 .prof-card{background:linear-gradient(135deg,rgba(192,57,43,.08),rgba(33,150,243,.08));
   border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px;margin-bottom:14px;text-align:center;}
 .prof-avatar{font-size:3.5rem;margin-bottom:8px;}
+.prof-avatar-wrap{position:relative;width:88px;height:88px;margin:0 auto 10px;cursor:pointer;}
+.prof-avatar-img{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid var(--geo2);display:block;}
+.prof-avatar-emoji{width:88px;height:88px;border-radius:50%;background:var(--bg3);border:3px solid var(--geo2);
+  display:flex;align-items:center;justify-content:center;font-size:2.6rem;}
+.prof-avatar-edit{position:absolute;bottom:0;right:0;background:var(--geo2);border-radius:50%;
+  width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:.75rem;
+  border:2px solid var(--bg);}
 .prof-name{font-family:'Amiri',serif;font-size:1.35rem;font-weight:700;color:var(--text);}
 .prof-phone{font-size:.75rem;color:var(--text2);margin-top:3px;}
 .prof-stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
@@ -597,7 +604,12 @@ select.inp{cursor:pointer;}
   </div>
   <div class="prof-body">
     <div class="prof-card">
-      <div class="prof-avatar">🧑‍🎓</div>
+      <div class="prof-avatar-wrap" onclick="$('avatarInput').click()" title="تغيير الصورة">
+        <div class="prof-avatar-emoji" id="profAvatarEmoji">🧑‍🎓</div>
+        <img id="profAvatarImg" class="prof-avatar-img" style="display:none" src="" alt="">
+        <div class="prof-avatar-edit">✏️</div>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+      </div>
       <div class="prof-name" id="profName"></div>
       <div class="prof-phone" id="profPhone"></div>
       <div class="prof-stats-grid">
@@ -1888,6 +1900,9 @@ function doLogin(){
 }
 function logout(){
   if(!confirm('تريد الخروج؟'))return;
+  setOffline(); // إرسال offline قبل الخروج
+  if(presTimer){clearInterval(presTimer);presTimer=null;}
+  if(frPollTimer){clearInterval(frPollTimer);frPollTimer=null;}
   try{localStorage.removeItem('y3_session');}catch(e){}
   if(chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null;}
   chatInitialized=false;chatCfg=null;chatOpen=false;chatUnread=0;
@@ -4123,6 +4138,7 @@ function openSettings(){
 function goProfile(){
   $('profName').textContent=userName;
   $('profPhone').textContent='📱 '+userPhone;
+  loadProfileAvatar();
   $('profTot').textContent=S.totalScore;
   $('profBest').textContent=S.bestPct+'%';
   $('profGms').textContent=S.games;
@@ -4189,9 +4205,11 @@ function renderProfileFriends(){
     var icon=p.role==='t'?'👨‍🏫':'👤';
     var clr=p.role==='t'?'var(--geo2)':'var(--green2)';
     return '<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:12px;padding:10px 12px;margin-bottom:7px">'+
-      '<div style="width:38px;height:38px;border-radius:50%;background:'+clr+';display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;position:relative">'+
-        icon+'<span style="position:absolute;bottom:0;left:0;width:10px;height:10px;border-radius:50%;background:'+(p.online?'var(--green2)':'#555')+';border:2px solid var(--bg3)"></span>'+
-      '</div>'+
+      (function(){var av=getContactAvatar(p.phone);
+        return av
+          ? '<div style="width:38px;height:38px;border-radius:50%;flex-shrink:0;position:relative;overflow:hidden"><img src="'+av+'" style="width:100%;height:100%;object-fit:cover"><span style="position:absolute;bottom:0;left:0;width:10px;height:10px;border-radius:50%;background:'+(p.online?'var(--green2)':'#555')+';border:2px solid var(--bg3)"></span></div>'
+          : '<div style="width:38px;height:38px;border-radius:50%;background:'+clr+';display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;position:relative">'+icon+'<span style="position:absolute;bottom:0;left:0;width:10px;height:10px;border-radius:50%;background:'+(p.online?'var(--green2)':'#555')+';border:2px solid var(--bg3)"></span></div>';
+      })()+
       '<div style="flex:1;min-width:0">'+
         '<div style="font-size:.83rem;font-weight:bold">'+safeHtml(p.name)+'</div>'+
         '<div style="font-size:.62rem;color:var(--text2)">'+(p.online?'🟢 متصل':'⚫ غير متصل')+' • '+(p.role==='t'?'معلم':'طالب')+'</div>'+
@@ -4964,6 +4982,119 @@ function submitEssayAns(){
   },4000);
 }
 
+
+// ══════════════════════════════════════════
+// PROFILE PICTURE
+// ══════════════════════════════════════════
+function getAvatar(phone){
+  try{return localStorage.getItem('y3_avatar_'+(phone||userPhone))||null;}catch(e){return null;}
+}
+function saveAvatar(dataUrl){
+  try{localStorage.setItem('y3_avatar_'+userPhone,dataUrl);}catch(e){}
+}
+function uploadAvatar(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  if(input) input.value='';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      // Compress to 200x200 circle
+      var size=200;
+      var canvas=document.createElement('canvas');
+      canvas.width=size; canvas.height=size;
+      var ctx=canvas.getContext('2d');
+      // Crop center square
+      var s=Math.min(img.width,img.height);
+      var sx=(img.width-s)/2, sy=(img.height-s)/2;
+      ctx.beginPath();
+      ctx.arc(size/2,size/2,size/2,0,Math.PI*2);
+      ctx.clip();
+      ctx.drawImage(img,sx,sy,s,s,0,0,size,size);
+      var dataUrl=canvas.toDataURL('image/jpeg',0.75);
+      saveAvatar(dataUrl);
+      applyAvatarToProfile(dataUrl);
+      toast('✅ تم تحديث الصورة','ok');
+      // Update contacts avatar in Supabase presence
+      updatePresence();
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function applyAvatarToProfile(dataUrl){
+  var img=$('profAvatarImg'), emoji=$('profAvatarEmoji');
+  if(!img||!emoji) return;
+  if(dataUrl){
+    img.src=dataUrl; img.style.display='block'; emoji.style.display='none';
+  } else {
+    img.style.display='none'; emoji.style.display='flex';
+    emoji.textContent=role==='t'?'👨‍🏫':'🧑‍🎓';
+  }
+}
+function loadProfileAvatar(){
+  var av=getAvatar(userPhone);
+  applyAvatarToProfile(av);
+}
+// Show avatars of contacts in chat
+function getContactAvatar(phone){
+  return getAvatar(phone)||null;
+}
+
+// ══════════════════════════════════════════
+// ONLINE / OFFLINE STATUS (precise)
+// ══════════════════════════════════════════
+function setOffline(){
+  // بعت offline ping وشيل الـ timers
+  if(presTimer){clearInterval(presTimer);presTimer=null;}
+  var payload={room:'presence',name:userName,phone:userPhone,role:role||'s',
+    msg:'offline',img:null,ts:Date.now()};
+  // Use sendBeacon for reliability when page closes
+  var cfg=chatCfg||loadChatConfig()||DEFAULT_SB_CFG;
+  if(cfg&&navigator.sendBeacon){
+    var blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
+    navigator.sendBeacon(cfg.url+'/rest/v1/messages?apikey='+cfg.key, blob);
+  } else {
+    sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
+  }
+}
+
+// ══════════════════════════════════════════
+// SEND IMAGE IN PRIVATE CHAT
+// ══════════════════════════════════════════
+function sendPrivateImage(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  if(input) input.value='';
+  if(!currentPcPhone){toast('افتح محادثة أولاً','err');return;}
+  toast('⏳ جاري رفع الصورة...','ok');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      // Compress to max 800px
+      var maxW=800, maxH=800;
+      var w=img.width, h=img.height;
+      if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+      if(h>maxH){w=Math.round(w*maxH/h);h=maxH;}
+      var canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      var dataUrl=canvas.toDataURL('image/jpeg',0.7);
+      var room=pcRoomId(userPhone,currentPcPhone);
+      var payload={room:room,name:userName,phone:userPhone,role:role||'s',
+        msg:'',img:dataUrl,ts:Date.now()};
+      appendPcMsg(payload); scrollPcMsgs();
+      sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
+        .then(function(r){
+          if(!r.ok) toast('⚠️ تعذّر إرسال الصورة','err');
+        })
+        .catch(function(){toast('⚠️ تعذّر إرسال الصورة','err');});
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 // ══════════════════════════════════════════
 // BACKUP SYSTEM
 // ══════════════════════════════════════════
@@ -5432,8 +5563,24 @@ var presTimer=null;
 function startPresence(){
   updatePresence();
   if(presTimer) clearInterval(presTimer);
-  presTimer=setInterval(updatePresence,30000);
-  setInterval(pollPresence,15000);
+  // كل 25 ثانية online ping (60s timeout = يعتبر offline لو انقطع)
+  presTimer=setInterval(updatePresence,25000);
+  setInterval(pollPresence,10000);
+
+  // Offline عند إغلاق التطبيق
+  window.addEventListener('beforeunload', setOffline);
+  window.addEventListener('pagehide', setOffline);
+
+  // Offline عند إخفاء الصفحة (موبايل switch app)
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden){
+      if(presTimer){clearInterval(presTimer);presTimer=null;}
+    } else {
+      // عاد للصفحة = online تاني
+      updatePresence();
+      if(!presTimer) presTimer=setInterval(updatePresence,25000);
+    }
+  });
 }
 function updatePresence(){
   var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
@@ -5442,22 +5589,27 @@ function updatePresence(){
   sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
 }
 function pollPresence(){
-  var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
-  var since=Date.now()-60000; // active in last 60s = online
-  sbSocial('messages?room=eq.presence&ts=gt.'+since+'&order=ts.desc&limit=100')
+  var since=Date.now()-55000; // 55s — أي حد بعت ping في آخر 55s = online
+  sbSocial('messages?room=eq.presence&ts=gt.'+since+'&order=ts.desc&limit=200')
     .then(function(r){return r.json();})
     .then(function(msgs){
-      var onlinePhones={};
-      if(msgs) msgs.forEach(function(m){onlinePhones[m.phone]=true;});
+      var onlinePhones={}, offlinePhones={};
+      if(msgs) msgs.forEach(function(m){
+        if(m.msg==='offline') offlinePhones[m.phone]=true;
+        else if(m.msg==='online'&&!offlinePhones[m.phone]) onlinePhones[m.phone]=true;
+      });
       var contacts=getContacts();
-      contacts.forEach(function(ct){ct.online=!!onlinePhones[ct.phone];});
+      contacts.forEach(function(ct){
+        ct.online=!!onlinePhones[ct.phone]&&!offlinePhones[ct.phone];
+      });
       saveContacts(contacts);
       renderContacts();
-      // Update private chat status if open
+      renderProfileFriends();
+      // Update private chat status
       if(currentPcPhone){
+        var isOn=!!onlinePhones[currentPcPhone]&&!offlinePhones[currentPcPhone];
         var st=$('pcChatStatus');
-        if(st) st.textContent=onlinePhones[currentPcPhone]?'● متصل':'○ غير متصل';
-        if(st) st.style.color=onlinePhones[currentPcPhone]?'var(--green2)':'var(--text2)';
+        if(st){st.textContent=isOn?'● متصل الآن':'○ غير متصل';st.style.color=isOn?'var(--green2)':'var(--text2)';}
       }
     }).catch(function(){});
 }
@@ -5553,8 +5705,16 @@ function openPrivateChat(phone,name,pRole){
   if(isBlocked(phone)){toast('هذا الشخص محظور','err');return;}
   currentPcPhone=phone;
   $('pcChatName').textContent=name||phone;
-  $('pcChatAvatar').textContent=pRole==='t'?'👨‍🏫':'👤';
-  $('pcChatAvatar').style.background=pRole==='t'?'var(--geo2)':'var(--green2)';
+  var pcEmoji=$('pcChatAvatarEmoji'), pcAImg=$('pcChatAvatarImg');
+  var contactAv=getContactAvatar(phone);
+  if(contactAv&&pcAImg){
+    pcAImg.src=contactAv; pcAImg.style.display='block';
+    if(pcEmoji) pcEmoji.style.display='none';
+  } else {
+    if(pcAImg) pcAImg.style.display='none';
+    if(pcEmoji){pcEmoji.style.display='';pcEmoji.textContent=pRole==='t'?'👨‍🏫':'👤';}
+    $('pcChatAvatar').style.background=pRole==='t'?'var(--geo2)':'var(--green2)';
+  }
   $('pcMsgs').innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);font-size:.75rem">⏳ جاري التحميل...</div>';
   var overlay=$('privateChatOverlay');
   overlay.style.display='flex';
@@ -5628,12 +5788,35 @@ function appendPcMsg(m){
   var isMe=m.phone===userPhone;
   var div=document.createElement('div');
   div.style.cssText='display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start');
-  var time=m.ts?new Date(m.ts).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'';
-  div.innerHTML='<div style="max-width:75%;background:'+(isMe?'var(--geo2)':'var(--bg3)')+';color:'+(isMe?'#fff':'var(--text)')+';'+
-    'border-radius:'+(isMe?'14px 14px 4px 14px':'14px 14px 14px 4px')+';padding:9px 13px;font-size:.82rem;line-height:1.4">'+
-    safeHtml(m.msg||'')+'</div>'+
-    '<div style="font-size:.58rem;color:var(--text2);margin-top:2px;padding:0 4px">'+time+'</div>';
+  var time=m.ts?new Date(typeof m.ts==='number'?m.ts:m.ts).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'';
+  var bubbleBg=isMe?'var(--geo2)':'var(--bg3)';
+  var bubbleClr=isMe?'#fff':'var(--text)';
+  var bubbleR=isMe?'14px 14px 4px 14px':'14px 14px 14px 4px';
+  var content='';
+  if(m.img&&m.img.startsWith('data:')){
+    // Image message
+    content='<img src="'+m.img+'" style="max-width:200px;max-height:200px;border-radius:10px;display:block;cursor:pointer" '+
+      'onclick="viewPcImg(this.src)" alt="صورة">';
+    if(m.msg) content+='<div style="font-size:.82rem;margin-top:5px;padding:0 2px">'+safeHtml(m.msg)+'</div>';
+    div.innerHTML='<div style="max-width:75%;background:'+bubbleBg+';color:'+bubbleClr+';'+
+      'border-radius:'+bubbleR+';padding:7px;overflow:hidden">'+content+'</div>'+
+      '<div style="font-size:.58rem;color:var(--text2);margin-top:2px;padding:0 4px">'+time+'</div>';
+  } else {
+    // Text message
+    div.innerHTML='<div style="max-width:75%;background:'+bubbleBg+';color:'+bubbleClr+';'+
+      'border-radius:'+bubbleR+';padding:9px 13px;font-size:.82rem;line-height:1.4">'+
+      safeHtml(m.msg||'')+'</div>'+
+      '<div style="font-size:.58rem;color:var(--text2);margin-top:2px;padding:0 4px">'+time+'</div>';
+  }
   el.appendChild(div);
+}
+
+function viewPcImg(src){
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;align-items:center;justify-content:center';
+  ov.innerHTML='<img src="'+src+'" style="max-width:95vw;max-height:90vh;border-radius:12px"><button onclick="this.parentNode.remove()" style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:1rem;cursor:pointer">✕</button>';
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  document.body.appendChild(ov);
 }
 function scrollPcMsgs(){var el=$('pcMsgs');if(el)el.scrollTop=el.scrollHeight;}
 function showPcOffline(){
@@ -5740,7 +5923,10 @@ CREATE POLICY "open" ON messages
 <div id="privateChatOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9990;flex-direction:column">
   <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border)">
     <button onclick="closePrivateChat()" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:.9rem">←</button>
-    <div id="pcChatAvatar" style="width:36px;height:36px;border-radius:50%;background:var(--geo2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">👤</div>
+    <div id="pcChatAvatar" style="width:40px;height:40px;border-radius:50%;background:var(--geo2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;overflow:hidden;position:relative">
+      <span id="pcChatAvatarEmoji">👤</span>
+      <img id="pcChatAvatarImg" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover" src="" alt="">
+    </div>
     <div style="flex:1">
       <div id="pcChatName" style="font-size:.9rem;font-weight:bold"></div>
       <div id="pcChatStatus" style="font-size:.65rem;color:var(--green2)">● متصل</div>
@@ -5748,9 +5934,13 @@ CREATE POLICY "open" ON messages
     <button id="pcBlockBtn" onclick="blockContact(currentPcPhone)" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:5px 10px;color:var(--hist2);cursor:pointer;font-size:.7rem">🚫 حظر</button>
   </div>
   <div id="pcMsgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px"></div>
-  <div style="padding:10px 12px;background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:8px">
+  <div style="padding:10px 12px;background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:7px;align-items:flex-end">
+    <label style="padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:1rem;flex-shrink:0" title="إرسال صورة">
+      🖼️
+      <input type="file" accept="image/*" style="display:none" onchange="sendPrivateImage(this)">
+    </label>
     <input id="pcMsgInp" class="inp" placeholder="اكتب رسالة..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendPrivateMsg()">
-    <button onclick="sendPrivateMsg()" style="padding:10px 16px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.85rem;cursor:pointer">إرسال</button>
+    <button onclick="sendPrivateMsg()" style="padding:10px 14px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.85rem;cursor:pointer;flex-shrink:0">إرسال</button>
   </div>
 </div>
 
