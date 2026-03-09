@@ -5231,7 +5231,7 @@ function sbSocial(path,opts){
     'apikey':cfg.key,
     'Authorization':'Bearer '+cfg.key,
     'Content-Type':'application/json',
-    'Prefer':'return=representation'  // مهم: يرجع البيانات بعد الإدراج
+    'Prefer':'return=minimal'
   };
   return fetch(url,Object.assign({headers:headers},opts||{}));
 }
@@ -5250,14 +5250,14 @@ function sendFriendRequest(){
   var inp2=$('profAddPhone'); if(inp2) inp2.value='';
 
   // بناء الـ payload بـ ISO timestamp عشان Supabase يقبله صح
-  var nowIso=new Date().toISOString();
   var payload={
     room:'friend_req',
     name:userName,
     phone:userPhone,
     role:role||'s',
     msg:JSON.stringify({type:'friend_req',to:phone,fromName:userName,fromPhone:userPhone,fromRole:role||'s'}),
-    ts:nowIso
+    img:null,
+    ts:Date.now()
   };
 
   toast('⏳ جاري الإرسال...','ok');
@@ -5331,7 +5331,8 @@ function acceptFriendReq(fromPhone, fromName, fromRole){
     phone:userPhone,
     role:role||'s',
     msg:JSON.stringify({type:'friend_accept',to:fromPhone,fromName:userName,fromPhone:userPhone,fromRole:role||'s'}),
-    ts:new Date().toISOString()
+    img:null,
+    ts:Date.now()
   };
   sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
     .catch(function(e){console.warn('accept send error:',e);});
@@ -5364,8 +5365,8 @@ function startFriendReqPoll(){
 }
 function pollFriendRequests(){
   // جيب آخر 24 ساعة بـ ISO timestamp
-  var since=new Date(Date.now()-86400000).toISOString();
-  sbSocial('messages?room=eq.friend_req&ts=gt.'+encodeURIComponent(since)+'&order=ts.asc&limit=100')
+  var since=Date.now()-86400000;
+  sbSocial('messages?room=eq.friend_req&ts=gt.'+since+'&order=ts.asc&limit=100')
     .then(function(r){return r.json();})
     .then(function(msgs){
       if(!msgs||!Array.isArray(msgs)||!msgs.length) return;
@@ -5437,7 +5438,7 @@ function startPresence(){
 function updatePresence(){
   var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
   var payload={room:'presence',name:userName,phone:userPhone,role:role||'s',
-    msg:'online',ts:Date.now()};
+    msg:'online',img:null,ts:Date.now()};
   sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
 }
 function pollPresence(){
@@ -5582,7 +5583,7 @@ function loadPrivateMsgs(){
         el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text2);font-size:.8rem">لا رسائل بعد — ابدأ المحادثة 👋</div>';
       } else {
         msgs.forEach(function(m){appendPcMsg(m);});
-        if(msgs.length) pcLastTs=msgs[msgs.length-1].ts||new Date().toISOString();
+        if(msgs.length) pcLastTs=msgs[msgs.length-1].ts||Date.now();
       }
       scrollPcMsgs();
     }).catch(showPcOffline);
@@ -5591,13 +5592,13 @@ function pollPrivateMsgs(){
   if(!currentPcPhone) return;
   var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
   var room=pcRoomId(userPhone,currentPcPhone);
-  var pcSince=pcLastTs?new Date(typeof pcLastTs==='number'?pcLastTs:pcLastTs).toISOString():new Date(Date.now()-3600000).toISOString();
-  sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&ts=gt.'+encodeURIComponent(pcSince)+'&order=ts.asc&limit=20')
+  var pcSince=pcLastTs||0;
+  sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&ts=gt.'+pcSince+'&order=ts.asc&limit=20')
     .then(function(r){return r.json();})
     .then(function(msgs){
       if(!msgs||!msgs.length) return;
       msgs.forEach(function(m){appendPcMsg(m);});
-      pcLastTs=msgs[msgs.length-1].ts||new Date().toISOString();
+      pcLastTs=msgs[msgs.length-1].ts||Date.now();
       scrollPcMsgs();
       var newFromOther=msgs.filter(function(m){return m.phone!==userPhone;});
     if(newFromOther.length){
@@ -5616,7 +5617,7 @@ function sendPrivateMsg(){
   var cfg=chatCfg||loadChatConfig();
   if(!cfg){toast('الدردشة غير متصلة — فعّل الدردشة أولاً','err');return;}
   var room=pcRoomId(userPhone,currentPcPhone);
-  var payload={room:room,name:userName,phone:userPhone,role:role||'s',msg:txt,ts:new Date().toISOString()};
+  var payload={room:room,name:userName,phone:userPhone,role:role||'s',msg:txt,img:null,ts:Date.now()};
   if(inp) inp.value='';
   // Optimistic append
   appendPcMsg(payload); scrollPcMsgs();
