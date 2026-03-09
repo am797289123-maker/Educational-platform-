@@ -628,14 +628,35 @@ select.inp{cursor:pointer;}
           title="تفعيل الإشعارات">🔔</button>
       </div>
       <!-- Add friend -->
-      <div style="display:flex;gap:7px;margin-bottom:10px;align-items:center">
-        <input class="inp" id="profAddPhone" placeholder="رقم الهاتف" type="tel" style="flex:1;margin-bottom:0">
-        <button onclick="sendFriendRequestFromProfile()" style="padding:9px 12px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.8rem;cursor:pointer">➕</button>
-        <label style="padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:.82rem" title="مسح QR">
-          📷
+      <div style="display:flex;gap:7px;margin-bottom:8px;align-items:center">
+        <input class="inp" id="profAddPhone" placeholder="رقم الهاتف" type="tel" style="flex:1;margin-bottom:0" onkeydown="if(event.key==='Enter')sendFriendRequestFromProfile()">
+        <button onclick="sendFriendRequestFromProfile()" style="padding:9px 12px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.8rem;cursor:pointer;white-space:nowrap">➕ إضافة</button>
+      </div>
+      <!-- Camera scan row -->
+      <div style="display:flex;gap:7px;margin-bottom:12px">
+        <button id="friendScanBtn" onclick="startFriendScan()" 
+          style="flex:1;padding:9px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);
+          color:var(--text2);font-family:Tajawal,sans-serif;font-size:.78rem;cursor:pointer">
+          📷 مسح QR بالكاميرا
+        </button>
+        <label style="padding:9px 12px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);cursor:pointer;font-size:.78rem;color:var(--text2);white-space:nowrap">
+          🖼️ رفع صورة
           <input type="file" accept="image/*" style="display:none" onchange="scanContactQRProfile(this)">
         </label>
       </div>
+      <!-- Camera view for friend scan -->
+      <div id="friendCamWrap" style="display:none;margin-bottom:10px;border-radius:12px;overflow:hidden;border:2px solid var(--geo2);position:relative">
+        <video id="friendCamVideo" autoplay playsinline muted style="width:100%;max-height:220px;display:block;background:#000"></video>
+        <canvas id="friendCamCanvas" style="display:none"></canvas>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:160px;height:160px;border:3px solid var(--geo2);border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.4)"></div>
+        </div>
+        <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center">
+          <span style="background:rgba(0,0,0,.6);color:#fff;font-size:.7rem;padding:3px 10px;border-radius:20px">وجّه QR الشخص داخل الإطار</span>
+        </div>
+        <button onclick="stopFriendScan()" style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);border:none;color:#fff;border-radius:8px;padding:4px 10px;font-size:.75rem;cursor:pointer">✕ إغلاق</button>
+      </div>
+      <div id="friendScanStatus" style="font-size:.75rem;color:var(--text2);margin-bottom:8px;min-height:16px;text-align:center"></div>
       <!-- Pending requests -->
       <div id="profPendingReqs"></div>
       <!-- Friends list -->
@@ -4190,7 +4211,67 @@ function sendFriendRequestFromProfile(){
 }
 
 function scanContactQRProfile(input){
-  scanContactQR(input);
+  var file=input.files&&input.files[0]; if(!file) return;
+  if(input) input.value='';
+  $('friendScanStatus').textContent='⏳ جاري تحليل الصورة...';
+
+  function processWithJsQR(src){
+    var img=new Image();
+    img.onload=function(){
+      var scales=[1,0.5,2];
+      var found=null;
+      for(var s=0;s<scales.length&&!found;s++){
+        var canvas=document.createElement('canvas');
+        canvas.width=Math.floor(img.width*scales[s]);
+        canvas.height=Math.floor(img.height*scales[s]);
+        var ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        if(typeof jsQR!=='undefined')
+          found=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height,{inversionAttempts:'attemptBoth'});
+      }
+      if(found&&found.data) handleFriendQRData(found.data);
+      else $('friendScanStatus').textContent='⚠️ لم يُعثر على QR — جرب صورة أوضح';
+    };
+    img.src=src;
+  }
+
+  if(_barcodeDetector){
+    var imgEl=new Image();
+    var r=new FileReader();
+    r.onload=function(e){
+      imgEl.onload=function(){
+        _barcodeDetector.detect(imgEl)
+          .then(function(codes){
+            if(codes&&codes.length>0&&codes[0].rawValue) handleFriendQRData(codes[0].rawValue);
+            else processWithJsQR(e.target.result);
+          }).catch(function(){processWithJsQR(e.target.result);});
+      };
+      imgEl.src=e.target.result;
+    };
+    r.readAsDataURL(file);
+    return;
+  }
+  var r2=new FileReader();
+  r2.onload=function(e){processWithJsQR(e.target.result);};
+  r2.readAsDataURL(file);
+}
+
+function handleFriendQRData(data){
+  var phone=null;
+  try{
+    var decoded=JSON.parse(decodeURIComponent(escape(atob(data.replace(/-/g,'+').replace(/_/g,'/')))));
+    if(decoded.p) phone=decoded.p;
+  }catch(ex){}
+  if(!phone){var raw=data.trim().replace(/\s/g,'');if(raw.match(/^[0-9+]{8,15}$/))phone=raw;}
+  if(phone){
+    $('friendScanStatus').textContent='✅ تم! جاري الإرسال...';
+    var inp=$('profAddPhone');if(inp)inp.value=phone;
+    var inp2=$('addPersonPhone');if(inp2)inp2.value=phone;
+    sendFriendRequest();
+    setTimeout(function(){$('friendScanStatus').textContent='';},3000);
+  } else {
+    $('friendScanStatus').textContent='⚠️ QR غير صالح لإضافة شخص';
+  }
 }
 
 function renderHistory(){
@@ -4984,6 +5065,130 @@ function scheduleBackupCheck(){
       },3000);
     }
   }catch(e){}
+}
+
+
+// ══════════════════════════════════════════
+// FRIEND CAMERA SCAN
+// ══════════════════════════════════════════
+var friendCamStream=null, friendScanInterval=null, _friendScanBusy=false;
+
+function startFriendScan(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    toast('الكاميرا غير متاحة — استخدم رفع صورة','err');return;
+  }
+  initBarcodeDetector();
+  $('friendCamWrap').style.display='block';
+  $('friendScanBtn').style.display='none';
+  $('friendScanStatus').textContent='⏳ جاري فتح الكاميرا...';
+  var vid=$('friendCamVideo');
+
+  function onStream(stream){
+    friendCamStream=stream;
+    vid.srcObject=stream;
+    vid.autoplay=true; vid.playsInline=true; vid.muted=true;
+    $('friendScanStatus').textContent='📷 وجّه كاميرا على QR الشخص';
+    var _started=false;
+    function startScan(){
+      if(_started)return; _started=true;
+      if(friendScanInterval) clearInterval(friendScanInterval);
+      friendScanInterval=setInterval(friendScanFrame,300);
+    }
+    vid.onplaying=startScan;
+    setTimeout(function(){vid.play().catch(function(){});},100);
+    setTimeout(function(){if(!_started)startScan();},2000);
+    setTimeout(function(){if(!_started)startScan();},4000);
+  }
+
+  function onError(err){
+    $('friendCamWrap').style.display='none';
+    $('friendScanBtn').style.display='block';
+    friendCamStream=null;
+    if(err&&(err.name==='NotAllowedError'||err.name==='PermissionDeniedError')){
+      $('friendScanStatus').textContent='🔒 اسمح بالكاميرا من إعدادات المتصفح';
+    } else {
+      $('friendScanStatus').textContent='❌ تعذّر فتح الكاميرا — استخدم رفع صورة';
+    }
+  }
+
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:'environment'}},audio:false})
+    .then(onStream).catch(function(){
+      navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+        .then(onStream).catch(function(){
+          navigator.mediaDevices.getUserMedia({video:true,audio:false})
+            .then(onStream).catch(onError);
+        });
+    });
+}
+
+function stopFriendScan(){
+  if(friendScanInterval){clearInterval(friendScanInterval);friendScanInterval=null;}
+  if(friendCamStream){friendCamStream.getTracks().forEach(function(t){t.stop();});friendCamStream=null;}
+  var wrap=$('friendCamWrap');if(wrap)wrap.style.display='none';
+  var btn=$('friendScanBtn');if(btn)btn.style.display='block';
+  _friendScanBusy=false;
+}
+
+function friendScanFrame(){
+  if(!friendCamStream||_friendScanBusy)return;
+  var vid=$('friendCamVideo');
+  if(!vid||!vid.videoWidth||vid.readyState<2)return;
+  _friendScanBusy=true;
+
+  function onFound(data){
+    clearInterval(friendScanInterval);friendScanInterval=null;
+    _friendScanBusy=false;
+    stopFriendScan();
+    // Decode QR data
+    var phone=null, name=null;
+    try{
+      var decoded=JSON.parse(decodeURIComponent(escape(atob(data.replace(/-/g,'+').replace(/_/g,'/')))));
+      if(decoded.p){phone=decoded.p; name=decoded.n||null;}
+    }catch(ex){}
+    if(!phone){
+      var raw=data.trim().replace(/\s/g,'');
+      if(raw.match(/^[0-9+]{8,15}$/)) phone=raw;
+    }
+    if(phone){
+      $('friendScanStatus').textContent='✅ تم المسح! جاري الإرسال...';
+      var inp=$('profAddPhone');if(inp)inp.value=phone;
+      var inp2=$('addPersonPhone');if(inp2)inp2.value=phone;
+      sendFriendRequest();
+      setTimeout(function(){$('friendScanStatus').textContent='';},3000);
+    } else {
+      $('friendScanStatus').textContent='⚠️ QR غير صالح — جرب صورة أخرى';
+      setTimeout(startFriendScan,2000);
+    }
+  }
+
+  // Method 1: BarcodeDetector
+  if(_barcodeDetector){
+    _barcodeDetector.detect(vid).then(function(codes){
+      _friendScanBusy=false;
+      if(codes&&codes.length>0&&codes[0].rawValue) onFound(codes[0].rawValue);
+    }).catch(function(){_barcodeDetector=null;_friendScanBusy=false;});
+    return;
+  }
+
+  // Method 2: jsQR
+  try{
+    var canvas=$('friendCamCanvas');
+    var W=vid.videoWidth,H=vid.videoHeight;
+    if(!W||!H){_friendScanBusy=false;return;}
+    canvas.width=W;canvas.height=H;
+    var ctx=canvas.getContext('2d');
+    ctx.drawImage(vid,0,0,W,H);
+    var found=null;
+    if(typeof jsQR!=='undefined'){
+      found=jsQR(ctx.getImageData(0,0,W,H).data,W,H,{inversionAttempts:'attemptBoth'});
+      if(!found){
+        var cx=Math.floor(W*.15),cy=Math.floor(H*.15),cw=Math.floor(W*.7),ch=Math.floor(H*.7);
+        found=jsQR(ctx.getImageData(cx,cy,cw,ch).data,cw,ch,{inversionAttempts:'attemptBoth'});
+      }
+    }
+    _friendScanBusy=false;
+    if(found&&found.data&&found.data.length>3) onFound(found.data);
+  }catch(e){_friendScanBusy=false;}
 }
 
 // Run backup check on startup
