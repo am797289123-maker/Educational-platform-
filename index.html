@@ -4345,11 +4345,21 @@ function askTeacherCurrent(){
 // CHAT — Supabase Realtime
 // ══════════════════════════════════════════
 var chatOpen=false, chatCfg=null, chatPollTimer=null;
+
+// ── Default Supabase config (يشتغل تلقائياً بدون إعداد) ──
+var DEFAULT_SB_CFG={
+  url:'https://ulfevadtqbbdparvzfgp.supabase.co',
+  key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVsZmV2YWR0cWJiZHBhcnZ6ZmdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMTI1ODIsImV4cCI6MjA4ODU4ODU4Mn0.Hz1VoDySjBkAbqNuJdBryyc7pmAmoPoLXY-_Idyy2NY',
+  room:'class1'
+};
 var chatLastTs=0, chatUnread=0, chatInitialized=false;
 
 // ── Config ──
 function loadChatConfig(){
-  try{return JSON.parse(localStorage.getItem('y3_sbcfg')||'null');}catch(e){return null;}
+  try{
+    var saved=JSON.parse(localStorage.getItem('y3_sbcfg')||'null');
+    return saved||DEFAULT_SB_CFG; // fallback to default
+  }catch(e){return DEFAULT_SB_CFG;}
 }
 function saveChatConfig(){
   var url=($('cfgUrl')||{value:''}).value.trim().replace(/\/$/,'');
@@ -4411,6 +4421,7 @@ function showChatReady(){
 
 // ── Supabase REST calls ──
 function sbFetch(path,opts){
+  if(!chatCfg) chatCfg=loadChatConfig()||DEFAULT_SB_CFG;
   if(!chatCfg)return Promise.reject('no config');
   var url=chatCfg.url+'/rest/v1/'+path;
   var headers={'apikey':chatCfg.key,'Authorization':'Bearer '+chatCfg.key,'Content-Type':'application/json','Prefer':'return=minimal'};
@@ -5213,41 +5224,58 @@ function isBlocked(phone){return getBlockedList().indexOf(phone)!==-1;}
 
 // ── Supabase helpers for social (reuse chatCfg) ──
 function sbSocial(path,opts){
-  var cfg=chatCfg||loadChatConfig();
+  var cfg=chatCfg||loadChatConfig()||DEFAULT_SB_CFG;
   if(!cfg) return Promise.reject('no config');
   var url=cfg.url+'/rest/v1/'+path;
-  var headers={'apikey':cfg.key,'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json','Prefer':'return=minimal'};
-  return fetch(url,Object.assign({headers:headers},opts));
+  var headers={
+    'apikey':cfg.key,
+    'Authorization':'Bearer '+cfg.key,
+    'Content-Type':'application/json',
+    'Prefer':'return=representation'  // مهم: يرجع البيانات بعد الإدراج
+  };
+  return fetch(url,Object.assign({headers:headers},opts||{}));
 }
 
 // ── Send friend request ──
 function sendFriendRequest(){
   var inp=$('addPersonPhone');
-  var phone=(inp?inp.value:'').trim().replace(/\s/g,'');
+  var phone=(inp?inp.value:'').trim().replace(/[^0-9+]/g,'');
   if(!phone||phone.length<8){toast('أدخل رقم هاتف صحيح','err');return;}
   if(phone===userPhone){toast('لا يمكنك إضافة نفسك','err');return;}
   var contacts=getContacts();
   if(contacts.find(function(ct){return ct.phone===phone;})){
     toast('هذا الشخص في قائمتك بالفعل','err');return;
   }
-  var cfg=chatCfg||loadChatConfig();
-  if(cfg){
-    // Send via Supabase messages table with special type
-    var payload={room:'friend_req',name:userName,phone:userPhone,role:role||'s',
-      msg:JSON.stringify({type:'friend_req',to:phone,fromName:userName,fromPhone:userPhone}),
-      ts:Date.now()};
-    sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
-      .then(function(){toast('✅ تم إرسال طلب الإضافة','ok');})
-      .catch(function(){toast('⚠️ تعذّر الإرسال — تأكد من اتصال الدردشة','err');});
-  } else {
-    // Offline: store pending request locally
-    var pending=[];
-    try{pending=JSON.parse(localStorage.getItem('y3_pending_req')||'[]');}catch(e){}
-    pending.push({to:phone,from:userPhone,fromName:userName,ts:Date.now()});
-    localStorage.setItem('y3_pending_req',JSON.stringify(pending));
-    toast('⏳ سيتم إرسال الطلب عند الاتصال','ok');
-  }
   if(inp) inp.value='';
+  var inp2=$('profAddPhone'); if(inp2) inp2.value='';
+
+  // بناء الـ payload بـ ISO timestamp عشان Supabase يقبله صح
+  var nowIso=new Date().toISOString();
+  var payload={
+    room:'friend_req',
+    name:userName,
+    phone:userPhone,
+    role:role||'s',
+    msg:JSON.stringify({type:'friend_req',to:phone,fromName:userName,fromPhone:userPhone,fromRole:role||'s'}),
+    ts:nowIso
+  };
+
+  toast('⏳ جاري الإرسال...','ok');
+  sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(r){
+      if(r.ok||r.status===201){
+        toast('✅ تم إرسال طلب الإضافة — في انتظار القبول','ok');
+      } else {
+        r.text().then(function(t){
+          console.error('FR send error:',r.status,t);
+          toast('⚠️ خطأ في الإرسال: '+r.status,'err');
+        });
+      }
+    })
+    .catch(function(err){
+      toast('⚠️ تعذّر الإرسال — تحقق من الإنترنت','err');
+      console.error('Friend req error:',err);
+    });
 }
 
 // ── Scan QR to add contact ──
@@ -5296,18 +5324,21 @@ function acceptFriendReq(fromPhone, fromName, fromRole){
       addedAt:new Date().toLocaleDateString('ar-EG'),online:false});
     saveContacts(contacts);
   }
-  // Also add me to their contacts via Supabase
-  var cfg=chatCfg||loadChatConfig();
-  if(cfg){
-    var payload={room:'friend_req',name:userName,phone:userPhone,role:role||'s',
-      msg:JSON.stringify({type:'friend_accept',to:fromPhone,fromName:userName,fromPhone:userPhone}),
-      ts:Date.now()};
-    sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
-  }
-  // Remove from pending UI
+  // أبعت إشعار القبول بـ ISO timestamp
+  var payload={
+    room:'friend_req',
+    name:userName,
+    phone:userPhone,
+    role:role||'s',
+    msg:JSON.stringify({type:'friend_accept',to:fromPhone,fromName:userName,fromPhone:userPhone,fromRole:role||'s'}),
+    ts:new Date().toISOString()
+  };
+  sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
+    .catch(function(e){console.warn('accept send error:',e);});
   removePendingReq(fromPhone);
   toast('✅ تمت الإضافة! يمكنك التحدث مع '+fromName,'ok');
   renderContacts();
+  renderProfileFriends();
 }
 
 function rejectFriendReq(fromPhone){
@@ -5327,52 +5358,72 @@ function removePendingReq(phone){
 var frPollTimer=null;
 function startFriendReqPoll(){
   if(frPollTimer) clearInterval(frPollTimer);
-  frPollTimer=setInterval(pollFriendRequests, 8000);
-  pollFriendRequests();
+  // كل 5 ثواني عشان الطلبات توصل بسرعة
+  frPollTimer=setInterval(pollFriendRequests, 5000);
+  pollFriendRequests(); // فوراً
 }
 function pollFriendRequests(){
-  var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
-  var since=Date.now()-86400000; // last 24h
-  sbSocial('messages?room=eq.friend_req&ts=gt.'+since+'&order=ts.asc&limit=50')
+  // جيب آخر 24 ساعة بـ ISO timestamp
+  var since=new Date(Date.now()-86400000).toISOString();
+  sbSocial('messages?room=eq.friend_req&ts=gt.'+encodeURIComponent(since)+'&order=ts.asc&limit=100')
     .then(function(r){return r.json();})
     .then(function(msgs){
-      if(!msgs||!msgs.length) return;
+      if(!msgs||!Array.isArray(msgs)||!msgs.length) return;
+
       var pend=[];
       try{pend=JSON.parse(localStorage.getItem('y3_pending_from_'+userPhone)||'[]');}catch(e){}
       var contacts=getContacts();
+      var changed=false;
+
       msgs.forEach(function(m){
         try{
           var data=JSON.parse(m.msg||'{}');
-          if(data.type==='friend_req'&&data.to===userPhone){
-            // Check not already contact or pending
+
+          // ── طلب إضافة وارد ──
+          if(data.type==='friend_req' && data.to===userPhone && data.fromPhone!==userPhone){
             var already=contacts.find(function(ct){return ct.phone===data.fromPhone;});
             var alreadyPend=pend.find(function(p){return p.fromPhone===data.fromPhone;});
-            if(!already&&!alreadyPend&&!isBlocked(data.fromPhone)){
-              pend.push({fromPhone:data.fromPhone,fromName:data.fromName||'شخص',fromRole:m.role||'s',ts:m.ts});
-              // Notify
-              sendBrowserNotif('📬 طلب إضافة جديد', (data.fromName||'شخص')+' يريد إضافتك كصديق');
+            if(!already && !alreadyPend && !isBlocked(data.fromPhone)){
+              pend.push({
+                fromPhone:data.fromPhone,
+                fromName:data.fromName||'شخص',
+                fromRole:data.fromRole||m.role||'s',
+                ts:m.ts||new Date().toISOString()
+              });
+              changed=true;
+              sendBrowserNotif('📬 طلب إضافة جديد',(data.fromName||'شخص')+' يريد إضافتك كصديق');
               addNotifBadge(1);
             }
           }
-          if(data.type==='friend_accept'&&data.to===userPhone){
-            // They accepted my request — add them
+
+          // ── قبول طلب إضافة ──
+          if(data.type==='friend_accept' && data.to===userPhone && data.fromPhone!==userPhone){
             var alreadyC=contacts.find(function(ct){return ct.phone===data.fromPhone;});
             if(!alreadyC){
-              contacts.push({phone:data.fromPhone,name:data.fromName||'شخص',role:m.role||'s',
-                addedAt:new Date().toLocaleDateString('ar-EG'),online:false});
+              contacts.push({
+                phone:data.fromPhone,
+                name:data.fromName||'شخص',
+                role:data.fromRole||m.role||'s',
+                addedAt:new Date().toLocaleDateString('ar-EG'),
+                online:false
+              });
               saveContacts(contacts);
-              sendBrowserNotif('🎉 قبول طلب الإضافة', data.fromName+' قبل طلبك!');
+              sendBrowserNotif('🎉 قبول طلب الإضافة',data.fromName+' قبل طلبك!');
               addNotifBadge(1);
               toast('🎉 '+data.fromName+' قبل طلب الإضافة!','ok');
-              renderContacts();
+              changed=true;
             }
           }
-        }catch(ex){}
+        }catch(ex){console.warn('pollFR parse error:',ex);}
       });
-      localStorage.setItem('y3_pending_from_'+userPhone,JSON.stringify(pend));
-      renderPendingRequests();
-      renderProfileFriends();
-    }).catch(function(){});
+
+      if(changed){
+        localStorage.setItem('y3_pending_from_'+userPhone,JSON.stringify(pend));
+        renderPendingRequests();
+        renderProfileFriends();
+        renderContacts();
+      }
+    }).catch(function(e){console.warn('pollFR error:',e);});
 }
 
 // ── Online presence ──
@@ -5531,7 +5582,7 @@ function loadPrivateMsgs(){
         el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text2);font-size:.8rem">لا رسائل بعد — ابدأ المحادثة 👋</div>';
       } else {
         msgs.forEach(function(m){appendPcMsg(m);});
-        if(msgs.length) pcLastTs=msgs[msgs.length-1].ts||0;
+        if(msgs.length) pcLastTs=msgs[msgs.length-1].ts||new Date().toISOString();
       }
       scrollPcMsgs();
     }).catch(showPcOffline);
@@ -5540,12 +5591,13 @@ function pollPrivateMsgs(){
   if(!currentPcPhone) return;
   var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
   var room=pcRoomId(userPhone,currentPcPhone);
-  sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&ts=gt.'+pcLastTs+'&order=ts.asc&limit=20')
+  var pcSince=pcLastTs?new Date(typeof pcLastTs==='number'?pcLastTs:pcLastTs).toISOString():new Date(Date.now()-3600000).toISOString();
+  sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&ts=gt.'+encodeURIComponent(pcSince)+'&order=ts.asc&limit=20')
     .then(function(r){return r.json();})
     .then(function(msgs){
       if(!msgs||!msgs.length) return;
       msgs.forEach(function(m){appendPcMsg(m);});
-      pcLastTs=msgs[msgs.length-1].ts||0;
+      pcLastTs=msgs[msgs.length-1].ts||new Date().toISOString();
       scrollPcMsgs();
       var newFromOther=msgs.filter(function(m){return m.phone!==userPhone;});
     if(newFromOther.length){
@@ -5564,7 +5616,7 @@ function sendPrivateMsg(){
   var cfg=chatCfg||loadChatConfig();
   if(!cfg){toast('الدردشة غير متصلة — فعّل الدردشة أولاً','err');return;}
   var room=pcRoomId(userPhone,currentPcPhone);
-  var payload={room:room,name:userName,phone:userPhone,role:role||'s',msg:txt,ts:Date.now()};
+  var payload={room:room,name:userName,phone:userPhone,role:role||'s',msg:txt,ts:new Date().toISOString()};
   if(inp) inp.value='';
   // Optimistic append
   appendPcMsg(payload); scrollPcMsgs();
