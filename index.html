@@ -101,6 +101,10 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 .stab.ah{border-color:var(--hist2);color:var(--hist2);background:var(--hist3);}
 .stab.ag{border-color:var(--geo2);color:var(--geo2);background:var(--geo3);}
 .stab.aq{border-color:var(--gold2);color:var(--gold2);background:var(--gold3);}
+.stab.ac{border-color:#9b59b6;color:#9b59b6;background:rgba(155,89,182,.08);}
+.qtype-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);
+  color:var(--text2);font-family:Tajawal,sans-serif;font-size:.72rem;cursor:pointer;}
+.qtype-btn.sel{background:var(--geo2);color:#fff;border-color:var(--geo2);}
 .panel{display:none;}.panel.active{display:block;}
 .sec-hd{font-size:.76rem;font-weight:700;color:var(--text3);margin-bottom:9px;display:flex;align-items:center;gap:5px;}
 .ch-card{background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:11px 13px;
@@ -939,6 +943,7 @@ select.inp{cursor:pointer;}
       <button class="stab ah" id="tab-h" onclick="swTab('h')">📜 تاريخ</button>
       <button class="stab" id="tab-g" onclick="swTab('g')">🗺️ جغرافيا</button>
       <button class="stab" id="tab-q" onclick="swTab('q')">📷 QR</button>
+      <button class="stab" id="tab-c" onclick="swTab('c')">👥 أصدقاء</button>
     </div>
     <div class="panel active" id="pnl-h">
       <div id="elmiMsgH" style="display:none;flex-direction:column;align-items:center;
@@ -1032,6 +1037,26 @@ select.inp{cursor:pointer;}
           </div>
         </div>
       </div>
+    </div>
+    <!-- ══ CONTACTS PANEL ══ -->
+    <div class="panel" id="pnl-c">
+      <div class="sec-hd">👥 أصدقائي ومعلميّ</div>
+
+      <!-- Add person row -->
+      <div style="display:flex;gap:7px;margin-bottom:8px;align-items:center">
+        <input class="inp" id="addPersonPhone" placeholder="رقم الهاتف" type="tel" style="flex:1;margin-bottom:0">
+        <button onclick="sendFriendRequest()" style="padding:9px 12px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.8rem;cursor:pointer;white-space:nowrap">➕ إضافة</button>
+        <label style="padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:.82rem" title="مسح QR">
+          📷
+          <input type="file" accept="image/*" style="display:none" onchange="scanContactQR(this)">
+        </label>
+      </div>
+
+      <!-- Pending requests -->
+      <div id="pendingRequests" style="margin-bottom:10px"></div>
+
+      <!-- Contacts list -->
+      <div id="contactsList"></div>
     </div>
   </div>
 </div>
@@ -1926,12 +1951,13 @@ function buildLists(){
 }
 
 function swTab(t){
-  ['h','g','q'].forEach(function(x){$('tab-'+x).className='stab';$('pnl-'+x).className='panel';});
+  ['h','g','q','c'].forEach(function(x){var tb=$('tab-'+x),pn=$('pnl-'+x);if(tb)tb.className='stab';if(pn)pn.className='panel';});
   $('tab-'+t).className='stab a'+t;
   $('pnl-'+t).className='panel active';
   if(t==='h')$('tab-h').classList.add('ah');
   if(t==='g')$('tab-g').classList.add('ag');
   if(t==='q')$('tab-q').classList.add('aq');
+  if(t==='c'){$('tab-c').classList.add('ac');renderContacts();}
   if(t!=='q') stopCamera();
 }
 
@@ -2311,7 +2337,14 @@ function saveDraft(){
     var qtog=$('tog_q'+id);
     var qShowAns=qtog?qtog.getAttribute('data-on')==='1':true;
     var qExp=($('qe'+id)||{}).value||'';
-    qs.push({q:qtxt,o:opts,a:ans,h:($('qh'+id)||{}).value||'',e:qExp,showAns:qShowAns});
+    var dBlock2=$('qb'+id);
+    var dQType2=dBlock2?dBlock2.dataset.qtype:'mcq';
+    var dEssayAns2=($('essay_ans'+id)||{}).value||'';
+    if(dQType2==='essay'){
+      qs.push({q:qtxt,o:[],a:-1,h:($('qh'+id)||{}).value||'',e:qExp,showAns:qShowAns,img:qImgData,type:'essay',essayAns:dEssayAns2});
+    } else {
+      qs.push({q:qtxt,o:opts,a:ans,h:($('qh'+id)||{}).value||'',e:qExp,showAns:qShowAns,img:qImgData,type:'mcq'});
+    }
   });
   var draftId=$('createExam').dataset.draftId||null;
   var draft={
@@ -2410,14 +2443,19 @@ function reshowQr(i){buildQrScreen(savedExams[i]);goScreen('qrShare');}
 var qIdx=0;
 function clearBuilder(){$('qWrap').innerHTML='';qIdx=0;$('exTitle').value='';if($('createExam'))$('createExam').dataset.draftId='';}
 function addQ(prefill){
-  var id=qIdx++;var ar=['أ','ب','ج','د'];var opts='';
-  for(var i=0;i<4;i++){
-    var val=prefill&&prefill.o?prefill.o[i]:'';var on=prefill&&prefill.a===i?' on':'';
-    opts+='<div class="opt-row">' +
-      '<div class="opt-ltr">'+ar[i]+'</div>' +
-      '<input class="inp" style="margin-bottom:0;flex:1" id="o'+id+'_'+i+'" placeholder="الخيار '+(i+1)+'" value="'+escHtml(val)+'">' +
-      '<div class="chk-mark'+on+'" id="c'+id+'_'+i+'" onclick="selAns('+id+','+i+')" title="✔ الإجابة الصحيحة">✔</div>' +
-    '</div>';
+  var id=qIdx++;var ar=['أ','ب','ج','د'];
+  var qType=prefill&&prefill.type?prefill.type:'mcq'; // mcq or essay
+  var optCount=prefill&&prefill.o?Math.max(2,Math.min(4,prefill.o.length)):4;
+  var opts='';
+  if(qType==='mcq'){
+    for(var i=0;i<optCount;i++){
+      var val=prefill&&prefill.o&&prefill.o[i]?prefill.o[i]:'';var on=prefill&&prefill.a===i?' on':'';
+      opts+='<div class="opt-row" id="opt_row'+id+'_'+i+'">' +
+        '<div class="opt-ltr">'+ar[i]+'</div>' +
+        '<input class="inp" style="margin-bottom:0;flex:1" id="o'+id+'_'+i+'" placeholder="الخيار '+(i+1)+'" value="'+escHtml(val)+'">' +
+        '<div class="chk-mark'+on+'" id="c'+id+'_'+i+'" onclick="selAns('+id+','+i+')" title="✔ الإجابة الصحيحة">✔</div>' +
+      '</div>';
+    }
   }
   var qval=prefill&&prefill.q?prefill.q:'';
   var hval=prefill&&prefill.h?prefill.h:'';
@@ -2425,9 +2463,17 @@ function addQ(prefill){
   var showAnsOn=(prefill&&prefill.showAns===false)?'':'1';
   var imgVal=prefill&&prefill.img?prefill.img:'';
   var d=document.createElement('div');d.className='q-block';d.id='qb'+id;
+  // Store type on element
+  d.dataset.qtype=qType;
+  d.dataset.optcount=optCount;
   d.innerHTML='<div class="qb-num">سؤال #'+(id+1)+'</div>' +
     '<button class="del-q-btn" onclick="delQ('+id+')">✕ حذف</button>' +
-    '<input class="inp" id="qt'+id+'" placeholder="نص السؤال (اختياري لو فيه صورة)" value="'+escHtml(qval)+'" style="margin-top:22px">' +
+    // Question type toggle
+    '<div style="display:flex;gap:6px;margin-top:18px;margin-bottom:8px">' +
+      '<button type="button" class="qtype-btn'+(qType==='mcq'?' sel':' ')+'" id="qtype_mcq'+id+'" onclick="setQType('+id+',\'mcq\')">📝 اختيار من متعدد</button>' +
+      '<button type="button" class="qtype-btn'+(qType==='essay'?' sel':' ')+'" id="qtype_essay'+id+'" onclick="setQType('+id+',\'essay\')">✏️ مقالي</button>' +
+    '</div>' +
+    '<input class="inp" id="qt'+id+'" placeholder="نص السؤال (اختياري لو فيه صورة)" value="'+escHtml(qval)+'">' +
     // Image upload for question
     '<div style="margin-bottom:8px">' +
       '<div style="font-size:.72rem;color:var(--text2);margin-bottom:4px">🖼️ صورة السؤال (اختياري)</div>' +
@@ -2444,7 +2490,20 @@ function addQ(prefill){
     '<input type="hidden" id="qimg'+id+'" value="'+escHtml(imgVal)+'">' +
     '<input class="inp" id="qh'+id+'" placeholder="💡 تلميح (اختياري)" value="'+escHtml(hval)+'">' +
     '<input class="inp" id="qe'+id+'" placeholder="📖 شرح الإجابة (اختياري)" value="'+escHtml(eval_)+'">' +
-    opts +
+    // MCQ options section (hidden for essay)
+    '<div id="mcq_section'+id+'" style="display:'+(qType==='essay'?'none':'block')+'">' +
+      // Add/Remove option buttons
+      '<div style="display:flex;gap:6px;margin-bottom:6px">' +
+        '<button type="button" onclick="addOpt('+id+')" style="padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--green2);font-size:.7rem;cursor:pointer;font-family:Tajawal,sans-serif">+ إضافة خيار</button>' +
+        '<button type="button" onclick="removeOpt('+id+')" style="padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);color:var(--hist2);font-size:.7rem;cursor:pointer;font-family:Tajawal,sans-serif">- حذف خيار</button>' +
+      '</div>' +
+      '<div id="opts_wrap'+id+'">'+opts+'</div>' +
+    '</div>' +
+    // Essay textarea section
+    '<div id="essay_section'+id+'" style="display:'+(qType==='essay'?'block':'none')+'">' +
+      '<div style="font-size:.72rem;color:var(--text2);margin-bottom:4px">✏️ نموذج الإجابة المقالية (يظهر للطالب بعد الانتهاء)</div>' +
+      '<textarea class="inp" id="essay_ans'+id+'" placeholder="اكتب نموذج الإجابة هنا..." style="min-height:80px;resize:vertical">'+escHtml(prefill&&prefill.essayAns?prefill.essayAns:'')+'</textarea>' +
+    '</div>' +
     '<div class="q-opt-tog">' +
       '<label>👁 إظهار الإجابة لهذا السؤال</label>' +
       '<div class="toggle-sw" id="tog_q'+id+'" data-on="'+showAnsOn+'" onclick="togQAns(this)"><div class="toggle-knob"></div></div>' +
@@ -2509,7 +2568,14 @@ function saveExam(){
     var qShowAns=qtog?qtog.getAttribute('data-on')==='1':true;
     var qExp=($('qe'+id)||{}).value||'';
     var qImgData2=($('qimg'+id)||{}).value||'';
-    qs.push({q:qtxt,o:opts,a:ans,h:($('qh'+id)||{}).value||'',e:qExp,showAns:qShowAns,img:qImgData2});
+    var block=$('qb'+id);
+    var qTypeVal=block?block.dataset.qtype:'mcq';
+    var essayAns=($('essay_ans'+id)||{}).value||'';
+    if(qTypeVal==='essay'){
+      qs.push({q:qtxt,o:[],a:-1,h:($('qh'+id)||{}).value||'',e:qExp,showAns:qShowAns,img:qImgData2,type:'essay',essayAns:essayAns});
+    } else {
+      qs.push({q:qtxt,o:opts,a:ans,h:($('qh'+id)||{}).value||'',e:qExp,showAns:qShowAns,img:qImgData2,type:'mcq'});
+    }
   });
   if(!qs.length){toast('أضف سؤالاً على الأقل ❗','err');return;}
   // Collect exam-level visibility settings
@@ -2572,17 +2638,29 @@ function buildQrScreen(exam){
 }
 
 function generateQR(text,container){
+  container.innerHTML='';
   if(typeof QRCode!=='undefined'){
     try{
-      container.innerHTML='';
-      new QRCode(container,{text:text,width:240,height:240,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
+      var wrapper=document.createElement('div');
+      container.appendChild(wrapper);
+      new QRCode(wrapper,{text:text,width:240,height:240,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});
       setTimeout(function(){
-        var el=container.querySelector('img,canvas');
+        // Keep only ONE element (canvas preferred, remove img duplicate)
+        var els=wrapper.querySelectorAll('canvas,img');
+        if(els.length>1){
+          // Remove all img tags, keep canvas
+          wrapper.querySelectorAll('img').forEach(function(img){img.remove();});
+        }
+        var el=wrapper.querySelector('canvas,img');
         if(el){
           el.style.cssText='border-radius:12px;border:6px solid #fff;display:block;margin:0 auto;max-width:240px;';
-          if(el.tagName==='IMG'&&(!el.src||el.src.length<50)){useGoogleQR(text,container);}
-        } else {useGoogleQR(text,container);}
-      },500);
+          // If img has no valid src, fallback
+          if(el.tagName==='IMG'&&(!el.src||el.src.length<50)){
+            container.innerHTML='';
+            useGoogleQR(text,container);
+          }
+        } else { container.innerHTML=''; useGoogleQR(text,container); }
+      },600);
       return;
     }catch(e){}
   }
@@ -2681,6 +2759,26 @@ function loadQ(){
   else if(isG){badge.textContent='🗺️ جغرافيا';badge.className='q-badge bg';}
   else{badge.textContent='📜 تاريخ';badge.className='q-badge bh';}
   $('qTxt').textContent=q.q;
+  // Essay question handling
+  var isEssay=q.type==='essay';
+  var essayWrap=$('essayWrap');
+  var optsEl=$('opts');
+  if(isEssay){
+    optsEl.style.display='none';
+    if(!essayWrap){
+      var ew=document.createElement('div');ew.id='essayWrap';
+      ew.style.cssText='padding:10px 0';
+      ew.innerHTML='<textarea id="essayInput" class="inp" placeholder="اكتب إجابتك هنا..." style="min-height:120px;resize:vertical;width:100%"></textarea>'+
+        '<button onclick="submitEssayAns()" style="width:100%;padding:12px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.9rem;font-weight:bold;cursor:pointer;margin-top:8px">✅ تسليم الإجابة</button>';
+      optsEl.parentNode.insertBefore(ew,optsEl);
+    } else { essayWrap.style.display='block'; if($('essayInput'))$('essayInput').value=''; }
+    $('hintBtn').style.display='none';
+    $('skipBtn')?$('skipBtn').style.display='none':null;
+  } else {
+    optsEl.style.display='';
+    if(essayWrap) essayWrap.style.display='none';
+    $('hintBtn').style.display='';
+  }
   // Show question image if exists
   var qiw=$('qImgWrap'), qim=$('qImg');
   if(q.img&&qiw&&qim){
@@ -2907,9 +3005,12 @@ function showResults(){
   // Respect exam visibility for results
   var vis=getExamVis();
   if(S.subj==='c' && !vis.showResult){
-    toast('✅ انتهى الاختبار — النتيجة محجوبة من قِبل المعلم');
-    goScreen('studentHome');
-    return;
+    // Show results screen but hide score details
+    $('rSc').textContent='—';$('rCr').textContent='—';$('rPct').textContent='—';$('rWr').textContent='—';
+    $('resGrade').textContent='✅';$('resT').textContent='انتهى الامتحان!';
+    $('resS').textContent='النتيجة محجوبة من قِبل المعلم';
+    $('resEm').textContent='📋';
+    rev.innerHTML='<div style="text-align:center;padding:16px;color:var(--text2);font-size:.85rem">🔒 محجوبة من المعلم</div>';
   }
   if(S.subj==='c' && !vis.showWrongs){
     $('wrongsList').innerHTML='<div style="text-align:center;padding:12px;color:var(--text2);font-size:.8rem">🔒 مراجعة الأخطاء محجوبة</div>';
@@ -4508,11 +4609,13 @@ loadTheme();
       updateStreamUI();
       buildLists();
       goScreen('studentHome');
+      setTimeout(initSocialFeatures,2000);
     } else {
       $('tName').textContent=userName+' — '+userPhone;
       renderTeacherStudents();
       goScreen('teacherHome');
     }
+      setTimeout(initSocialFeatures,2000);
   }catch(e){}
 })();
 
@@ -4542,6 +4645,85 @@ loadTheme();
     applyLang();
   }catch(e){}
 })();
+
+
+// ══ Question type + options management ══
+function setQType(id, type){
+  var block=$('qb'+id); if(block) block.dataset.qtype=type;
+  var mcq=$('mcq_section'+id), essay=$('essay_section'+id);
+  var btnM=$('qtype_mcq'+id), btnE=$('qtype_essay'+id);
+  if(mcq) mcq.style.display=type==='mcq'?'block':'none';
+  if(essay) essay.style.display=type==='essay'?'block':'none';
+  if(btnM){btnM.className='qtype-btn'+(type==='mcq'?' sel':'');}
+  if(btnE){btnE.className='qtype-btn'+(type==='essay'?' sel':'');}
+}
+
+function addOpt(id){
+  var block=$('qb'+id); if(!block) return;
+  var count=parseInt(block.dataset.optcount||'4');
+  if(count>=6){toast('الحد الأقصى 6 خيارات','err');return;}
+  count++;
+  block.dataset.optcount=count;
+  var ar=['أ','ب','ج','د','هـ','و'];
+  var wrap=$('opts_wrap'+id); if(!wrap) return;
+  var i=count-1;
+  var row=document.createElement('div');
+  row.className='opt-row'; row.id='opt_row'+id+'_'+i;
+  row.innerHTML='<div class="opt-ltr">'+ar[i]+'</div>'+
+    '<input class="inp" style="margin-bottom:0;flex:1" id="o'+id+'_'+i+'" placeholder="الخيار '+(i+1)+'">'+
+    '<div class="chk-mark" id="c'+id+'_'+i+'" onclick="selAns('+id+','+i+')" title="✔ الإجابة الصحيحة">✔</div>';
+  wrap.appendChild(row);
+}
+
+function removeOpt(id){
+  var block=$('qb'+id); if(!block) return;
+  var count=parseInt(block.dataset.optcount||'4');
+  if(count<=2){toast('الحد الأدنى خيارين','err');return;}
+  count--;
+  block.dataset.optcount=count;
+  block.dataset.optcount=count;
+  var row=$('opt_row'+id+'_'+count);
+  if(row) row.remove();
+}
+
+// ══ Start social features after login ══
+function initSocialFeatures(){
+  var cfg=chatCfg||loadChatConfig();
+  if(cfg){
+    startPresence();
+    startFriendReqPoll();
+  }
+}
+
+
+function submitEssayAns(){
+  var q=S.qs[S.cur]; if(!q||S.answered) return;
+  S.answered=true;
+  clearInterval(S.timer);
+  var inp=$('essayInput');
+  var studentAnswer=(inp?inp.value:'').trim();
+  // Show model answer
+  var modelAns=q.essayAns||q.e||'لا يوجد نموذج إجابة';
+  var fb=$('feedback'); 
+  S.totalQThisSession=(S.totalQThisSession||0)+1;
+  S.totalQCorrectThisSession=(S.totalQCorrectThisSession||0); // essay not auto-scored
+  // Show feedback with model answer
+  if(fb){
+    fb.className='feedback essay';
+    fb.innerHTML='<div style="font-size:.9rem;font-weight:bold;margin-bottom:6px">📝 إجابتك:</div>'+
+      '<div style="background:var(--bg3);border-radius:8px;padding:8px;margin-bottom:10px;font-size:.82rem">'+safeHtml(studentAnswer||'(لم تكتب شيئاً)')+'</div>'+
+      '<div style="font-size:.9rem;font-weight:bold;margin-bottom:6px;color:var(--green2)">✅ نموذج الإجابة:</div>'+
+      '<div style="background:rgba(39,174,96,.1);border-radius:8px;padding:8px;font-size:.82rem">'+safeHtml(modelAns)+'</div>';
+    fb.style.display='block';
+  }
+  // Enable next button
+  var nb=$('nextBtn'); if(nb) nb.style.display='block';
+  var ew=$('essayWrap'); if(ew) ew.style.display='none';
+  setTimeout(function(){
+    S.answered=true;
+    nextQ();
+  },4000);
+}
 
 // ══════════════════════════════════════════
 // BACKUP SYSTEM
@@ -4659,6 +4841,388 @@ function scheduleBackupCheck(){
 
 // Run backup check on startup
 setTimeout(scheduleBackupCheck, 5000);
+
+// ══════════════════════════════════════════
+// CONTACTS + FRIENDS + PRIVATE CHAT SYSTEM
+// ══════════════════════════════════════════
+var currentPcPhone=null, pcPollTimer=null, pcLastTs=0;
+
+// ── localStorage helpers ──
+function getContacts(){
+  try{return JSON.parse(localStorage.getItem('y3_contacts_'+userPhone)||'[]');}catch(e){return [];}
+}
+function saveContacts(arr){
+  try{localStorage.setItem('y3_contacts_'+userPhone,JSON.stringify(arr));}catch(e){}
+}
+function getBlockedList(){
+  try{return JSON.parse(localStorage.getItem('y3_blocked_'+userPhone)||'[]');}catch(e){return [];}
+}
+function isBlocked(phone){return getBlockedList().indexOf(phone)!==-1;}
+
+// ── Supabase helpers for social (reuse chatCfg) ──
+function sbSocial(path,opts){
+  var cfg=chatCfg||loadChatConfig();
+  if(!cfg) return Promise.reject('no config');
+  var url=cfg.url+'/rest/v1/'+path;
+  var headers={'apikey':cfg.key,'Authorization':'Bearer '+cfg.key,'Content-Type':'application/json','Prefer':'return=minimal'};
+  return fetch(url,Object.assign({headers:headers},opts));
+}
+
+// ── Send friend request ──
+function sendFriendRequest(){
+  var inp=$('addPersonPhone');
+  var phone=(inp?inp.value:'').trim().replace(/\s/g,'');
+  if(!phone||phone.length<8){toast('أدخل رقم هاتف صحيح','err');return;}
+  if(phone===userPhone){toast('لا يمكنك إضافة نفسك','err');return;}
+  var contacts=getContacts();
+  if(contacts.find(function(ct){return ct.phone===phone;})){
+    toast('هذا الشخص في قائمتك بالفعل','err');return;
+  }
+  var cfg=chatCfg||loadChatConfig();
+  if(cfg){
+    // Send via Supabase messages table with special type
+    var payload={room:'friend_req',name:userName,phone:userPhone,role:role||'s',
+      msg:JSON.stringify({type:'friend_req',to:phone,fromName:userName,fromPhone:userPhone}),
+      ts:Date.now()};
+    sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
+      .then(function(){toast('✅ تم إرسال طلب الإضافة','ok');})
+      .catch(function(){toast('⚠️ تعذّر الإرسال — تأكد من اتصال الدردشة','err');});
+  } else {
+    // Offline: store pending request locally
+    var pending=[];
+    try{pending=JSON.parse(localStorage.getItem('y3_pending_req')||'[]');}catch(e){}
+    pending.push({to:phone,from:userPhone,fromName:userName,ts:Date.now()});
+    localStorage.setItem('y3_pending_req',JSON.stringify(pending));
+    toast('⏳ سيتم إرسال الطلب عند الاتصال','ok');
+  }
+  if(inp) inp.value='';
+}
+
+// ── Scan QR to add contact ──
+function scanContactQR(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  if(input) input.value='';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      canvas.width=img.width; canvas.height=img.height;
+      var ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0);
+      if(typeof jsQR==='undefined'){toast('مكتبة المسح غير محملة','err');return;}
+      var code=jsQR(ctx.getImageData(0,0,canvas.width,canvas.height).data,canvas.width,canvas.height,{inversionAttempts:'attemptBoth'});
+      if(code&&code.data){
+        // Try to decode as student QR
+        try{
+          var decoded=JSON.parse(decodeURIComponent(escape(atob(code.data.replace(/-/g,'+').replace(/_/g,'/')))));
+          if(decoded.p){
+            var inp=$('addPersonPhone');
+            if(inp) inp.value=decoded.p;
+            sendFriendRequest();
+            return;
+          }
+        }catch(ex){}
+        // Try raw phone number
+        var raw=code.data.trim().replace(/\s/g,'');
+        if(raw.match(/^[0-9+]{8,15}$/)){
+          var inp2=$('addPersonPhone');
+          if(inp2) inp2.value=raw;
+          sendFriendRequest();
+        } else { toast('QR غير صالح لإضافة شخص','err'); }
+      } else { toast('لم يُعثر على QR','err'); }
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Accept / Reject friend request ──
+function acceptFriendReq(fromPhone, fromName, fromRole){
+  var contacts=getContacts();
+  if(!contacts.find(function(ct){return ct.phone===fromPhone;})){
+    contacts.push({phone:fromPhone,name:fromName||'شخص جديد',role:fromRole||'s',
+      addedAt:new Date().toLocaleDateString('ar-EG'),online:false});
+    saveContacts(contacts);
+  }
+  // Also add me to their contacts via Supabase
+  var cfg=chatCfg||loadChatConfig();
+  if(cfg){
+    var payload={room:'friend_req',name:userName,phone:userPhone,role:role||'s',
+      msg:JSON.stringify({type:'friend_accept',to:fromPhone,fromName:userName,fromPhone:userPhone}),
+      ts:Date.now()};
+    sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
+  }
+  // Remove from pending UI
+  removePendingReq(fromPhone);
+  toast('✅ تمت الإضافة! يمكنك التحدث مع '+fromName,'ok');
+  renderContacts();
+}
+
+function rejectFriendReq(fromPhone){
+  removePendingReq(fromPhone);
+  toast('تم رفض الطلب');
+}
+
+function removePendingReq(phone){
+  var pend=[];
+  try{pend=JSON.parse(localStorage.getItem('y3_pending_from_'+userPhone)||'[]');}catch(e){}
+  pend=pend.filter(function(r){return r.fromPhone!==phone;});
+  localStorage.setItem('y3_pending_from_'+userPhone,JSON.stringify(pend));
+  renderPendingRequests();
+}
+
+// ── Poll for friend requests directed at me ──
+var frPollTimer=null;
+function startFriendReqPoll(){
+  if(frPollTimer) clearInterval(frPollTimer);
+  frPollTimer=setInterval(pollFriendRequests, 8000);
+  pollFriendRequests();
+}
+function pollFriendRequests(){
+  var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
+  var since=Date.now()-86400000; // last 24h
+  sbSocial('messages?room=eq.friend_req&ts=gt.'+since+'&order=ts.asc&limit=50')
+    .then(function(r){return r.json();})
+    .then(function(msgs){
+      if(!msgs||!msgs.length) return;
+      var pend=[];
+      try{pend=JSON.parse(localStorage.getItem('y3_pending_from_'+userPhone)||'[]');}catch(e){}
+      var contacts=getContacts();
+      msgs.forEach(function(m){
+        try{
+          var data=JSON.parse(m.msg||'{}');
+          if(data.type==='friend_req'&&data.to===userPhone){
+            // Check not already contact or pending
+            var already=contacts.find(function(ct){return ct.phone===data.fromPhone;});
+            var alreadyPend=pend.find(function(p){return p.fromPhone===data.fromPhone;});
+            if(!already&&!alreadyPend&&!isBlocked(data.fromPhone)){
+              pend.push({fromPhone:data.fromPhone,fromName:data.fromName||'شخص',fromRole:m.role||'s',ts:m.ts});
+            }
+          }
+          if(data.type==='friend_accept'&&data.to===userPhone){
+            // They accepted my request — add them
+            var alreadyC=contacts.find(function(ct){return ct.phone===data.fromPhone;});
+            if(!alreadyC){
+              contacts.push({phone:data.fromPhone,name:data.fromName||'شخص',role:m.role||'s',
+                addedAt:new Date().toLocaleDateString('ar-EG'),online:false});
+              saveContacts(contacts);
+              toast('🎉 '+data.fromName+' قبل طلب الإضافة!','ok');
+              renderContacts();
+            }
+          }
+        }catch(ex){}
+      });
+      localStorage.setItem('y3_pending_from_'+userPhone,JSON.stringify(pend));
+      renderPendingRequests();
+    }).catch(function(){});
+}
+
+// ── Online presence ──
+var presTimer=null;
+function startPresence(){
+  updatePresence();
+  if(presTimer) clearInterval(presTimer);
+  presTimer=setInterval(updatePresence,30000);
+  setInterval(pollPresence,15000);
+}
+function updatePresence(){
+  var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
+  var payload={room:'presence',name:userName,phone:userPhone,role:role||'s',
+    msg:'online',ts:Date.now()};
+  sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
+}
+function pollPresence(){
+  var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
+  var since=Date.now()-60000; // active in last 60s = online
+  sbSocial('messages?room=eq.presence&ts=gt.'+since+'&order=ts.desc&limit=100')
+    .then(function(r){return r.json();})
+    .then(function(msgs){
+      var onlinePhones={};
+      if(msgs) msgs.forEach(function(m){onlinePhones[m.phone]=true;});
+      var contacts=getContacts();
+      contacts.forEach(function(ct){ct.online=!!onlinePhones[ct.phone];});
+      saveContacts(contacts);
+      renderContacts();
+      // Update private chat status if open
+      if(currentPcPhone){
+        var st=$('pcChatStatus');
+        if(st) st.textContent=onlinePhones[currentPcPhone]?'● متصل':'○ غير متصل';
+        if(st) st.style.color=onlinePhones[currentPcPhone]?'var(--green2)':'var(--text2)';
+      }
+    }).catch(function(){});
+}
+
+// ── Block contact ──
+function blockContact(phone){
+  if(!phone) return;
+  if(!confirm('هل تريد حظر هذا الشخص؟')) return;
+  var blocked=getBlockedList();
+  if(blocked.indexOf(phone)===-1) blocked.push(phone);
+  localStorage.setItem('y3_blocked_'+userPhone,JSON.stringify(blocked));
+  // Remove from contacts
+  var contacts=getContacts().filter(function(ct){return ct.phone!==phone;});
+  saveContacts(contacts);
+  closePrivateChat();
+  toast('🚫 تم الحظر');
+  renderContacts();
+}
+
+// ── Remove contact ──
+function removeContact(phone){
+  var contacts=getContacts().filter(function(ct){return ct.phone!==phone;});
+  saveContacts(contacts);
+  renderContacts();
+  toast('تم الحذف');
+}
+
+// ── Render pending requests ──
+function renderPendingRequests(){
+  var el=$('pendingRequests'); if(!el) return;
+  var pend=[];
+  try{pend=JSON.parse(localStorage.getItem('y3_pending_from_'+userPhone)||'[]');}catch(e){}
+  if(!pend.length){el.innerHTML='';return;}
+  var html='<div style="font-size:.72rem;font-weight:bold;color:var(--gold2);margin-bottom:6px">📬 طلبات إضافة واردة ('+pend.length+')</div>';
+  pend.forEach(function(r){
+    var icon=r.fromRole==='t'?'👨‍🏫':'👤';
+    html+='<div style="background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.2);border-radius:12px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:8px">'+
+      '<div style="font-size:1.3rem">'+icon+'</div>'+
+      '<div style="flex:1">'+
+        '<div style="font-size:.82rem;font-weight:bold">'+safeHtml(r.fromName||r.fromPhone)+'</div>'+
+        '<div style="font-size:.65rem;color:var(--text2)">'+r.fromPhone+'</div>'+
+      '</div>'+
+      '<button data-ph="'+r.fromPhone+'" data-nm="'+(r.fromName||'شخص')+'" data-rl="'+(r.fromRole||'s')+'" '+
+        'onclick="acceptFriendReq(this.dataset.ph,this.dataset.nm,this.dataset.rl)" '+
+        'style="padding:5px 10px;border-radius:8px;border:none;background:var(--green2);color:#fff;font-size:.72rem;cursor:pointer;font-family:Tajawal,sans-serif">قبول</button>'+
+      '<button data-ph2="'+r.fromPhone+'" onclick="rejectFriendReq(this.dataset.ph2)" '+
+        'style="padding:5px 10px;border-radius:8px;border:none;background:rgba(231,76,60,.15);color:var(--hist2);font-size:.72rem;cursor:pointer;font-family:Tajawal,sans-serif;margin-right:4px">رفض</button>'+
+    '</div>';
+  });
+  el.innerHTML=html;
+}
+
+// ── Render contacts list ──
+function renderContacts(){
+  var el=$('contactsList'); if(!el) return;
+  var contacts=getContacts();
+  renderPendingRequests();
+  if(!contacts.length){
+    el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text2);font-size:.82rem">'+
+      '👥 لا يوجد أصدقاء بعد<br><small style="opacity:.6">أضف رقم معلمك أو صديقك أو امسح الـ QR</small></div>';
+    return;
+  }
+  // Sort: online first
+  contacts.sort(function(a,b){return (b.online?1:0)-(a.online?1:0);});
+  el.innerHTML=contacts.map(function(p){
+    var icon=p.role==='t'?'👨‍🏫':'👤';
+    var clr=p.role==='t'?'var(--geo2)':'var(--green2)';
+    var onlineDot=p.online
+      ?'<span style="width:8px;height:8px;border-radius:50%;background:var(--green2);display:inline-block;margin-left:4px"></span>'
+      :'<span style="width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;margin-left:4px"></span>';
+    var roleLabel=p.role==='t'?'معلم':'طالب';
+    return '<div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:12px;padding:10px 12px;margin-bottom:7px">'+
+      '<div style="width:40px;height:40px;border-radius:50%;background:'+clr+';display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;position:relative">'+
+        icon+
+        '<span style="position:absolute;bottom:0;left:0;width:11px;height:11px;border-radius:50%;background:'+(p.online?'var(--green2)':'#666')+';border:2px solid var(--bg3)"></span>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:.85rem;font-weight:bold">'+safeHtml(p.name)+'</div>'+
+        '<div style="font-size:.65rem;color:var(--text2)">'+onlineDot+(p.online?'متصل الآن':'غير متصل')+' • '+roleLabel+'</div>'+
+      '</div>'+
+      '<button data-ph="'+p.phone+'" data-nm="'+safeHtml(p.name)+'" data-rl="'+p.role+'" '+
+        'onclick="openPrivateChat(this.dataset.ph,this.dataset.nm,this.dataset.rl)" '+
+      '<button data-rph="'+p.phone+'" onclick="removeContact(this.dataset.rph)" '+
+        'style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:.72rem;cursor:pointer;margin-right:4px">✕</button>'+
+    '</div>';
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// PRIVATE CHAT
+// ══════════════════════════════════════════
+function openPrivateChat(phone,name,pRole){
+  if(isBlocked(phone)){toast('هذا الشخص محظور','err');return;}
+  currentPcPhone=phone;
+  $('pcChatName').textContent=name||phone;
+  $('pcChatAvatar').textContent=pRole==='t'?'👨‍🏫':'👤';
+  $('pcChatAvatar').style.background=pRole==='t'?'var(--geo2)':'var(--green2)';
+  $('pcMsgs').innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);font-size:.75rem">⏳ جاري التحميل...</div>';
+  var overlay=$('privateChatOverlay');
+  overlay.style.display='flex';
+  pcLastTs=0;
+  loadPrivateMsgs();
+  if(pcPollTimer) clearInterval(pcPollTimer);
+  pcPollTimer=setInterval(pollPrivateMsgs,3000);
+}
+function closePrivateChat(){
+  $('privateChatOverlay').style.display='none';
+  if(pcPollTimer){clearInterval(pcPollTimer);pcPollTimer=null;}
+  currentPcPhone=null;
+}
+function pcRoomId(a,b){
+  // Consistent room id regardless of who opens chat
+  return 'pc_'+(a<b?a+'_'+b:b+'_'+a);
+}
+function loadPrivateMsgs(){
+  var cfg=chatCfg||loadChatConfig(); if(!cfg){showPcOffline();return;}
+  var room=pcRoomId(userPhone,currentPcPhone);
+  sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&order=ts.asc&limit=80')
+    .then(function(r){return r.json();})
+    .then(function(msgs){
+      var el=$('pcMsgs'); el.innerHTML='';
+      if(!msgs||!msgs.length){
+        el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text2);font-size:.8rem">لا رسائل بعد — ابدأ المحادثة 👋</div>';
+      } else {
+        msgs.forEach(function(m){appendPcMsg(m);});
+        if(msgs.length) pcLastTs=msgs[msgs.length-1].ts||0;
+      }
+      scrollPcMsgs();
+    }).catch(showPcOffline);
+}
+function pollPrivateMsgs(){
+  if(!currentPcPhone) return;
+  var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
+  var room=pcRoomId(userPhone,currentPcPhone);
+  sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&ts=gt.'+pcLastTs+'&order=ts.asc&limit=20')
+    .then(function(r){return r.json();})
+    .then(function(msgs){
+      if(!msgs||!msgs.length) return;
+      msgs.forEach(function(m){appendPcMsg(m);});
+      pcLastTs=msgs[msgs.length-1].ts||0;
+      scrollPcMsgs();
+      if(msgs.some(function(m){return m.phone!==userPhone;})) playMsgSound();
+    }).catch(function(){});
+}
+function sendPrivateMsg(){
+  var inp=$('pcMsgInp');
+  var txt=(inp?inp.value:'').trim();
+  if(!txt||!currentPcPhone) return;
+  var cfg=chatCfg||loadChatConfig();
+  if(!cfg){toast('الدردشة غير متصلة — فعّل الدردشة أولاً','err');return;}
+  var room=pcRoomId(userPhone,currentPcPhone);
+  var payload={room:room,name:userName,phone:userPhone,role:role||'s',msg:txt,ts:Date.now()};
+  if(inp) inp.value='';
+  // Optimistic append
+  appendPcMsg(payload); scrollPcMsgs();
+  sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){toast('تعذّر الإرسال','err');});
+}
+function appendPcMsg(m){
+  var el=$('pcMsgs'); if(!el) return;
+  var isMe=m.phone===userPhone;
+  var div=document.createElement('div');
+  div.style.cssText='display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start');
+  var time=m.ts?new Date(m.ts).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'';
+  div.innerHTML='<div style="max-width:75%;background:'+(isMe?'var(--geo2)':'var(--bg3)')+';color:'+(isMe?'#fff':'var(--text)')+';'+
+    'border-radius:'+(isMe?'14px 14px 4px 14px':'14px 14px 14px 4px')+';padding:9px 13px;font-size:.82rem;line-height:1.4">'+
+    safeHtml(m.msg||'')+'</div>'+
+    '<div style="font-size:.58rem;color:var(--text2);margin-top:2px;padding:0 4px">'+time+'</div>';
+  el.appendChild(div);
+}
+function scrollPcMsgs(){var el=$('pcMsgs');if(el)el.scrollTop=el.scrollHeight;}
+function showPcOffline(){
+  var el=$('pcMsgs');
+  if(el) el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text2);font-size:.8rem">⚠️ الدردشة غير متصلة<br><small>فعّل إعدادات الدردشة أولاً</small></div>';
+}
+
 </script>
 
 <!-- ═══ CHAT FAB + PANEL ═══ -->
@@ -4750,6 +5314,25 @@ CREATE POLICY "open" ON messages
       onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"
       oninput="onChatInput()"></textarea>
     <button class="chat-send-btn" onclick="sendMsg()">➤</button>
+  </div>
+</div>
+
+
+<!-- ══ PRIVATE CHAT OVERLAY ══ -->
+<div id="privateChatOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9990;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border)">
+    <button onclick="closePrivateChat()" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:.9rem">←</button>
+    <div id="pcChatAvatar" style="width:36px;height:36px;border-radius:50%;background:var(--geo2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">👤</div>
+    <div style="flex:1">
+      <div id="pcChatName" style="font-size:.9rem;font-weight:bold"></div>
+      <div id="pcChatStatus" style="font-size:.65rem;color:var(--green2)">● متصل</div>
+    </div>
+    <button id="pcBlockBtn" onclick="blockContact(currentPcPhone)" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);border-radius:8px;padding:5px 10px;color:var(--hist2);cursor:pointer;font-size:.7rem">🚫 حظر</button>
+  </div>
+  <div id="pcMsgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px"></div>
+  <div style="padding:10px 12px;background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:8px">
+    <input id="pcMsgInp" class="inp" placeholder="اكتب رسالة..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendPrivateMsg()">
+    <button onclick="sendPrivateMsg()" style="padding:10px 16px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.85rem;cursor:pointer">إرسال</button>
   </div>
 </div>
 
