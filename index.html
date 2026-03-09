@@ -2234,8 +2234,18 @@ function loadCustomExam(exam){
   resetPlay();
 }
 function confirmFinishExam(){
-  if(!confirm('هل تريد إنهاء الامتحان الآن؟\nسيتم احتساب النتيجة على الأسئلة التي أجبت عليها.')) return;
+  if(!confirm('هل تريد إنهاء الامتحان؟\nسيتم احتساب درجتك على ما أجبت عليه.')) return;
   clearInterval(S.timer);
+  S.answered=true; // prevent double-answer on current question
+  // Make sure session counters are correct
+  // totalQThisSession = questions answered so far (not skipped current)
+  // If student is on a question they haven't answered, don't count it
+  var answered = S.totalQThisSession || 0;
+  var correct  = S.totalQCorrectThisSession || 0;
+  // Override S values so showResults uses correct numbers
+  S.totalQThisSession = answered;
+  S.totalQCorrectThisSession = correct;
+  // Hide button
   var fb=$('finishExamBtn');if(fb)fb.style.display='none';
   showResults();
 }
@@ -2853,7 +2863,8 @@ function showResults(){
   clearInterval(S.timer);
   examActive=false;
   setTimeout(updateChatFabVisibility,50);
-  var totalAnswered=S.totalQThisSession||S.qs.length;
+  // For finish-early: use actual answered count; fallback to qs.length only if session ran to completion
+  var totalAnswered = (S.totalQThisSession && S.totalQThisSession>0) ? S.totalQThisSession : S.qs.length;
   var totalCorrect=S.totalQCorrectThisSession||S.correct;
   var pct=Math.round((totalCorrect/Math.max(totalAnswered,1))*100);
   S.totalScore+=S.score;S.games++;
