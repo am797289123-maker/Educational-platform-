@@ -909,10 +909,10 @@ select.inp{cursor:pointer;}
       <input type="file" id="loginAvatarInput" accept="image/*" style="display:none" onchange="pickLoginAvatar(this)">
     </div>
     <label class="lbl" id="lblName">👤 الاسم الكامل</label>
-    <input class="name-inp" id="nameInp" type="text" placeholder="اكتب اسمك هنا" maxlength="50">
+    <input class="name-inp" id="nameInp" type="text" placeholder="اكتب اسمك هنا" maxlength="50" oninput="checkLogin()">
 
     <label class="lbl" id="lblPhone">📱 رقم الهاتف</label>
-    <input class="phone-inp" id="phoneInp" type="tel" placeholder="01xxxxxxxxx" maxlength="11">
+    <input class="phone-inp" id="phoneInp" type="tel" placeholder="01xxxxxxxxx" maxlength="11" oninput="checkLogin()">
 
     <!-- Gender -->
     <label class="lbl" id="lblGender">⚥ الجنس</label>
@@ -993,7 +993,7 @@ select.inp{cursor:pointer;}
       </div>
     </div>
 
-    <button class="btn-login" id="btnLogin" onclick="doLogin()" disabled id="loginTitle">دخول ←</button>
+    <button class="btn-login" id="btnLogin" onclick="doLogin()">دخول ←</button>
   </div>
 </div>
 
@@ -1892,7 +1892,12 @@ function checkLogin(){
     $('roleS').style.opacity=''; $('roleT').style.opacity='';
     var hint=$('roleLockHint'); if(hint) hint.style.display='none';
   }
-  $('btnLogin').disabled=!allOk;
+  // Don't disable - show visual feedback instead
+  var btn=$('btnLogin');
+  if(btn){
+    btn.style.opacity=allOk?'1':'0.5';
+    btn.style.cursor=allOk?'pointer':'default';
+  }
 }
 function updTimeSummary(){
   var m=parseInt(($('exTimeMin')||{value:0}).value)||0;
@@ -1909,6 +1914,13 @@ function doLogin(){
   var name=$('nameInp').value.trim();
   var phone=$('phoneInp').value.trim();
   var r=pickedRole;
+  // ── Validate fields with clear messages ──
+  if(!name||name.length<2){ toast('⚠️ اكتب اسمك الكامل (على الأقل حرفان)','err'); $('nameInp').focus(); return; }
+  if(!phone||phone.length<10){ toast('⚠️ اكتب رقم هاتفك صح (10 أرقام على الأقل)','err'); $('phoneInp').focus(); return; }
+  if(!userGender){ toast('⚠️ اختر الجنس أولاً','err'); return; }
+  if(!r){ toast('⚠️ اختر إذا كنت طالب أم معلم','err'); return; }
+  if(r==='s'&&!userStream){ toast('⚠️ اختر شعبتك الدراسية','err'); return; }
+  if(r==='t'&&!teacherSubject){ toast('⚠️ اختر مادتك التدريسية','err'); return; }
   if(r==='s'){
     // Check phone-name lock
     var lock=checkNameLock(phone,name);
@@ -4973,6 +4985,8 @@ function updateChatFabVisibility(){
 ['h','g','q'].forEach(function(t){if($('tab-'+t))$('tab-'+t).className='stab'+(t==='h'?' ah':'');});
 // load saved theme
 loadTheme();
+// Enable login button check on startup
+try{ checkLogin(); }catch(e){}
 
 // ══════════════════════════════════════════
 // AUTO-LOGIN (session persistence)
