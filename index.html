@@ -62,17 +62,15 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 .csb-ok{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.2);color:var(--green2);}
 .csb-no{background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.2);color:var(--hist2);}
 .role-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;position:relative;z-index:2;}
-.role-card{padding:16px 10px;border-radius:14px;border:1.5px solid var(--border);background:var(--bg3);cursor:pointer;text-align:center;position:relative;z-index:10;-webkit-tap-highlight-color:rgba(0,0,0,0);user-select:none;touch-action:manipulation;transition:border-color .15s,background .15s;}
+.role-card{padding:16px 10px;border-radius:14px;border:2px solid rgba(255,255,255,0.08);background:var(--bg3);cursor:pointer;text-align:center;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent;pointer-events:auto;}
 .role-card .ri{font-size:1.8rem;display:block;margin-bottom:5px;}
 .role-card .rn{font-size:.84rem;font-weight:700;color:var(--text3);}
 .role-card .rd{font-size:.63rem;color:var(--text2);margin-top:2px;}
 
-.role-card.sel-s{border:2.5px solid var(--geo2) !important;background:rgba(33,150,243,.18) !important;box-shadow:0 0 0 3px rgba(33,150,243,.15) !important;}
-.role-card.sel-s:hover,.role-card.sel-s:active{border:2.5px solid var(--geo2) !important;background:rgba(33,150,243,.18) !important;}
-.role-card.sel-s .rn{color:var(--geo2) !important;}
-.role-card.sel-t{border:2.5px solid var(--gold2) !important;background:rgba(245,197,24,.18) !important;box-shadow:0 0 0 3px rgba(245,197,24,.15) !important;}
-.role-card.sel-t:hover,.role-card.sel-t:active{border:2.5px solid var(--gold2) !important;background:rgba(245,197,24,.18) !important;}
-.role-card.sel-t .rn{color:var(--gold2) !important;}
+.role-card.sel-s{border:2px solid #2196f3 !important;background:rgba(33,150,243,0.12) !important;}
+.role-card.sel-s .rn{color:#2196f3 !important;}
+.role-card.sel-t{border:2px solid #f5c518 !important;background:rgba(245,197,24,0.12) !important;}
+.role-card.sel-t .rn{color:#f5c518 !important;}
 .btn-login{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--hist2),var(--gold));
   color:#fff;font-family:'Tajawal',Tahoma,sans-serif;font-size:1rem;font-weight:900;cursor:pointer;transition:all .2s;;touch-action:manipulation;-webkit-tap-highlight-color:rgba(0,0,0,0);}
 .btn-login:disabled{opacity:.35;cursor:not-allowed;}
@@ -887,12 +885,8 @@ select.inp{cursor:pointer;}
 <!-- ═══ LOGIN ═══ -->
 <div id="loginScreen" class="screen active">
   <div class="login-box">
-    <!-- Language Toggle -->
     <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
-      <button id="langToggleBtn" onclick="toggleLang()" style="background:var(--bg3);border:1px solid var(--border);
-        color:var(--text);border-radius:20px;padding:4px 14px;font-size:.75rem;cursor:pointer">
-        🌐 English
-      </button>
+      <button id="langToggleBtn" onclick="toggleLang()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:20px;padding:4px 14px;font-size:.75rem;cursor:pointer">🌐 English</button>
     </div>
     <div class="login-logo">
       <span class="login-emoji">🎓</span>
@@ -900,20 +894,15 @@ select.inp{cursor:pointer;}
       <div class="login-sub" id="loginSub">تاريخ • جغرافيا • اختبارات ذكية</div>
     </div>
     <div class="divider"></div>
-
-    <!-- Avatar picker -->
     <div style="text-align:center;margin-bottom:12px">
-      <div id="loginAvatarWrap" onclick="$('loginAvatarInput').click()" 
-        style="width:72px;height:72px;border-radius:50%;margin:0 auto 6px;cursor:pointer;
-        background:var(--bg3);border:2px dashed var(--border);
-        display:flex;align-items:center;justify-content:center;
-        font-size:2rem;position:relative;overflow:hidden">
+      <div id="loginAvatarWrap" onclick="$('loginAvatarInput').click()" style="width:72px;height:72px;border-radius:50%;margin:0 auto 6px;cursor:pointer;background:var(--bg3);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem;position:relative;overflow:hidden">
         <span id="loginAvatarEmoji">📷</span>
         <img id="loginAvatarImg" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover" src="" alt="">
       </div>
       <div style="font-size:.68rem;color:var(--text2)">صورة شخصية (اختياري)</div>
       <input type="file" id="loginAvatarInput" accept="image/*" style="display:none" onchange="pickLoginAvatar(this)">
     </div>
+
     <label class="lbl" id="lblName">👤 الاسم الكامل</label>
     <input class="name-inp" id="nameInp" type="text" placeholder="اكتب اسمك هنا" maxlength="50" oninput="checkLogin()">
 
@@ -923,11 +912,11 @@ select.inp{cursor:pointer;}
     <!-- Gender -->
     <label class="lbl" id="lblGender">⚥ الجنس</label>
     <div class="role-row" id="genderRow">
-      <div class="role-card" id="genderM" onclick="pickGender('m')">
+      <div class="role-card" id="genderM" onclick="pickGender('m')" ontouchstart="">
         <span class="ri">👦</span>
         <div class="rn" id="genderMLabel">ولد</div>
       </div>
-      <div class="role-card" id="genderF" onclick="pickGender('f')">
+      <div class="role-card" id="genderF" onclick="pickGender('f')" ontouchstart="">
         <span class="ri">👧</span>
         <div class="rn" id="genderFLabel">بنت</div>
       </div>
@@ -935,47 +924,44 @@ select.inp{cursor:pointer;}
 
     <!-- Role -->
     <label class="lbl" id="lblRole">👤 أنت؟</label>
-    <div id="roleLockHint" style="display:none;font-size:.7rem;color:var(--gold2);text-align:center;
-      padding:5px 10px;background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.2);
-      border-radius:8px;margin-bottom:6px"></div>
+    <div id="roleLockHint" style="display:none;font-size:.7rem;color:var(--gold2);text-align:center;padding:5px 10px;background:rgba(245,197,24,.07);border:1px solid rgba(245,197,24,.2);border-radius:8px;margin-bottom:6px"></div>
     <div class="role-row">
-      <div class="role-card" id="roleS" onclick="pickRole('s')">
+      <div class="role-card" id="roleS" onclick="pickRole('s')" ontouchstart="">
         <span class="ri">🧑‍🎓</span>
         <div class="rn" id="roleSLabel">طالب</div>
         <div class="rd" id="roleSDesc">حل الاختبارات</div>
       </div>
-      <div class="role-card" id="roleT" onclick="pickRole('t')">
+      <div class="role-card" id="roleT" onclick="pickRole('t')" ontouchstart="">
         <span class="ri">👨‍🏫</span>
         <div class="rn" id="roleTLabel">معلم</div>
         <div class="rd" id="roleTDesc">إنشاء الاختبارات</div>
       </div>
     </div>
 
-    <!-- Student stream (shown when role=s) -->
+    <!-- Student stream -->
     <div id="streamSection" style="display:none">
       <label class="lbl" id="lblStream">📚 الشعبة</label>
       <div class="role-row">
-        <div class="role-card" id="streamAdabi" onclick="pickStream('adabi')">
+        <div class="role-card" id="streamAdabi" onclick="pickStream('adabi')" ontouchstart="">
           <span class="ri">📜</span>
           <div class="rn" id="streamAdabiLabel">أدبي</div>
           <div class="rd" id="streamAdabiDesc">تاريخ • جغرافيا</div>
         </div>
-        <div class="role-card" id="streamElmi" onclick="pickStream('elmi')">
+        <div class="role-card" id="streamElmi" onclick="pickStream('elmi')" ontouchstart="">
           <span class="ri">🔬</span>
           <div class="rn" id="streamElmiLabel">علمي</div>
           <div class="rd" id="streamElmiDesc">علوم • رياضة</div>
         </div>
       </div>
-      <!-- Sub-stream for Elmi -->
       <div id="subStreamSection" style="display:none;margin-top:8px">
         <label class="lbl" id="lblSubStream">🔬 التخصص العلمي</label>
         <div class="role-row">
-          <div class="role-card" id="subElmiOlom" onclick="pickSubStream('olom')">
+          <div class="role-card" id="subElmiOlom" onclick="pickSubStream('olom')" ontouchstart="">
             <span class="ri">🧬</span>
             <div class="rn" id="subOlomLabel">علمي علوم</div>
             <div class="rd" id="subOlomDesc">أحياء • كيمياء • فيزياء</div>
           </div>
-          <div class="role-card" id="subElmiRiada" onclick="pickSubStream('riada')">
+          <div class="role-card" id="subElmiRiada" onclick="pickSubStream('riada')" ontouchstart="">
             <span class="ri">📐</span>
             <div class="rn" id="subRiadaLabel">علمي رياضة</div>
             <div class="rd" id="subRiadaDesc">رياضة • فيزياء • كيمياء</div>
@@ -984,22 +970,22 @@ select.inp{cursor:pointer;}
       </div>
     </div>
 
-    <!-- Teacher subject (shown when role=t) -->
+    <!-- Teacher subject -->
     <div id="teacherSubjectSection" style="display:none">
       <label class="lbl" id="lblTeacherSubject">📖 مادتك</label>
       <div class="role-row">
-        <div class="role-card" id="subjHist" onclick="pickTeacherSubject('h')">
+        <div class="role-card" id="subjHist" onclick="pickTeacherSubject('h')" ontouchstart="">
           <span class="ri">📜</span>
           <div class="rn" id="subjHistLabel">تاريخ</div>
         </div>
-        <div class="role-card" id="subjGeo" onclick="pickTeacherSubject('g')">
+        <div class="role-card" id="subjGeo" onclick="pickTeacherSubject('g')" ontouchstart="">
           <span class="ri">🗺️</span>
           <div class="rn" id="subjGeoLabel">جغرافيا</div>
         </div>
       </div>
     </div>
 
-    <button class="btn-login" id="btnLogin" onclick="doLogin()" style="touch-action:manipulation">دخول ←</button>
+    <button class="btn-login" id="btnLogin" onclick="doLogin()">دخول ←</button>
   </div>
 </div>
 
@@ -1401,6 +1387,7 @@ select.inp{cursor:pointer;}
 </div>
 
 <script>
+var IS_LOCAL=(location.protocol==='file:');
 // ══════════════════════════════════════
 function pickLoginAvatar(input){
   var file=input.files&&input.files[0]; if(!file) return;
@@ -1430,7 +1417,7 @@ function pickLoginAvatar(input){
   };
   reader.readAsDataURL(file);
 }
-════
+// ════
 // DATA
 // ══════════════════════════════════════════
 var HM=[
@@ -1817,16 +1804,12 @@ function pickGender(g){
   userGender=g;
   $('genderM').className='role-card'+(g==='m'?' sel-s':'');
   $('genderF').className='role-card'+(g==='f'?' sel-s':'');
-  // Visual feedback
-  $('genderM').style.transform=(g==='m')?'scale(1.03)':'scale(1)';
-  $('genderF').style.transform=(g==='f')?'scale(1.03)':'scale(1)';
   checkLogin();
 }
 function pickStream(st2){
   $('streamAdabi').className='role-card'+(st2==='adabi'?' sel-s':'');
   $('streamElmi').className='role-card'+(st2==='elmi'?' sel-s':'');
-  $('streamAdabi').style.transform=(st2==='adabi')?'scale(1.03)':'scale(1)';
-  $('streamElmi').style.transform=(st2==='elmi')?'scale(1.03)':'scale(1)';
+
   $('subStreamSection').style.display=st2==='elmi'?'block':'none';
   if(st2==='adabi'){userStream='adabi';}
   else{userStream='';if($('subElmiOlom'))$('subElmiOlom').className='role-card';if($('subElmiRiada'))$('subElmiRiada').className='role-card';}
@@ -1836,8 +1819,7 @@ function pickSubStream(ss){
   userStream=ss;
   $('subElmiOlom').className='role-card'+(ss==='olom'?' sel-s':'');
   $('subElmiRiada').className='role-card'+(ss==='riada'?' sel-s':'');
-  $('subElmiOlom').style.transform=(ss==='olom')?'scale(1.03)':'scale(1)';
-  $('subElmiRiada').style.transform=(ss==='riada')?'scale(1.03)':'scale(1)';
+
   checkLogin();
 }
 function pickTeacherSubject(subj){
@@ -1850,8 +1832,6 @@ function pickRole(r){
   pickedRole=r;
   $('roleS').className='role-card'+(r==='s'?' sel-s':'');
   $('roleT').className='role-card'+(r==='t'?' sel-t':'');
-  $('roleS').style.transform=(r==='s')?'scale(1.03)':'scale(1)';
-  $('roleT').style.transform=(r==='t')?'scale(1.03)':'scale(1)';
   $('streamSection').style.display=r==='s'?'block':'none';
   $('teacherSubjectSection').style.display=r==='t'?'block':'none';
   if(r==='t'){userStream='';}
@@ -1868,6 +1848,8 @@ $('phoneInp').addEventListener('input',function(){
   }
   checkLogin();
 });
+
+
 function checkLogin(){
   // Just update button opacity - no side effects, no auto-select
   var n=$('nameInp').value.trim();
@@ -5078,6 +5060,7 @@ function removeOpt(id){
 
 // ══ Start social features after login ══
 function initSocialFeatures(){
+  if(IS_LOCAL) return; // لا تشغّل الشبكة لما الملف يشتغل محلياً
   var cfg=chatCfg||loadChatConfig();
   if(cfg){
     startPresence();
@@ -6585,16 +6568,19 @@ function removePendingReq(phone){
 // ── Poll for friend requests directed at me ──
 var frPollTimer=null;
 function startFriendReqPoll(){
+  if(IS_LOCAL) return;
   if(frPollTimer) clearInterval(frPollTimer);
   // كل 5 ثواني عشان الطلبات توصل بسرعة
-  frPollTimer=setInterval(pollFriendRequests, 5000);
+  frPollTimer=setInterval(pollFriendRequests, 15000);
   pollFriendRequests(); // فوراً
 }
+var _frPollFails=0;
 function pollFriendRequests(){
+  if(_frPollFails>3){return;} // توقف بعد 3 فشل متتالي
   // جيب آخر 24 ساعة بـ ISO timestamp
   var since=Date.now()-86400000;
   sbSocial('messages?room=eq.friend_req&ts=gt.'+since+'&order=ts.asc&limit=100')
-    .then(function(r){return r.json();})
+    .then(function(r){_frPollFails=0;return r.json();})
     .then(function(msgs){
       if(!msgs||!Array.isArray(msgs)||!msgs.length) return;
 
@@ -6651,12 +6637,13 @@ function pollFriendRequests(){
         renderProfileFriends();
         renderContacts();
       }
-    }).catch(function(e){console.warn('pollFR error:',e);});
+    }).catch(function(){_frPollFails++;});
 }
 
 // ── Online presence ──
 var presTimer=null;
 function startPresence(){
+  if(IS_LOCAL) return;
   updatePresence();
   if(presTimer) clearInterval(presTimer);
   // كل 25 ثانية online ping (60s timeout = يعتبر offline لو انقطع)
@@ -6685,6 +6672,7 @@ function updatePresence(){
   sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
 }
 function pollPresence(){
+  var cfg=chatCfg||loadChatConfig(); if(!cfg) return;
   var since=Date.now()-55000; // 55s — أي حد بعت ping في آخر 55s = online
   sbSocial('messages?room=eq.presence&ts=gt.'+since+'&order=ts.desc&limit=200')
     .then(function(r){return r.json();})
