@@ -539,7 +539,7 @@ select.inp{cursor:pointer;}
 .q-total-inf{font-size:.67rem;color:var(--text2);}
 
 /* ══ CHAT BUBBLE ══ */
-.chat-fab{position:fixed;bottom:22px;left:18px;width:52px;height:52px;border-radius:50%;
+.chat-fab{display:none !important;position:fixed;bottom:22px;left:18px;width:52px;height:52px;border-radius:50%;
   background:linear-gradient(135deg,var(--geo2),#1565c0);box-shadow:0 4px 18px rgba(33,150,243,.4);
   border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
   font-size:1.4rem;z-index:900;transition:transform .2s;}
@@ -706,43 +706,7 @@ select.inp{cursor:pointer;}
     <div class="hdr-info"><div class="hdr-title">⚙️ الإعدادات</div><div class="hdr-sub">تخصيص المنصة</div></div>
   </div>
   <div class="set-body">
-    <div class="set-section">
-      <div class="set-hd">🎨 لون الشاشة</div>
-      <div class="theme-grid">
-        <div class="theme-swatch sel" id="th-dark" onclick="applyTheme('dark')">
-          <div class="ts-circle" style="background:linear-gradient(135deg,#07060f,#17152a)"></div>
-          <span>داكن</span>
-        </div>
-        <div class="theme-swatch" id="th-light" onclick="applyTheme('light')">
-          <div class="ts-circle" style="background:linear-gradient(135deg,#f0f4ff,#dde8ff)"></div>
-          <span>فاتح</span>
-        </div>
-        <div class="theme-swatch" id="th-blue" onclick="applyTheme('blue')">
-          <div class="ts-circle" style="background:linear-gradient(135deg,#0a1628,#0d2547)"></div>
-          <span>أزرق غامق</span>
-        </div>
-        <div class="theme-swatch" id="th-pink" onclick="applyTheme('pink')">
-          <div class="ts-circle" style="background:linear-gradient(135deg,#1a0a14,#2d1020)"></div>
-          <span>وردي</span>
-        </div>
-        <div class="theme-swatch" id="th-green" onclick="applyTheme('green')">
-          <div class="ts-circle" style="background:linear-gradient(135deg,#041a10,#082e1a)"></div>
-          <span>أخضر</span>
-        </div>
-        <div class="theme-swatch" id="th-purple" onclick="applyTheme('purple')">
-          <div class="ts-circle" style="background:linear-gradient(135deg,#0e0520,#1a0a35)"></div>
-          <span>بنفسجي</span>
-        </div>
-        <div class="theme-swatch" id="th-sand" onclick="applyTheme('sand')">
-          <div class="ts-circle" style="background:linear-gradient(135deg,#1a1208,#2e2010)"></div>
-          <span>ذهبي</span>
-        </div>
-        <div class="theme-swatch" id="th-white" onclick="applyTheme('white')">
-          <div class="ts-circle" style="background:linear-gradient(135deg,#ffffff,#f5f5f5);border:2px solid #ccc"></div>
-          <span>أبيض</span>
-        </div>
-      </div>
-    </div>
+    
     <div class="set-section" id="accountSection">
       <div class="set-hd">👤 الحساب</div>
       <div id="setLoggedIn" style="display:none">
@@ -750,7 +714,7 @@ select.inp{cursor:pointer;}
           <div><div class="set-lbl" id="setUserName">—</div><div class="set-sub" id="setUserPhone">—</div></div>
           <div class="hdr-badge" id="setUserRole" style="font-size:.65rem">—</div>
         </div>
-        <button onclick="logout()" style="width:100%;margin-top:10px;padding:10px;border-radius:11px;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:var(--hist2);font-family:Tajawal,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer">🚪 تسجيل الخروج</button>
+        <button onclick="logout()" style="width:100%;margin-top:10px;padding:10px;border-radius:11px;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:var(--hist2);font-family:Tajawal,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer" onclick="logout()">🚪 تسجيل الخروج</button>
         <div id="deletePendingBox" style="display:none;margin-top:10px;padding:10px;border-radius:11px;border:1px solid rgba(245,197,24,.2);background:rgba(245,197,24,.06);font-size:.75rem;color:var(--gold2);text-align:center"></div>
         <button onclick="requestDeleteAccount()" id="btnDeleteAccount" style="width:100%;margin-top:8px;padding:9px;border-radius:11px;border:1px solid rgba(120,60,60,.3);background:transparent;color:var(--text2);font-family:Tajawal,sans-serif;font-size:.75rem;cursor:pointer">🗑 طلب حذف الحساب</button>
         <button onclick="cancelDeleteAccount()" id="btnCancelDelete" style="display:none;width:100%;margin-top:6px;padding:9px;border-radius:11px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.06);color:#27ae60;font-family:Tajawal,sans-serif;font-size:.75rem;cursor:pointer">↩️ إلغاء طلب الحذف</button>
@@ -761,11 +725,7 @@ select.inp{cursor:pointer;}
       </div>
     </div>
     <!-- Teacher/Student: chat setup link -->
-    <div class="set-section" id="teacherChatSection" style="display:none">
-      <div class="set-hd">💬 إعداد دردشة الفصل</div>
-      <div style="font-size:.72rem;color:var(--text2);margin-bottom:10px;line-height:1.6">الدردشة تعمل عبر Supabase المجاني — اضغط زرار الدردشة 💬 وادخل إعدادات Supabase من هناك</div>
-      <button onclick="toggleChat();showChatConfig();" style="width:100%;padding:10px;border-radius:10px;background:rgba(33,150,243,.1);border:1px solid rgba(33,150,243,.25);color:var(--geo2);font-family:Tajawal,sans-serif;font-size:.8rem;font-weight:700;cursor:pointer">⚙️ فتح إعدادات الدردشة</button>
-    </div>
+    
     <!-- Teacher: scan to add student -->
     <div class="set-section" id="teacherScanSection" style="display:none">
       <div class="set-hd">📷 إضافة طالب بالـ Scan</div>
@@ -2204,8 +2164,15 @@ function logout(){
   chatInitialized=false;chatCfg=null;chatOpen=false;chatUnread=0;
   var panel=$('chatPanel');if(panel)panel.classList.remove('open');
   role=null;userName='';userPhone='';pickedRole=null;
+  userGender=null;userStream=null;teacherSubject=null;
   $('roleS').className='role-card';$('roleT').className='role-card';
-  $('nameInp').value='';$('phoneInp').value='';$('btnLogin').disabled=true;
+  ['genderM','genderF'].forEach(function(id){var e=$(id);if(e)e.className='role-card';});
+  ['streamAdabi','streamElmi','subElmiOlom','subElmiRiada'].forEach(function(id){var e=$(id);if(e)e.className='role-card';});
+  ['subjHist','subjGeo','subjArab','subjStats','subjPhys'].forEach(function(id){var e=$(id);if(e)e.className='role-card';});
+  var ss=$('streamSection');if(ss)ss.style.display='none';
+  var ts=$('teacherSubjectSection');if(ts)ts.style.display='none';
+  $('nameInp').value='';$('phoneInp').value='';
+  var btn=$('btnLogin');if(btn){btn.disabled=false;btn.style.opacity='0.6';}
   stopCamera();
   goScreen('loginScreen');
 }
@@ -2306,9 +2273,9 @@ function buildLists(){
     else if(showHist){ swTab('h'); }
     else { swTab('a'); }
   }
-  if(role==='t'&&teacherSubject==='a'){ swTab('a'); }
-  if(role==='t'&&teacherSubject==='s'){ swTab('s'); }
-  if(role==='t'&&teacherSubject==='p'){ swTab('p'); buildPhysList(); }
+  if(role==='t'&&teacherSubject==='a'){ if($('tab-a')) swTab('a'); }
+  if(role==='t'&&teacherSubject==='s'){ if($('tab-s')) swTab('s'); }
+  if(role==='t'&&teacherSubject==='p'){ if($('tab-p')){ swTab('p'); buildPhysList(); } }
   if(showStats) buildStatsList();
   if(showArab) buildArabicList();
   if(showHist){
@@ -3655,7 +3622,8 @@ function saveStudentResult(examCode, examTitle){
       date:new Date().toLocaleDateString('ar-EG'),
       time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}),
       wrongs:S.wrongs.slice(),
-      examTitle:examTitle
+      examTitle:examTitle,
+      subj:S.subj||'c'
     };
     // Update if same student retook exam
     var existIdx=results.findIndex(function(r){return r.phone===userPhone;});
@@ -4320,7 +4288,13 @@ function stuView(phone){
       if(k&&k.indexOf('y3_res_')===0){
         var arr=JSON.parse(localStorage.getItem(k)||'[]');
         var found=arr.find(function(r){return r.phone===phone;});
-        if(found) examResults.push(found);
+        if(found){
+          var subjMap={h:'تاريخ',g:'جغرافيا',a:'عربي',p:'فيزياء',s:'إحصاء'};
+          var matchSubj=!teacherSubject||found.subj===teacherSubject||
+            (found.subj==='c')||
+            (found.examTitle&&subjMap[teacherSubject]&&found.examTitle.indexOf(subjMap[teacherSubject])>-1);
+          if(matchSubj) examResults.push(found);
+        }
       }
     }
   }catch(e){}
@@ -5854,7 +5828,7 @@ function showGroupInfo(){
   var group=getGroupById(currentGroupId); if(!group) return;
   $('grpInfoName').textContent='👥 '+group.name;
   // Generate QR
-  var code=btoa(JSON.stringify({type:'group_join',groupId:group.id,groupName:group.name}));
+  var code=btoa(unescape(encodeURIComponent(JSON.stringify({type:'group_join',groupId:group.id,groupName:group.name}))));
   _currentGrpCode=code;
   var qrDiv=$('grpQrDiv');
   if(qrDiv){qrDiv.innerHTML='';generateQR(code,qrDiv);}
@@ -5863,11 +5837,14 @@ function showGroupInfo(){
   if(membEl&&group.members){
     membEl.innerHTML=group.members.map(function(m){
       var icon=m.role==='t'?'👨‍🏫':'👤';
-      var isAdmin=m.phone===group.createdBy;
+      var grpAdmins=group.admins||[group.createdBy];
+      var isAdmin=grpAdmins.indexOf(m.phone)>-1;
+      var iAmAdmin=grpAdmins.indexOf(userPhone)>-1;
       return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">'+
         '<span style="font-size:1.1rem">'+icon+'</span>'+
         '<span style="flex:1;font-size:.83rem">'+safeHtml(m.name||m.phone)+(isAdmin?' 👑':'')+'</span>'+
-        (group.createdBy===userPhone&&m.phone!==userPhone?
+        (iAmAdmin&&m.phone!==userPhone?
+          '<button data-ph="'+m.phone+'" onclick="toggleGroupAdmin(this.dataset.ph)" style="font-size:.6rem;padding:3px 7px;border-radius:6px;border:none;background:rgba(33,150,243,.1);color:var(--geo2);cursor:pointer;margin-left:3px">'+(isAdmin?'خفض 👑':'ترقية 👑')+'</button>'+
           '<button data-ph="'+m.phone+'" onclick="removeMemberFromGroup(this.dataset.ph)" style="font-size:.65rem;padding:3px 8px;border-radius:6px;border:none;background:rgba(231,76,60,.1);color:var(--hist2);cursor:pointer">إزالة</button>':'')+'</div>';
     }).join('');
   }
@@ -5886,6 +5863,9 @@ function showGroupInfo(){
       }).join('');
     }
   }
+  // Show delete button only for group creator
+  var delBtn=$('grpDeleteBtn');
+  if(delBtn) delBtn.style.display=(group.createdBy===userPhone)?'block':'none';
   $('groupInfoOverlay').style.display='flex';
 }
 
@@ -5916,6 +5896,8 @@ function removeMemberFromGroup(phone){
   var groups=getGroups();
   var group=groups.find(function(g){return g.id===currentGroupId;});
   if(!group) return;
+  var admins=group.admins||[group.createdBy];
+  if(admins.indexOf(userPhone)===-1){toast('فقط الأدمن يمكنه إزالة الأعضاء','err');return;}
   group.members=group.members.filter(function(m){return m.phone!==phone;});
   saveGroups(groups);
   toast('تمت إزالة العضو');
@@ -5929,6 +5911,39 @@ function leaveGroup(groupId){
   $('groupInfoOverlay').style.display='none';
   closeGroupChat();
   toast('تمت المغادرة');
+  renderGroupsList();
+}
+
+// ── Toggle admin ──
+function toggleGroupAdmin(phone){
+  var groups=getGroups();
+  var group=groups.find(function(g){return g.id===currentGroupId;});
+  if(!group) return;
+  if(group.createdBy!==userPhone&&(group.admins||[]).indexOf(userPhone)===-1){
+    toast('فقط الأدمن يمكنه تغيير الصلاحيات','err'); return;
+  }
+  if(!group.admins) group.admins=[group.createdBy];
+  var idx=group.admins.indexOf(phone);
+  if(idx>-1){
+    if(phone===group.createdBy){toast('لا يمكن خفض منشئ القروب','err');return;}
+    group.admins.splice(idx,1);
+    toast('تم خفض الصلاحيات');
+  } else {
+    group.admins.push(phone);
+    toast('✅ تمت الترقية لأدمن');
+  }
+  saveGroups(groups);
+  showGroupInfo();
+}
+
+// ── Delete group (admin only) ──
+function deleteGroup(groupId){
+  if(!confirm('هل تريد حذف القروب نهائياً؟ لا يمكن التراجع!')) return;
+  var groups=getGroups().filter(function(g){return g.id!==groupId;});
+  saveGroups(groups);
+  $('groupInfoOverlay').style.display='none';
+  closeGroupChat();
+  toast('✅ تم حذف القروب');
   renderGroupsList();
 }
 
@@ -5953,7 +5968,7 @@ var _origHandleFriendQR=null;
 function handleAnyQR(data){
   // Try group QR
   try{
-    var decoded=JSON.parse(atob(data.replace(/-/g,'+').replace(/_/g,'/')));
+    var decoded=JSON.parse(decodeURIComponent(escape(atob(data.replace(/-/g,'+').replace(/_/g,'/').replace(/[^A-Za-z0-9+/=]/g,'')))));
     if(decoded.type==='group_join'){
       joinGroupByCode(decoded.groupId,decoded.groupName);
       return;
@@ -6013,7 +6028,7 @@ function joinGroupByCode(groupId,groupName){
 function handleFriendQRData(data){
   // Try group QR first
   try{
-    var dec=JSON.parse(atob(data.replace(/-/g,'+').replace(/_/g,'/')));
+    var dec=JSON.parse(decodeURIComponent(escape(atob(data.replace(/-/g,'+').replace(/_/g,'/').replace(/[^A-Za-z0-9+/=]/g,'')))));
     if(dec.type==='group_join'){
       joinGroupByCode(dec.groupId,dec.groupName); return;
     }
@@ -7413,6 +7428,9 @@ CREATE POLICY "open" ON messages
       <div id="grpAddMemberList"></div>
     </div>
     <button onclick="leaveGroup(currentGroupId)" style="width:100%;margin-top:14px;padding:10px;border-radius:10px;border:none;background:rgba(231,76,60,.1);color:var(--hist2);font-family:Tajawal,sans-serif;font-size:.85rem;cursor:pointer">🚪 مغادرة القروب</button>
+    <div id="grpDeleteBtn" style="display:none">
+      <button onclick="deleteGroup(currentGroupId)" style="width:100%;margin-top:8px;padding:10px;border-radius:10px;border:none;background:rgba(192,57,43,.15);color:#e74c3c;font-family:Tajawal,sans-serif;font-size:.85rem;font-weight:bold;cursor:pointer">🗑️ حذف القروب نهائياً</button>
+    </div>
   </div>
 </div>
 
