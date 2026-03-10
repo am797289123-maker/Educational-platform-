@@ -101,6 +101,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 .stab.ah{border-color:var(--hist2);color:var(--hist2);background:var(--hist3);}
 .stab.ag{border-color:var(--geo2);color:var(--geo2);background:var(--geo3);}
 .stab.aq{border-color:var(--gold2);color:var(--gold2);background:var(--gold3);}
+.stab.ap{border-color:#9c27b0;color:#9c27b0;background:rgba(156,39,176,.08);}
 .stab.ac{border-color:#9b59b6;color:#9b59b6;background:rgba(155,89,182,.08);}
 .qtype-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);
   color:var(--text2);font-family:Tajawal,sans-serif;font-size:.72rem;cursor:pointer;}
@@ -590,6 +591,11 @@ select.inp{cursor:pointer;}
 .backup-freq-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);
   background:var(--bg3);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.72rem;cursor:pointer;}
 .backup-freq-btn.sel{background:var(--geo2);color:#fff;border-color:var(--geo2);}
+  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+  #examNavBar{direction:ltr;scrollbar-width:thin;}
+  #examNavBtns{direction:rtl;min-width:max-content;}
+  #finishExamBtn{animation-fill-mode:both;}
+
 </style>
 
 </head>
@@ -638,6 +644,9 @@ select.inp{cursor:pointer;}
           style="font-size:.62rem;padding:3px 8px;border-radius:6px;border:1px solid var(--border);
           background:var(--bg3);color:var(--text2);cursor:pointer;font-family:Tajawal,sans-serif"
           title="تفعيل الإشعارات">🔔</button>
+        <button onclick="openGroups()" 
+          style="font-size:.62rem;padding:3px 8px;border-radius:6px;border:none;
+          background:var(--geo2);color:#fff;cursor:pointer;font-family:Tajawal,sans-serif">👥 القروبات</button>
       </div>
       <!-- Add friend -->
       <div style="display:flex;gap:7px;margin-bottom:8px;align-items:center">
@@ -886,6 +895,19 @@ select.inp{cursor:pointer;}
     </div>
     <div class="divider"></div>
 
+    <!-- Avatar picker -->
+    <div style="text-align:center;margin-bottom:12px">
+      <div id="loginAvatarWrap" onclick="$('loginAvatarInput').click()" 
+        style="width:72px;height:72px;border-radius:50%;margin:0 auto 6px;cursor:pointer;
+        background:var(--bg3);border:2px dashed var(--border);
+        display:flex;align-items:center;justify-content:center;
+        font-size:2rem;position:relative;overflow:hidden">
+        <span id="loginAvatarEmoji">📷</span>
+        <img id="loginAvatarImg" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover" src="" alt="">
+      </div>
+      <div style="font-size:.68rem;color:var(--text2)">صورة شخصية (اختياري)</div>
+      <input type="file" id="loginAvatarInput" accept="image/*" style="display:none" onchange="pickLoginAvatar(this)">
+    </div>
     <label class="lbl" id="lblName">👤 الاسم الكامل</label>
     <input class="name-inp" id="nameInp" type="text" placeholder="اكتب اسمك هنا" maxlength="50">
 
@@ -997,10 +1019,11 @@ select.inp{cursor:pointer;}
       <div class="stat"><div class="stat-v" id="sBest">0%</div><div class="stat-l">أفضل</div></div>
       <div class="stat"><div class="stat-v" id="sGms">0</div><div class="stat-l">اختبارات</div></div>
     </div>
-    <div class="stabs">
-      <button class="stab ah" id="tab-h" onclick="swTab('h')">📜 تاريخ</button>
-      <button class="stab" id="tab-g" onclick="swTab('g')">🗺️ جغرافيا</button>
-      <button class="stab" id="tab-q" onclick="swTab('q')">📷 QR</button>
+    <div class="stabs" id="mainTabs">
+      <button class="stab ah" id="tab-h" onclick="swTab('h')" style="display:none">📜 تاريخ</button>
+      <button class="stab" id="tab-g" onclick="swTab('g')" style="display:none">🗺️ جغرافيا</button>
+      <button class="stab" id="tab-p" onclick="swTab('p')" style="display:none">⚡ فيزياء</button>
+      <button class="stab aq" id="tab-q" onclick="swTab('q')">📷 QR</button>
     </div>
     <div class="panel active" id="pnl-h">
       <div id="elmiMsgH" style="display:none;flex-direction:column;align-items:center;
@@ -1093,6 +1116,18 @@ select.inp{cursor:pointer;}
             </button>
           </div>
         </div>
+      </div>
+    </div>
+    <!-- ══ PHYSICS PANEL ══ -->
+    <div class="panel" id="pnl-p">
+      <div class="sec-hd">⚡ فصول الفيزياء</div>
+      <div id="physList"></div>
+      <div class="sec-hd" style="margin-top:13px">⚡ اختبارات سريعة</div>
+      <div class="exam-grid">
+        <div class="ex-card ex-m" onclick="quickPhysExam('all')"><span class="ex-icon">⚡</span><div class="ex-nm">كل الفيزياء</div><div class="ex-d">25 سؤال</div></div>
+        <div class="ex-card ex-h" onclick="quickPhysExam('hard')"><span class="ex-icon">🔥</span><div class="ex-nm">وضع صعب</div><div class="ex-d">20 سؤال</div></div>
+        <div class="ex-card ex-g" onclick="quickPhysExam('unit1')"><span class="ex-icon">🔌</span><div class="ex-nm">الوحدة الأولى</div><div class="ex-d">كهرباء ومغناطيس</div></div>
+        <div class="ex-card ex-g" onclick="quickPhysExam('unit2')"><span class="ex-icon">🔬</span><div class="ex-nm">الوحدة الثانية</div><div class="ex-d">فيزياء حديثة</div></div>
       </div>
     </div>
     <!-- ══ CONTACTS PANEL (legacy - friends now in profile) ══ -->
@@ -1304,6 +1339,10 @@ select.inp{cursor:pointer;}
     <div class="streak" id="streakB">🔥 <span id="streakN">0</span></div>
   </div>
   <div class="prb"><div class="prf" id="prFill"></div></div>
+  <!-- ══ EXAM QUESTION NAV BAR ══ -->
+  <div id="examNavBar" style="display:none;padding:8px 10px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;">
+    <div style="display:inline-flex;align-items:center;gap:4px;padding:2px 0;" id="examNavBtns"></div>
+  </div>
   <div class="g-body">
     <div>
       <div class="q-badge bh" id="qBadge">📜 تاريخ</div>
@@ -1356,7 +1395,36 @@ select.inp{cursor:pointer;}
 </div>
 
 <script>
-// ══════════════════════════════════════════
+// ══════════════════════════════════════
+function pickLoginAvatar(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  if(input) input.value='';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var size=200;
+      var canvas=document.createElement('canvas');
+      canvas.width=size; canvas.height=size;
+      var ctx=canvas.getContext('2d');
+      var s=Math.min(img.width,img.height);
+      var sx=(img.width-s)/2, sy=(img.height-s)/2;
+      ctx.beginPath();
+      ctx.arc(size/2,size/2,size/2,0,Math.PI*2);
+      ctx.clip();
+      ctx.drawImage(img,sx,sy,s,s,0,0,size,size);
+      var dataUrl=canvas.toDataURL('image/jpeg',0.8);
+      try{localStorage.setItem('y3_avatar_login_pending',dataUrl);}catch(ex){}
+      var imgEl=$('loginAvatarImg'), emojiEl=$('loginAvatarEmoji');
+      if(imgEl){imgEl.src=dataUrl; imgEl.style.display='block';}
+      if(emojiEl) emojiEl.style.display='none';
+    };
+    img.onerror=function(){toast('\u26a0\ufe0f تعذّر قراءة الصورة','err');};
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+════
 // DATA
 // ══════════════════════════════════════════
 var HM=[
@@ -1866,6 +1934,15 @@ function doLogin(){
   }
   userName=name; userPhone=phone; role=r;
   loadStats();
+  // Save login avatar if picked (first time only — won't overwrite existing)
+  try{
+    var existingAv=localStorage.getItem('y3_avatar_'+phone);
+    var loginAv=localStorage.getItem('y3_avatar_login_pending');
+    if(!existingAv&&loginAv){
+      localStorage.setItem('y3_avatar_'+phone,loginAv);
+    }
+    localStorage.removeItem('y3_avatar_login_pending');
+  }catch(e){}
   // Save session for auto-login
   try{localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,role:role,gender:userGender,stream:userStream,teacherSubject:teacherSubject,lang:appLang}));}catch(e){}
   // Save role + name to identity (permanent lock)
@@ -1985,12 +2062,25 @@ function updateStreamUI(){
 
 function buildLists(){
   var ar=['١','٢','٣','٤','٥','٦','٧','٨'];
-  var showHist=(role==='t')?teacherSubject==='h':userStream==='adabi';
-  var showGeo=(role==='t')?teacherSubject==='g':userStream==='adabi';
+  var isElmi = role==='s' && (userStream==='olom'||userStream==='riada');
+  var showHist=(role==='t')?teacherSubject==='h':(userStream==='adabi');
+  var showGeo=(role==='t')?teacherSubject==='g':(userStream==='adabi');
+  var showPhys = isElmi; // فيزياء لطلاب العلمي فقط
   var hSec=$('histSection');if(hSec)hSec.style.display=showHist?'block':'none';
   var gSec=$('geoSection');if(gSec)gSec.style.display=showGeo?'block':'none';
   var elmiMsg=$('elmiMsg');if(elmiMsg)elmiMsg.style.display=(role==='s'&&userStream!=='adabi')?'flex':'none';
   var elmiMsgH=$('elmiMsgH');if(elmiMsgH)elmiMsgH.style.display=(role==='s'&&userStream!=='adabi')?'flex':'none';
+  // Physics tab - show for elmi only
+  var tabH=$('tab-h'), tabG=$('tab-g'), tabP=$('tab-p');
+  if(tabH) tabH.style.display = showHist?'':'none';
+  if(tabG) tabG.style.display = showGeo?'':'none';
+  if(tabP) tabP.style.display = showPhys?'':'none';
+  // Default tab for elmi students: QR since their subjects are physics via teacher
+  if(role==='s'){
+    if(isElmi){ swTab('p'); buildPhysList(); }
+    else if(showHist){ swTab('h'); }
+    else { swTab('q'); }
+  }
   if(showHist){
     var h=$('histList');h.innerHTML='';
     HM.forEach(function(m,i){
@@ -2012,12 +2102,18 @@ function buildLists(){
 }
 
 function swTab(t){
-  ['h','g','q','c'].forEach(function(x){var tb=$('tab-'+x),pn=$('pnl-'+x);if(tb)tb.className='stab';if(pn)pn.className='panel';});
-  $('tab-'+t).className='stab a'+t;
-  $('pnl-'+t).className='panel active';
-  if(t==='h')$('tab-h').classList.add('ah');
-  if(t==='g')$('tab-g').classList.add('ag');
-  if(t==='q')$('tab-q').classList.add('aq');
+  ['h','g','q','c','p'].forEach(function(x){
+    var tb=$('tab-'+x),pn=$('pnl-'+x);
+    if(tb)tb.className='stab';
+    if(pn)pn.className='panel';
+  });
+  var tabEl=$('tab-'+t), panEl=$('pnl-'+t);
+  if(tabEl) tabEl.className='stab a'+t;
+  if(panEl) panEl.className='panel active';
+  if(t==='h') if(tabEl) tabEl.classList.add('ah');
+  if(t==='g') if(tabEl) tabEl.classList.add('ag');
+  if(t==='q') if(tabEl) tabEl.classList.add('aq');
+  if(t==='p') if(tabEl) tabEl.classList.add('ap');
   if(t!=='q') stopCamera();
 }
 
@@ -2251,30 +2347,74 @@ function scanFrame(){
 }
 function handleQRData(data){
   data=(data||'').trim();if(!data)return;
-  // 1) URL with ?c= or ?code= param
+
+  // ── Try as friend/person QR first ──
+  try{
+    var decoded=JSON.parse(decodeURIComponent(escape(atob(data.replace(/-/g,'+').replace(/_/g,'/')))));
+    if(decoded.p){
+      // Person QR — add as friend
+      var phone=decoded.p;
+      if(phone===userPhone){toast('لا يمكنك إضافة نفسك','err');return;}
+      var inp=$('addPersonPhone'); if(inp) inp.value=phone;
+      var inp2=$('profAddPhone'); if(inp2) inp2.value=phone;
+      sendFriendRequest();
+      toast('✅ تم إرسال طلب الإضافة','ok');
+      return;
+    }
+    // Group QR
+    if(decoded.gid){
+      joinGroupByQR(decoded);
+      return;
+    }
+  }catch(ex){}
+
+  // ── Try as raw phone number ──
+  if(/^[0-9+]{8,15}$/.test(data)){
+    var inp3=$('addPersonPhone'); if(inp3) inp3.value=data;
+    sendFriendRequest();
+    return;
+  }
+
+  // ── Try as exam URL with ?c= or ?code= param ──
   try{
     var u=new URL(data);
-    var c=u.searchParams.get('c')||u.searchParams.get('code');
-    if(c){
-      var ex=decodeCode(decodeURIComponent(c))||decodeCode(c);
+    var cParam=u.searchParams.get('c')||u.searchParams.get('code');
+    if(cParam){
+      var ex=decodeCode(decodeURIComponent(cParam))||decodeCode(cParam);
       if(ex){showScannedExam(ex);return;}
     }
     var d=u.searchParams.get('exam');
     if(d){try{var ex2=JSON.parse(decodeURIComponent(escape(atob(d))));if(ex2&&ex2.qs){showScannedExam(ex2);return;}}catch(e){}}
   }catch(e){}
-  // 2) Raw base64url code (QR contains code directly)
+
+  // ── Raw base64url exam code ──
   var ex3=decodeCode(data);
   if(ex3){showScannedExam(ex3);return;}
-  // 3) JSON fallback
+
+  // ── JSON fallback ──
   try{var ex4=JSON.parse(data);if(ex4&&ex4.qs){showScannedExam(ex4);return;}}catch(e){}
-  // Try as plain exam link with ?c= 
-  try{
-    var urlTry=new URL('https://x.com/?c='+data);
-    var ex5=decodeCode(data);
-    if(ex5){showScannedExam(ex5);return;}
-  }catch(e){}
-  $('camStatus').textContent='⚠️ لم يُقرأ الكود — الصق الكود النصي في الخانة أدناه';
-  toast('⚠️ QR غير صالح — جرب نسخ الكود من المعلم ولصقه','err');
+
+  $('camStatus').textContent='⚠️ لم يُقرأ الكود';
+  toast('⚠️ QR غير معروف','err');
+}
+
+function joinGroupByQR(groupData){
+  var gid=groupData.gid;
+  var name=groupData.name||'قروب';
+  // Add to my groups
+  var myGroups=getMyGroups();
+  if(myGroups.find(function(g){return g.id===gid;})){
+    toast('أنت عضو في هذا القروب بالفعل','err'); return;
+  }
+  myGroups.push({id:gid,name:name,createdBy:groupData.owner||'',joinedAt:Date.now()});
+  saveMyGroups(myGroups);
+  // Notify group of new member via Supabase
+  var payload={room:'grp_'+gid,name:userName,phone:userPhone,role:role||'s',
+    msg:JSON.stringify({type:'member_join',name:userName,phone:userPhone}),
+    img:null,ts:Date.now()};
+  sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
+  toast('✅ انضممت إلى '+name,'ok');
+  openGroupChat(gid,name);
 }
 function loadByCode(){
   var raw=($('codeInp').value||'').trim();
@@ -2308,37 +2448,39 @@ function startScannedExam(){if(!scannedExam)return;$('scanResult').style.display
 function loadCustomExam(exam){
   S.subj='c';
   S.examCode=exam.code||exam.title||('ex_'+Date.now());
-  S.qs=shuf((exam.qs||[]).map(function(q){return Object.assign({},q,{_g:false});}));
+  S.qs=(exam.qs||[]).map(function(q){return Object.assign({},q,{_g:false});});
   S.label='📋 '+exam.title;
   currentExam=exam;
   $('gTitle').textContent=S.label;
-  // Show finish button for custom exams
-  var fb=$('finishExamBtn');
-  if(fb) fb.style.display='inline-flex';
-  var si=$('stopInfBtn');
-  if(si) si.style.display='none';
+  // Exam mode: hide finish, hide stop infinite
+  var fb=$('finishExamBtn'); if(fb) fb.style.display='none';
+  var si=$('stopInfBtn'); if(si) si.style.display='none';
+  // Enable exam nav
+  examAnswers={};
+  examNavMode=true;
   resetPlay();
+  goScreen('gameScreen');
+  setTimeout(function(){ initExamNav(); loadQ(); },200);
 }
 function confirmFinishExam(){
-  if(!confirm('هل تريد إنهاء الامتحان؟\nسيتم احتساب درجتك على ما أجبت عليه.')) return;
-  clearInterval(S.timer);
-  S.answered=true; // prevent double-answer on current question
-  // Make sure session counters are correct
-  // totalQThisSession = questions answered so far (not skipped current)
-  // If student is on a question they haven't answered, don't count it
-  var answered = S.totalQThisSession || 0;
-  var correct  = S.totalQCorrectThisSession || 0;
-  // Override S values so showResults uses correct numbers
-  S.totalQThisSession = answered;
-  S.totalQCorrectThisSession = correct;
-  // Hide button
-  var fb=$('finishExamBtn');if(fb)fb.style.display='none';
-  showResults();
+  if(examNavMode){
+    var remaining = S.qs.length - Object.keys(examAnswers).length;
+    if(remaining > 0){
+      toast('⚠️ لا يزال '+remaining+' سؤال بدون إجابة', 'err');
+      // Jump to first unanswered
+      for(var i=0;i<S.qs.length;i++){
+        if(!examAnswers[i]){ goToQuestion(i); break; }
+      }
+      return;
+    }
+  }
+  if(confirm('هل أنت متأكد من إنهاء الامتحان؟')){
+    examNavMode = false;
+    var navBar = $('examNavBar');
+    if(navBar) navBar.style.display = 'none';
+    showResults();
+  }
 }
-
-// ══════════════════════════════════════════
-// TEACHER
-// ══════════════════════════════════════════
 function goCreate(){clearBuilder();addQ();goScreen('createExam');}
 function bankExam(){
   clearBuilder();$('exTitle').value='امتحان من بنك الأسئلة';
@@ -2772,17 +2914,19 @@ function toast(msg,type){
 // ══════════════════════════════════════════
 function resetPlay(){
   S.cur=0;S.score=0;S.correct=0;S.streak=0;S.answered=false;S.wrongs=[];
-  S.roundsCompleted=0; // how many full rounds done
-  S.totalQThisSession=0; // total questions answered this session
+  S.roundsCompleted=0;
+  S.totalQThisSession=0;
   S.totalQCorrectThisSession=0;
-  S.basePool=S.qs.slice(); // save original pool for infinite reshuffling
+  S.basePool=S.qs.slice();
   $('scVal').textContent='0';$('streakB').style.display='none';
-  goScreen('gameScreen');
   examActive=true;
-  // Show "stop" button only in infinite mode (not custom exams)
   var stopBtn=$('stopInfBtn');
   if(stopBtn) stopBtn.style.display=(S.subj==='c'?'none':'inline-flex');
-  loadQ();
+  // loadCustomExam handles goScreen + loadQ for exam mode
+  if(!examNavMode){
+    goScreen('gameScreen');
+    loadQ();
+  }
 }
 function shuf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function loadQ(){
@@ -2790,8 +2934,19 @@ function loadQ(){
   var isExam=(S.subj==='c');
   var skipBtn=document.querySelector('.skip-btn:not(#askTeacherBtn)');
   var askBtn=$('askTeacherBtn');
-  if(skipBtn) skipBtn.style.display=isExam?'none':'flex';
-  if(askBtn)  askBtn.style.display=isExam?'none':'flex';
+  if(skipBtn){
+    if(examNavMode){
+      // In exam nav mode: show skip as "انتقل للتالي"
+      skipBtn.style.display='flex';
+      skipBtn.textContent='⏭ السؤال التالي';
+    } else {
+      skipBtn.style.display=isExam?'none':'flex';
+      skipBtn.textContent='⏭ تخطي';
+    }
+  }
+  if(askBtn) askBtn.style.display=isExam?'none':'flex';
+  // Update nav bar
+  if(examNavMode) renderExamNav();
 
   // INFINITE MODE: when questions run out, reshuffle and continue (no results until manual stop)
   // But if it's a custom exam (teacher-made), play once through then show results
@@ -2960,30 +3115,67 @@ function updTimer(){
   el.className='tmr-v'+(t<=10?' hot':'');
 }
 function ansQ(idx,btn,q){
-  if(S.answered)return;S.answered=true;clearInterval(S.timer);
+  if(S.answered)return;
+  S.answered=true;
+  clearInterval(S.timer);
   document.querySelectorAll('.opt').forEach(function(o){o.classList.add('disabled');});
   S.totalQThisSession=(S.totalQThisSession||0)+1;
-  if(idx===q.a){
+  var isCorrect=(idx===q.a);
+
+  // ── Record answer for exam nav mode ──
+  if(examNavMode && !examAnswers[S.cur]){
+    examAnswers[S.cur] = {chosen:idx, correct:isCorrect, correct_idx:q.a};
+  }
+
+  if(isCorrect){
     btn.classList.add('correct');
     var pts=100+Math.max(0,Math.floor((S.timeLeft/30)*60))+(S.streak>=2?S.streak*10:0)-(S.hintUsed?5:0);
-    S.score+=pts;S.correct++;S.streak++;S.totalQCorrectThisSession=(S.totalQCorrectThisSession||0)+1;
-    showFb(true,'ممتاز! +'+pts);spawnP();updSc();updSt();
+    S.score+=pts; S.correct++; S.streak++;
+    S.totalQCorrectThisSession=(S.totalQCorrectThisSession||0)+1;
+    showFb(true,'ممتاز! +'+pts); spawnP(); updSc(); updSt();
     var vis=getExamVis();
-    if(vis.showExp && q.e){$('qExp').textContent='📖 '+q.e;$('qExp').style.color='#7ec8a0';$('qExp').classList.add('show');}
+    if(vis.showExp&&q.e){$('qExp').textContent='📖 '+q.e;$('qExp').style.color='#7ec8a0';$('qExp').classList.add('show');}
   } else {
     var qvis=getQVis(q);
     if(qvis) btn.classList.add('wrong');
-    if(qvis) document.querySelectorAll('.opt')[q.a].classList.add('correct');
-    S.wrongs.push({q:q.q,w:q.o[idx],c:q.o[q.a]});S.streak=0;updSt();
+    if(qvis && document.querySelectorAll('.opt')[q.a]) document.querySelectorAll('.opt')[q.a].classList.add('correct');
+    // Only add to wrongs if first time answering this question
+    if(!examNavMode || !examAnswers[S.cur] || examAnswers[S.cur].chosen===idx){
+      S.wrongs.push({q:q.q,w:q.o[idx],c:q.o[q.a]});
+    }
+    S.streak=0; updSt();
     showFb(false,qvis?'خطأ ❌':'تم التسجيل');
     var vis2=getExamVis();
-    if(vis2.showExp && q.e){$('qExp').textContent='📖 '+q.e;$('qExp').style.color='#e8b88a';$('qExp').classList.add('show');}
+    if(vis2.showExp&&q.e){$('qExp').textContent='📖 '+q.e;$('qExp').style.color='#e8b88a';$('qExp').classList.add('show');}
   }
-  // Update infinite progress bar text
+
   if(S.subj!=='c'){
     $('gProg').textContent='إجمالي: '+(S.totalQThisSession)+' سؤال ✦ '+(S.roundsCompleted||0)+' جولة';
   }
-  setTimeout(function(){S.cur++;loadQ();},2000);
+
+  if(examNavMode){
+    // Update nav bar buttons
+    setTimeout(function(){
+      renderExamNav();
+      // After 1.4s auto-jump to next unanswered
+      setTimeout(function(){
+        var next=-1;
+        for(var i=S.cur+1;i<S.qs.length;i++){if(!examAnswers[i]){next=i;break;}}
+        if(next===-1){for(var j=0;j<S.cur;j++){if(!examAnswers[j]){next=j;break;}}}
+        if(next!==-1){
+          goToQuestion(next);
+        } else {
+          // All done!
+          renderExamNav(); // refresh to show finish btn
+          toast('✅ أجبت على كل الأسئلة! يمكنك الآن الإنهاء','ok');
+          var finBtn=$('finishExamBtn');
+          if(finBtn){ finBtn.style.display='inline-flex'; }
+        }
+      },1400);
+    },200);
+  } else {
+    setTimeout(function(){S.cur++;loadQ();},2000);
+  }
 }
 function timeUp(){
   if(S.answered)return;S.answered=true;
@@ -2995,11 +3187,14 @@ function timeUp(){
 }
 function useHint(){if(S.hintUsed)return;S.hintUsed=true;$('qHint').classList.add('show');$('hintBtn').disabled=true;$('hintBtn').style.opacity='.5';}
 function skipQ(){
-  if(S.answered)return;S.answered=true;clearInterval(S.timer);
+  if(examNavMode){ skipQExam(); return; }
+  if(S.answered)return;
+  S.answered=true; clearInterval(S.timer);
   var q=S.qs[S.cur];
   document.querySelectorAll('.opt').forEach(function(o){o.classList.add('disabled');});
-  document.querySelectorAll('.opt')[q.a].classList.add('reveal');
-  S.wrongs.push({q:q.q,w:'(تخطيت)',c:q.o[q.a]});S.streak=0;updSt();
+  var opts=document.querySelectorAll('.opt');
+  if(opts[q.a]) opts[q.a].classList.add('reveal');
+  S.wrongs.push({q:q.q,w:'(تخطيت)',c:q.o[q.a]}); S.streak=0; updSt();
   setTimeout(function(){S.cur++;loadQ();},1400);
 }
 function updSc(){var e=$('scVal');e.textContent=S.score;e.classList.remove('bump');void e.offsetWidth;e.classList.add('bump');}
@@ -4895,8 +5090,9 @@ function initSocialFeatures(){
   if(cfg){
     startPresence();
     startFriendReqPoll();
+    pollGroupInvites();
+    setInterval(pollGroupNotifications, 15000);
   }
-  // Request notification permission
   requestNotifPermission();
 }
 
@@ -5062,37 +5258,945 @@ function setOffline(){
 // ══════════════════════════════════════════
 // SEND IMAGE IN PRIVATE CHAT
 // ══════════════════════════════════════════
+function compressAndSend(file, roomOrGroup, isGroup){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var src=e.target.result;
+    // Use createImageBitmap if available (avoids black canvas bug)
+    if(window.createImageBitmap){
+      createImageBitmap(file).then(function(bmp){
+        doCompress(bmp, bmp.width, bmp.height, src, roomOrGroup, isGroup, file.name||'صورة');
+      }).catch(function(){
+        fallbackCompress(src, roomOrGroup, isGroup, file.name||'صورة');
+      });
+    } else {
+      fallbackCompress(src, roomOrGroup, isGroup, file.name||'صورة');
+    }
+  };
+  reader.onerror=function(){toast('⚠️ تعذّر قراءة الملف','err');};
+  reader.readAsDataURL(file);
+}
+
+function fallbackCompress(src, roomOrGroup, isGroup, fname){
+  var img=new Image();
+  img.onload=function(){
+    var w=img.naturalWidth||img.width||100;
+    var h=img.naturalHeight||img.height||100;
+    doCompress(img, w, h, src, roomOrGroup, isGroup, fname);
+  };
+  img.onerror=function(){toast('⚠️ تعذّر تحميل الصورة','err');};
+  img.src=src;
+}
+
+function doCompress(source, w, h, originalSrc, roomOrGroup, isGroup, fname){
+  var maxD=700;
+  var scale=Math.min(1,maxD/Math.max(w,h));
+  var cw=Math.max(1,Math.round(w*scale));
+  var ch=Math.max(1,Math.round(h*scale));
+  var canvas=document.createElement('canvas');
+  canvas.width=cw; canvas.height=ch;
+  var ctx=canvas.getContext('2d');
+  ctx.drawImage(source,0,0,cw,ch);
+  var dataUrl=canvas.toDataURL('image/jpeg',0.7);
+  // If still too big, compress more
+  if(dataUrl.length>900000){
+    var c2=Math.round(cw*0.65), r2=Math.round(ch*0.65);
+    canvas.width=c2; canvas.height=r2;
+    ctx=canvas.getContext('2d');
+    ctx.drawImage(source,0,0,c2,r2);
+    dataUrl=canvas.toDataURL('image/jpeg',0.55);
+  }
+  var payload;
+  if(isGroup){
+    payload={room:roomOrGroup,name:userName,phone:userPhone,role:role||'s',
+      msg:'📷 صورة',img:dataUrl,ts:Date.now()};
+  } else {
+    payload={room:roomOrGroup,name:userName,phone:userPhone,role:role||'s',
+      msg:'',img:dataUrl,ts:Date.now()};
+    appendPcMsg(payload); scrollPcMsgs();
+  }
+  sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(r){
+      if(!r.ok){r.text().then(function(t){
+        console.error('img send:',r.status,t);
+        // If 413 too large, try with original but warn
+        toast('⚠️ الصورة كبيرة جداً — جرب صورة أصغر','err');
+      });}
+      else if(isGroup){appendGroupMsg(payload);scrollGroupMsgs();}
+    })
+    .catch(function(e){console.error('img send err:',e);toast('⚠️ تعذّر الإرسال','err');});
+}
+
 function sendPrivateImage(input){
   var file=input.files&&input.files[0]; if(!file) return;
   if(input) input.value='';
   if(!currentPcPhone){toast('افتح محادثة أولاً','err');return;}
-  toast('⏳ جاري رفع الصورة...','ok');
+  // Handle non-image files
+  if(!file.type.startsWith('image/')){
+    sendPrivateFile(file); return;
+  }
+  toast('⏳ جاري ضغط الصورة...','ok');
+  var room=pcRoomId(userPhone,currentPcPhone);
+  compressAndSend(file,room,false);
+}
+
+function sendPrivateFile(file){
+  // For non-image files: store as base64 with filename
   var reader=new FileReader();
   reader.onload=function(e){
-    var img=new Image();
-    img.onload=function(){
-      // Compress to max 800px
-      var maxW=800, maxH=800;
-      var w=img.width, h=img.height;
-      if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
-      if(h>maxH){w=Math.round(w*maxH/h);h=maxH;}
-      var canvas=document.createElement('canvas');
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      var dataUrl=canvas.toDataURL('image/jpeg',0.7);
-      var room=pcRoomId(userPhone,currentPcPhone);
-      var payload={room:room,name:userName,phone:userPhone,role:role||'s',
-        msg:'',img:dataUrl,ts:Date.now()};
-      appendPcMsg(payload); scrollPcMsgs();
-      sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
-        .then(function(r){
-          if(!r.ok) toast('⚠️ تعذّر إرسال الصورة','err');
-        })
-        .catch(function(){toast('⚠️ تعذّر إرسال الصورة','err');});
-    };
-    img.src=e.target.result;
+    var dataUrl=e.target.result;
+    if(dataUrl.length>800000){toast('⚠️ الملف كبير جداً (الحد 600KB)','err');return;}
+    var room=pcRoomId(userPhone,currentPcPhone);
+    var payload={room:room,name:userName,phone:userPhone,role:role||'s',
+      msg:'📎 '+file.name,img:dataUrl,ts:Date.now()};
+    appendPcMsg(payload); scrollPcMsgs();
+    sbSocial('messages',{method:'POST',body:JSON.stringify(payload)})
+      .catch(function(){toast('⚠️ تعذّر الإرسال','err');});
   };
   reader.readAsDataURL(file);
+}
+
+
+// ══════════════════════════════════════════
+// GROUPS SYSTEM
+// ══════════════════════════════════════════
+var currentGroupId=null, grpPollTimer=null, grpLastTs=0;
+
+// ── localStorage ──
+function getGroups(){
+  try{return JSON.parse(localStorage.getItem('y3_groups_'+userPhone)||'[]');}catch(e){return [];}
+}
+function saveGroups(arr){
+  try{localStorage.setItem('y3_groups_'+userPhone,JSON.stringify(arr));}catch(e){}
+}
+function getGroupById(id){
+  return getGroups().find(function(g){return g.id===id;})||null;
+}
+
+// ── Open/Close ──
+function openGroups(){
+  $('groupsOverlay').style.display='flex';
+  renderGroupsList();
+  // Also check for invites
+  pollGroupInvites();
+}
+function closeGroups(){$('groupsOverlay').style.display='none';}
+function closeCreateGroup(){$('createGroupOverlay').style.display='none';}
+function closeGroupChat(){
+  $('groupChatOverlay').style.display='none';
+  if(grpPollTimer){clearInterval(grpPollTimer);grpPollTimer=null;}
+  currentGroupId=null;
+}
+
+// ── Render groups list ──
+function renderGroupsList(){
+  var el=$('groupsList'); if(!el) return;
+  var groups=getGroups();
+  if(!groups.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text2);font-size:.85rem">'+
+      '<div style="font-size:2.5rem;margin-bottom:10px">👥</div>'+
+      'لا توجد قروبات بعد<br><small style="opacity:.6">أنشئ قروباً أو انضم بـ QR</small>'+
+      '<br><br><button onclick="scanToJoinGroup()" style="padding:9px 20px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.8rem;cursor:pointer">📷 انضم بـ QR</button></div>';
+    return;
+  }
+  el.innerHTML=groups.map(function(g){
+    var membCount=g.members?g.members.length:1;
+    return '<div data-gid="'+g.id+'" onclick="openGroupChat(this.dataset.gid)" style="display:flex;align-items:center;gap:12px;background:var(--bg3);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer;border:1px solid var(--border)">'+
+      '<div style="width:46px;height:46px;border-radius:50%;background:var(--geo2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0">👥</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:.9rem;font-weight:bold">'+safeHtml(g.name)+'</div>'+
+        '<div style="font-size:.65rem;color:var(--text2)">'+membCount+' عضو'+(g.unread?'<span style="background:var(--hist2);color:#fff;border-radius:10px;padding:1px 6px;font-size:.6rem;margin-right:6px">'+g.unread+'</span>':'')+'</div>'+
+      '</div>'+
+      '<div style="font-size:.7rem;color:var(--text2)">←</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── Create group ──
+function showCreateGroup(){
+  $('createGroupOverlay').style.display='flex';
+  $('groupNameInp').value='';
+  // Show contacts as member options
+  var picker=$('groupMemberPicker'); if(!picker) return;
+  var contacts=getContacts();
+  if(!contacts.length){
+    picker.innerHTML='<div style="color:var(--text2);font-size:.8rem">لا يوجد أصدقاء بعد — أضف أصدقاء أولاً</div>';
+    return;
+  }
+  picker.innerHTML=contacts.map(function(p){
+    var icon=p.role==='t'?'👨‍🏫':'👤';
+    return '<label style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:9px 12px;margin-bottom:6px;cursor:pointer">'+
+      '<input type="checkbox" class="grp-memb-chk" value="'+p.phone+'" data-name="'+safeHtml(p.name)+'" data-role="'+(p.role||'s')+'" style="width:18px;height:18px;cursor:pointer">'+
+      '<span style="font-size:1.1rem">'+icon+'</span>'+
+      '<span style="font-size:.85rem">'+safeHtml(p.name)+'</span>'+
+    '</label>';
+  }).join('');
+}
+
+function createGroup(){
+  var name=($('groupNameInp')||{}).value.trim();
+  if(!name||name.length<2){toast('أدخل اسماً للقروب','err');return;}
+  var checkboxes=document.querySelectorAll('.grp-memb-chk:checked');
+  var members=[{phone:userPhone,name:userName,role:role||'s'}];
+  checkboxes.forEach(function(ch){
+    members.push({phone:ch.value,name:ch.dataset.name||ch.value,role:ch.dataset.role||'s'});
+  });
+  var groupId='grp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  var group={id:groupId,name:name,members:members,createdBy:userPhone,createdAt:Date.now(),unread:0};
+  var groups=getGroups();
+  groups.push(group);
+  saveGroups(groups);
+  closeCreateGroup();
+  // Notify members via Supabase
+  members.forEach(function(m){
+    if(m.phone===userPhone) return;
+    var payload={room:'group_invite',name:userName,phone:userPhone,role:role||'s',
+      msg:JSON.stringify({type:'group_invite',groupId:groupId,groupName:name,
+        members:members,invitedPhone:m.phone,fromName:userName}),
+      img:null,ts:Date.now()};
+    sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
+  });
+  toast('✅ تم إنشاء القروب: '+name,'ok');
+  renderGroupsList();
+  setTimeout(function(){openGroupChat(groupId);},300);
+}
+
+// ── Poll group invites ──
+function pollGroupInvites(){
+  var since=Date.now()-86400000*7; // 7 days
+  sbSocial('messages?room=eq.group_invite&ts=gt.'+since+'&order=ts.asc&limit=100')
+    .then(function(r){return r.json();})
+    .then(function(msgs){
+      if(!msgs||!msgs.length) return;
+      var groups=getGroups();
+      var changed=false;
+      msgs.forEach(function(m){
+        try{
+          var data=JSON.parse(m.msg||'{}');
+          if(data.type==='group_invite'&&data.invitedPhone===userPhone){
+            var already=groups.find(function(g){return g.id===data.groupId;});
+            if(!already){
+              groups.push({id:data.groupId,name:data.groupName,members:data.members||[],
+                createdBy:m.phone,createdAt:m.ts||Date.now(),unread:0});
+              changed=true;
+              toast('📨 تمت إضافتك لقروب: '+data.groupName,'ok');
+              sendBrowserNotif('👥 تمت إضافتك لقروب',data.fromName+' أضافك لـ '+data.groupName);
+            }
+          }
+          if(data.type==='group_join'&&data.groupId){
+            // Update members list
+            var grp=groups.find(function(g){return g.id===data.groupId;});
+            if(grp&&data.member){
+              var alreadyM=grp.members.find(function(mb){return mb.phone===data.member.phone;});
+              if(!alreadyM){grp.members.push(data.member);changed=true;}
+            }
+          }
+        }catch(ex){}
+      });
+      if(changed){saveGroups(groups);renderGroupsList();}
+    }).catch(function(){});
+}
+
+// ── Open group chat ──
+function openGroupChat(groupId){
+  var group=getGroupById(groupId);
+  if(!group){toast('القروب غير موجود','err');return;}
+  currentGroupId=groupId;
+  // Clear unread
+  var groups=getGroups();
+  var g=groups.find(function(x){return x.id===groupId;});
+  if(g){g.unread=0;saveGroups(groups);}
+  $('grpChatName').textContent=group.name;
+  $('grpChatMembers').textContent=(group.members?group.members.length:0)+' عضو';
+  $('grpMsgs').innerHTML='<div style="text-align:center;padding:20px;color:var(--text2);font-size:.75rem">⏳ جاري التحميل...</div>';
+  $('groupChatOverlay').style.display='flex';
+  grpLastTs=0;
+  loadGroupMsgs();
+  if(grpPollTimer) clearInterval(grpPollTimer);
+  grpPollTimer=setInterval(pollGroupMsgs,3000);
+}
+
+function loadGroupMsgs(){
+  var room='grp_'+currentGroupId;
+  sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&order=ts.asc&limit=100')
+    .then(function(r){return r.json();})
+    .then(function(msgs){
+      $('grpMsgs').innerHTML='';
+      if(!msgs||!msgs.length){
+        $('grpMsgs').innerHTML='<div style="text-align:center;padding:30px;color:var(--text2);font-size:.8rem">لا رسائل بعد 👋</div>';
+      } else {
+        msgs.forEach(function(m){appendGroupMsg(m);});
+        grpLastTs=msgs[msgs.length-1].ts||0;
+      }
+      scrollGroupMsgs();
+    }).catch(function(){$('grpMsgs').innerHTML='<div style="text-align:center;padding:20px;color:var(--hist2);font-size:.8rem">⚠️ تعذّر التحميل</div>';});
+}
+
+function pollGroupMsgs(){
+  if(!currentGroupId) return;
+  var room='grp_'+currentGroupId;
+  sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&ts=gt.'+grpLastTs+'&order=ts.asc&limit=30')
+    .then(function(r){return r.json();})
+    .then(function(msgs){
+      if(!msgs||!msgs.length) return;
+      msgs.forEach(function(m){appendGroupMsg(m);});
+      grpLastTs=msgs[msgs.length-1].ts||grpLastTs;
+      scrollGroupMsgs();
+      var newFromOther=msgs.filter(function(m){return m.phone!==userPhone;});
+      if(newFromOther.length){
+        playMsgSound();
+        sendBrowserNotif('💬 '+getGroupById(currentGroupId).name, newFromOther[0].name+': '+(newFromOther[0].msg||'صورة').substring(0,50));
+      }
+    }).catch(function(){});
+}
+
+function appendGroupMsg(m){
+  var el=$('grpMsgs'); if(!el) return;
+  var isMe=m.phone===userPhone;
+  var div=document.createElement('div');
+  div.style.cssText='display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start');
+  var time=m.ts?new Date(typeof m.ts==='number'?m.ts:m.ts).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):'';
+  var bubbleBg=isMe?'var(--geo2)':'var(--bg3)';
+  var bubbleClr=isMe?'#fff':'var(--text)';
+  var bubbleR=isMe?'14px 14px 4px 14px':'14px 14px 14px 4px';
+  var nameTag=!isMe?'<div style="font-size:.65rem;color:var(--gold2);margin-bottom:3px;font-weight:bold">'+safeHtml(m.name||m.phone)+'</div>':'';
+  var content='';
+  if(m.img&&m.img.startsWith('data:')){
+    var mimeM=m.img.match(/^data:([^;]+)/);
+    var mime=mimeM?mimeM[1]:'';
+    if(mime.startsWith('image/')){
+      content='<img src="'+m.img+'" style="max-width:220px;max-height:220px;border-radius:10px;display:block;cursor:pointer" onclick="viewPcImg(this.src)" alt="صورة">';
+    } else {
+      var fname=m.msg&&m.msg.startsWith('📎 ')?m.msg.slice(3):'ملف';
+      content='<a href="'+m.img+'" download="'+safeHtml(fname)+'" style="display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none"><span style="font-size:1.3rem">📎</span><span style="font-size:.8rem;text-decoration:underline">'+safeHtml(fname)+'</span></a>';
+    }
+  } else {
+    content='<span style="font-size:.83rem;line-height:1.45;white-space:pre-wrap">'+safeHtml(m.msg||'')+'</span>';
+  }
+  div.innerHTML=nameTag+
+    '<div style="max-width:78%;background:'+bubbleBg+';color:'+bubbleClr+';border-radius:'+bubbleR+';padding:8px 12px;overflow:hidden">'+content+'</div>'+
+    '<div style="font-size:.58rem;color:var(--text2);margin-top:2px;padding:0 4px">'+time+'</div>';
+  el.appendChild(div);
+}
+
+function scrollGroupMsgs(){var el=$('grpMsgs');if(el)el.scrollTop=el.scrollHeight;}
+
+function sendGroupMsg(){
+  var inp=$('grpMsgInp');
+  var txt=(inp?inp.value:'').trim();
+  if(!txt||!currentGroupId) return;
+  var room='grp_'+currentGroupId;
+  var payload={room:room,name:userName,phone:userPhone,role:role||'s',msg:txt,img:null,ts:Date.now()};
+  if(inp) inp.value='';
+  appendGroupMsg(payload); scrollGroupMsgs();
+  sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){toast('⚠️ تعذّر الإرسال','err');});
+}
+
+function sendGroupFile(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  if(input) input.value='';
+  if(!currentGroupId){toast('افتح قروب أولاً','err');return;}
+  var room='grp_'+currentGroupId;
+  if(file.type.startsWith('image/')){
+    toast('⏳ جاري ضغط الصورة...','ok');
+    compressAndSend(file,room,true);
+  } else {
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var dataUrl=e.target.result;
+      if(dataUrl.length>800000){toast('⚠️ الملف كبير جداً','err');return;}
+      var payload={room:room,name:userName,phone:userPhone,role:role||'s',msg:'📎 '+file.name,img:dataUrl,ts:Date.now()};
+      appendGroupMsg(payload); scrollGroupMsgs();
+      sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){toast('⚠️ تعذّر الإرسال','err');});
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// ── Group Info & QR ──
+var _currentGrpCode='';
+function showGroupInfo(){
+  var group=getGroupById(currentGroupId); if(!group) return;
+  $('grpInfoName').textContent='👥 '+group.name;
+  // Generate QR
+  var code=btoa(JSON.stringify({type:'group_join',groupId:group.id,groupName:group.name}));
+  _currentGrpCode=code;
+  var qrDiv=$('grpQrDiv');
+  if(qrDiv){qrDiv.innerHTML='';generateQR(code,qrDiv);}
+  // Members
+  var membEl=$('grpInfoMembers');
+  if(membEl&&group.members){
+    membEl.innerHTML=group.members.map(function(m){
+      var icon=m.role==='t'?'👨‍🏫':'👤';
+      var isAdmin=m.phone===group.createdBy;
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">'+
+        '<span style="font-size:1.1rem">'+icon+'</span>'+
+        '<span style="flex:1;font-size:.83rem">'+safeHtml(m.name||m.phone)+(isAdmin?' 👑':'')+'</span>'+
+        (group.createdBy===userPhone&&m.phone!==userPhone?
+          '<button data-ph="'+m.phone+'" onclick="removeMemberFromGroup(this.dataset.ph)" style="font-size:.65rem;padding:3px 8px;border-radius:6px;border:none;background:rgba(231,76,60,.1);color:var(--hist2);cursor:pointer">إزالة</button>':'')+'</div>';
+    }).join('');
+  }
+  // Add members from contacts not in group
+  var addEl=$('grpAddMemberList');
+  if(addEl){
+    var existPhones=group.members?group.members.map(function(m){return m.phone;}):[];
+    var contactsNotIn=getContacts().filter(function(ct){return existPhones.indexOf(ct.phone)===-1;});
+    if(!contactsNotIn.length){addEl.innerHTML='<div style="color:var(--text2);font-size:.75rem">كل الأصدقاء موجودون في القروب</div>';}
+    else{
+      addEl.innerHTML=contactsNotIn.map(function(p){
+        return '<button data-ph="'+p.phone+'" data-nm="'+safeHtml(p.name)+'" data-rl="'+(p.role||'s')+'" '+
+          'onclick="addMemberToGroup(this.dataset.ph,this.dataset.nm,this.dataset.rl)" '+
+          'style="display:inline-flex;align-items:center;gap:6px;margin:3px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Tajawal,sans-serif;font-size:.75rem;cursor:pointer">'+
+          '➕ '+safeHtml(p.name)+'</button>';
+      }).join('');
+    }
+  }
+  $('groupInfoOverlay').style.display='flex';
+}
+
+function copyGrpCode(){
+  if(navigator.clipboard&&_currentGrpCode){
+    navigator.clipboard.writeText(_currentGrpCode).then(function(){toast('✅ تم نسخ الكود');}).catch(function(){});
+  }
+}
+
+function addMemberToGroup(phone,name,pRole){
+  var groups=getGroups();
+  var group=groups.find(function(g){return g.id===currentGroupId;});
+  if(!group) return;
+  if(group.members.find(function(m){return m.phone===phone;})){toast('هذا الشخص في القروب بالفعل','err');return;}
+  group.members.push({phone:phone,name:name,role:pRole||'s'});
+  saveGroups(groups);
+  // Notify via Supabase
+  var payload={room:'group_invite',name:userName,phone:userPhone,role:role||'s',
+    msg:JSON.stringify({type:'group_invite',groupId:group.id,groupName:group.name,
+      members:group.members,invitedPhone:phone,fromName:userName}),
+    img:null,ts:Date.now()};
+  sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
+  toast('✅ تمت إضافة '+name,'ok');
+  showGroupInfo(); // refresh
+}
+
+function removeMemberFromGroup(phone){
+  var groups=getGroups();
+  var group=groups.find(function(g){return g.id===currentGroupId;});
+  if(!group) return;
+  group.members=group.members.filter(function(m){return m.phone!==phone;});
+  saveGroups(groups);
+  toast('تمت إزالة العضو');
+  showGroupInfo();
+}
+
+function leaveGroup(groupId){
+  if(!confirm('هل تريد مغادرة القروب؟')) return;
+  var groups=getGroups().filter(function(g){return g.id!==groupId;});
+  saveGroups(groups);
+  $('groupInfoOverlay').style.display='none';
+  closeGroupChat();
+  toast('تمت المغادرة');
+  renderGroupsList();
+}
+
+// ── Scan QR to join group ──
+function scanToJoinGroup(){
+  // Use same friend scan camera
+  closeGroupChat();
+  $('groupInfoOverlay').style.display='none';
+  // Open friend scan with group handler
+  goProfile();
+  setTimeout(function(){
+    _grpScanMode=true;
+    startFriendScan();
+    $('friendScanStatus').textContent='📷 وجّه على QR القروب للانضمام';
+  },300);
+}
+var _grpScanMode=false;
+
+// ── Handle QR join ──  
+// Override handleFriendQRData to also handle group QR
+var _origHandleFriendQR=null;
+function handleAnyQR(data){
+  // Try group QR
+  try{
+    var decoded=JSON.parse(atob(data.replace(/-/g,'+').replace(/_/g,'/')));
+    if(decoded.type==='group_join'){
+      joinGroupByCode(decoded.groupId,decoded.groupName);
+      return;
+    }
+  }catch(e){}
+  // Try person QR
+  handleFriendQRData(data);
+}
+
+function joinGroupByCode(groupId,groupName){
+  var groups=getGroups();
+  var already=groups.find(function(g){return g.id===groupId;});
+  if(already){
+    toast('أنت في هذا القروب بالفعل','err');
+    openGroupChat(groupId); return;
+  }
+  // Fetch group members from Supabase invite
+  var since=Date.now()-86400000*30;
+  sbSocial('messages?room=eq.group_invite&ts=gt.'+since+'&order=ts.desc&limit=50')
+    .then(function(r){return r.json();})
+    .then(function(msgs){
+      var members=[{phone:userPhone,name:userName,role:role||'s'}];
+      if(msgs) msgs.forEach(function(m){
+        try{
+          var d=JSON.parse(m.msg||'{}');
+          if(d.groupId===groupId&&d.members) members=d.members;
+        }catch(e){}
+      });
+      // Add self if not in members
+      if(!members.find(function(m){return m.phone===userPhone;})){
+        members.push({phone:userPhone,name:userName,role:role||'s'});
+      }
+      var group={id:groupId,name:groupName||'قروب جديد',members:members,createdAt:Date.now(),unread:0};
+      groups.push(group);
+      saveGroups(groups);
+      // Notify group members
+      var payload={room:'group_invite',name:userName,phone:userPhone,role:role||'s',
+        msg:JSON.stringify({type:'group_join',groupId:groupId,member:{phone:userPhone,name:userName,role:role||'s'}}),
+        img:null,ts:Date.now()};
+      sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
+      toast('✅ انضممت للقروب: '+(groupName||''),'ok');
+      $('friendScanStatus').textContent='';
+      stopFriendScan();
+      openGroups();
+      setTimeout(function(){openGroupChat(groupId);},300);
+    }).catch(function(){
+      // Join anyway with minimal info
+      groups.push({id:groupId,name:groupName||'قروب جديد',members:[{phone:userPhone,name:userName,role:role||'s'}],createdAt:Date.now(),unread:0});
+      saveGroups(groups);
+      toast('✅ انضممت للقروب','ok');
+      openGroupChat(groupId);
+    });
+}
+
+// ── Update friend QR scan to handle groups too ──
+// Patch handleFriendQRData
+function handleFriendQRData(data){
+  // Try group QR first
+  try{
+    var dec=JSON.parse(atob(data.replace(/-/g,'+').replace(/_/g,'/')));
+    if(dec.type==='group_join'){
+      joinGroupByCode(dec.groupId,dec.groupName); return;
+    }
+  }catch(e){}
+  // Then person QR
+  var phone=null;
+  try{
+    var decoded=JSON.parse(decodeURIComponent(escape(atob(data.replace(/-/g,'+').replace(/_/g,'/')))));
+    if(decoded.p) phone=decoded.p;
+  }catch(ex){}
+  if(!phone){var raw=data.trim().replace(/\s/g,'');if(raw.match(/^[0-9+]{8,15}$/))phone=raw;}
+  if(phone){
+    $('friendScanStatus').textContent='✅ تم! جاري الإرسال...';
+    var inp=$('profAddPhone');if(inp)inp.value=phone;
+    var inp2=$('addPersonPhone');if(inp2)inp2.value=phone;
+    sendFriendRequest();
+    setTimeout(function(){$('friendScanStatus').textContent='';},3000);
+  } else {
+    $('friendScanStatus').textContent='⚠️ QR غير صالح';
+  }
+}
+
+// ── Poll for group messages notifications ──
+function pollGroupNotifications(){
+  var groups=getGroups();
+  if(!groups.length) return;
+  groups.forEach(function(g){
+    if(currentGroupId===g.id) return; // already in this chat
+    var room='grp_'+g.id;
+    var since=g.lastRead||Date.now()-3600000;
+    sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&ts=gt.'+since+'&order=ts.desc&limit=5')
+      .then(function(r){return r.json();})
+      .then(function(msgs){
+        if(!msgs||!msgs.length) return;
+        var newMsgs=msgs.filter(function(m){return m.phone!==userPhone;});
+        if(newMsgs.length){
+          var grpList=getGroups();
+          var grp=grpList.find(function(x){return x.id===g.id;});
+          if(grp){
+            grp.unread=(grp.unread||0)+newMsgs.length;
+            grp.lastRead=Date.now();
+            saveGroups(grpList);
+          }
+          sendBrowserNotif('💬 '+g.name,newMsgs[0].name+': '+(newMsgs[0].msg||'صورة').substring(0,50));
+          addNotifBadge(newMsgs.length);
+          if($('groupsOverlay').style.display==='flex') renderGroupsList();
+        }
+      }).catch(function(){});
+  });
+}
+
+
+// ══════════════════════════════════════════
+// PHYSICS QUESTION BANK (علمي علوم + علمي رياضة)
+// الوحدة الأولى: الكهربية التيارية والكهرومغناطيسية
+// الوحدة الثانية: مقدمة في الفيزياء الحديثة
+// ══════════════════════════════════════════
+var PQ = {
+// ═══ فصل 1: التيار الكهربي وقانون أوم وكيرشوف ═══
+1:[
+{q:'وحدة قياس المقاومة الكهربية هي...',o:['أمبير','فولت','أوم','واط'],a:2,h:'رمزها Ω',e:'المقاومة تُقاس بالأوم (Ω) تيمناً بالعالم جورج أوم.'},
+{q:'ينص قانون أوم على أن شدة التيار الكهربي في موصل...',o:['تتناسب طردياً مع مقاومته','تتناسب طردياً مع فرق الجهد وعكسياً مع المقاومة','تساوي حاصل ضرب الجهد في المقاومة','لا تتأثر بفرق الجهد'],a:1,h:'I = V/R',e:'قانون أوم: I = V/R أي شدة التيار = فرق الجهد ÷ المقاومة.'},
+{q:'مقاومتان قيمتيهما 4Ω و 6Ω وصّلتا على التوازي، المقاومة المكافئة...',o:['10 Ω','2.4 Ω','5 Ω','0.42 Ω'],a:1,h:'1/R = 1/R1 + 1/R2',e:'1/R = 1/4 + 1/6 = 5/12 → R = 12/5 = 2.4 Ω'},
+{q:'ينص قانون كيرشوف للجهود على أن مجموع فروق الجهد في أي حلقة مغلقة...',o:['يساوي قيمة المقاومة الكلية','يساوي صفراً','يساوي مجموع التيارات','يساوي القوة الدافعة فقط'],a:1,h:'قانون الحلقة المغلقة',e:'قانون كيرشوف الثاني: مجموع فروق الجهد في أي مسار مغلق = صفر.'},
+{q:'ينص قانون كيرشوف للتيارات على أن مجموع التيارات عند أي عقدة...',o:['يساوي قيمة الجهد','يساوي المقاومة الكلية','يساوي صفراً','يتضاعف'],a:2,h:'ΣI داخل = ΣI خارج',e:'مجموع التيارات الداخلة لأي عقدة = مجموع التيارات الخارجة منها.'},
+{q:'إذا كان فرق الجهد 12V والمقاومة 3Ω، فشدة التيار تساوي...',o:['4 A','36 A','0.25 A','9 A'],a:0,h:'I = V/R',e:'I = 12 ÷ 3 = 4 A'},
+{q:'مقاومتان 6Ω و 12Ω وُصّلتا على التوالي، المقاومة المكافئة...',o:['2 Ω','18 Ω','4 Ω','72 Ω'],a:1,h:'R = R1 + R2',e:'توصيل التوالي: R = 6 + 12 = 18 Ω'},
+{q:'القوة الدافعة الكهربية (ق.د.ك) لبطارية تُقاس بوحدة...',o:['أمبير','أوم','فولت','واط'],a:2,h:'مثلها مثل فرق الجهد',e:'القوة الدافعة الكهربية وحدتها الفولت (V) وهي الطاقة التي تعطيها البطارية لكل كولوم من الشحنات.'},
+{q:'في دائرة ذات ق.د.ك = 9V ومقاومة داخلية r=1Ω ومقاومة خارجية R=2Ω، شدة التيار...',o:['1 A','3 A','4.5 A','9 A'],a:1,h:'I = ε/(R+r)',e:'I = 9 ÷ (2+1) = 3 A'},
+{q:'القدرة الكهربية المستهلكة في مقاومة 4Ω يمر فيها تيار 3A تساوي...',o:['12 W','36 W','0.75 W','48 W'],a:1,h:'P = I²R',e:'P = (3)² × 4 = 9 × 4 = 36 W'},
+{q:'الطاقة الكهربية المستهلكة = ...',o:['P + t','P × t','P / t','P - t'],a:1,h:'E = Pt',e:'الطاقة الكهربية E = P × t = V × I × t وتُقاس بالجول.'},
+{q:'وحدة قياس القدرة الكهربية هي...',o:['جول','أمبير','واط','فولت'],a:2,h:'W = J/s',e:'القدرة الكهربية تُقاس بالواط (W) وهو جول في الثانية.'},
+{q:'مقاومة سلك كهربي تتناسب طردياً مع...',o:['مساحة مقطعه','طوله','درجة حرارة الوسط','سرعة الإلكترونات'],a:1,h:'R = ρL/A',e:'من قانون R = ρL/A المقاومة تتناسب طردياً مع الطول L.'},
+{q:'مقاومة سلك كهربي تتناسب عكسياً مع...',o:['طوله','مقاومته النوعية','مساحة مقطعه العرضي','درجة الحرارة'],a:2,h:'R = ρL/A',e:'من قانون R = ρL/A المقاومة تتناسب عكسياً مع مساحة المقطع A.'},
+{q:'إذا مرّ تيار 5A خلال موصل لمدة 4s، فالشحنة المارة خلاله تساوي...',o:['1.25 C','20 C','9 C','0.8 C'],a:1,h:'Q = I × t',e:'Q = I × t = 5 × 4 = 20 C'},
+{q:'الفولت يُعرَّف بأنه...',o:['أمبير × أوم','جول ÷ كولوم','كولوم ÷ أمبير','واط × ثانية'],a:1,h:'تعريف الجهد',e:'الفولت = جول / كولوم أي الطاقة المبذولة لنقل وحدة الشحنة.'},
+{q:'في توصيل التوازي تكون قيمة الجهد...',o:['مختلفة من فرع لآخر','متساوية على جميع الفروع','تتضاعف مع كل فرع','نصف الجهد الكلي'],a:1,h:'خاصية التوازي',e:'في التوصيل على التوازي الجهد على جميع الفروع متساوٍ ويساوي الجهد الكلي.'},
+{q:'في توصيل التوالي تكون قيمة التيار...',o:['مختلفة من مقاومة لأخرى','متساوية في جميع أجزاء الدائرة','تتضاعف مع كل مقاومة','صفراً'],a:1,h:'خاصية التوالي',e:'في التوصيل على التوالي التيار ثابت ومتساوٍ في جميع عناصر الدائرة.'},
+{q:'الجهد الكهربي بين طرفي بطارية ذات ق.د.ك ε ومقاومة داخلية r عند مرور تيار I هو...',o:['ε + Ir','ε - Ir','ε × Ir','ε / Ir'],a:1,h:'فرق الجهد = ق.د.ك - الهبوط الداخلي',e:'V = ε - I×r أي الجهد الخارجي = القوة الدافعة ناقص الهبوط في المقاومة الداخلية.'},
+{q:'عند تقصير الدائرة (ربط طرفي البطارية مباشرة) يكون التيار...',o:['صفراً','أقل ما يمكن','ε/r فقط','ε/R'],a:2,h:'R=0 → I=ε/r',e:'عند التقصير R=0 فيصبح I = ε/r وهذا التيار كبير وخطير.'},
+{q:'أي من التالي يُستخدم لقياس شدة التيار الكهربي؟',o:['الفولتميتر','الأوميتر','الأميتر','الغالفانومتر الحساس فقط'],a:2,h:'يوصَّل على التوالي',e:'الأميتر جهاز مقياس شدة التيار ويوصَّل دائماً على التوالي في الدائرة.'},
+{q:'يُوصَّل الفولتميتر في الدائرة الكهربية...',o:['على التوالي مع العنصر','على التوازي مع العنصر','في أي موضع','مع الأميتر دائماً'],a:1,h:'موازٍ للعنصر',e:'الفولتميتر يُوصَّل على التوازي مع العنصر المراد قياس الجهد عبره.'},
+{q:'الكيلوواط.ساعة (kWh) وحدة قياس...',o:['القدرة الكهربية','شدة التيار','الطاقة الكهربية','المقاومة'],a:2,h:'الوحدة التجارية للطاقة',e:'الكيلوواط.ساعة هي الوحدة التجارية لقياس الطاقة الكهربية (1 kWh = 3.6 × 10⁶ J).'},
+{q:'سلك مقاومته النوعية 2×10⁻⁸ Ω.m وطوله 5m ومساحة مقطعه 2×10⁻⁶ m²، مقاومته تساوي...',o:['0.1 Ω','0.05 Ω','0.2 Ω','4 Ω'],a:1,h:'R = ρL/A',e:'R = (2×10⁻⁸ × 5) / (2×10⁻⁶) = 10⁻⁷ / 2×10⁻⁶ = 0.05 Ω'},
+{q:'تأثير رفع درجة الحرارة على مقاومة المعادن...',o:['تقل المقاومة','ترتفع المقاومة','تبقى ثابتة','تتضاعف ثم تنعدم'],a:1,h:'اهتزازات الشبكة تزيد',e:'في المعادن: رفع الحرارة يزيد اهتزازات الأيونات الشبكية فيزيد تصادم الإلكترونات فترتفع المقاومة.'},
+{q:'في دائرة مكونة من 3 مقاومات متساوية كل منها 6Ω موصّلة على التوازي، المقاومة المكافئة...',o:['18 Ω','2 Ω','6 Ω','3 Ω'],a:1,h:'1/R = 3/6',e:'1/R = 1/6 + 1/6 + 1/6 = 3/6 → R = 2 Ω'},
+{q:'قانون جول للتسخين الكهربي ينص على أن الحرارة المتولدة...',o:['H = I²Rt','H = V²/Rt','H = IR/t','H = V/It'],a:0,h:'H = I²Rt',e:'قانون جول: H = I² × R × t تتناسب طردياً مع مربع شدة التيار والمقاومة والزمن.'},
+{q:'قيمة فرق الجهد بين طرفي مقاومة خارجية 5Ω يمر فيها تيار 2A...',o:['2.5 V','10 V','7 V','0.4 V'],a:1,h:'V = IR',e:'V = I × R = 2 × 5 = 10 V'},
+{q:'الشحنة الكهربية تُقاس بوحدة...',o:['أمبير','فولت','كولوم','واط'],a:2,h:'رمزها C',e:'وحدة الشحنة الكهربية هي الكولوم (C) تيمناً بالعالم شارل دو كولوم.'},
+{q:'إذا وُصّلت 4 مقاومات كل منها 8Ω على التوالي، المقاومة المكافئة...',o:['2 Ω','32 Ω','8 Ω','4 Ω'],a:1,h:'R = n × R1',e:'R = 4 × 8 = 32 Ω في توصيل التوالي.'},
+{q:'المقاومة الداخلية للبطارية تسبب...',o:['زيادة الجهد الكلي','هبوطاً في الجهد داخل البطارية','زيادة القدرة المفيدة','لا تأثير لها'],a:1,h:'V = ε - Ir',e:'المقاومة الداخلية تسبب هبوطاً في الجهد = I × r مما يقلل الجهد الخارجي المفيد.'}
+],
+// ═══ فصل 2: التأثير المغناطيسي للتيار وأجهزة القياس ═══
+2:[
+{q:'من اكتشف أن التيار الكهربي ينشئ مجالاً مغناطيسياً؟',o:['أمبير','فاراداي','أورستد','لنز'],a:2,h:'عالم دنماركي 1820م',e:'هانز كريستيان أورستد اكتشف عام 1820م أن السلك الحامل للتيار يؤثر على إبرة البوصلة.'},
+{q:'اتجاه المجال المغناطيسي حول سلك مستقيم يحمل تياراً يُحدَّد بـ...',o:['قاعدة اليد اليمنى','قاعدة فليمنج اليسرى','قاعدة لنز','قانون كيرشوف'],a:0,h:'الإبهام في اتجاه التيار',e:'قاعدة اليد اليمنى: الإبهام يشير لاتجاه التيار، وبقية الأصابع تشير لاتجاه المجال المغناطيسي.'},
+{q:'القوة المؤثرة على موصل طوله L يحمل تياراً I في مجال مغناطيسي B بزاوية θ...',o:['F = BIL/sinθ','F = BIL sinθ','F = B/(IL)','F = IL/B'],a:1,h:'قانون أمبير',e:'F = B × I × L × sinθ حيث θ الزاوية بين اتجاه التيار واتجاه المجال.'},
+{q:'القوة على موصل في مجال مغناطيسي تكون أعظمية عندما...',o:['السلك موازٍ للمجال','السلك عمودي على المجال','السلك بزاوية 45°','التيار صغير'],a:1,h:'sin90° = 1',e:'F = BIL sinθ، عند θ=90° يكون sinθ=1 فتكون القوة أعظمية.'},
+{q:'القوة على موصل في مجال مغناطيسي تكون صفراً عندما...',o:['السلك عمودي على المجال','السلك موازٍ للمجال','التيار كبير','المجال قوي'],a:1,h:'sin0° = 0',e:'F = BIL sinθ، عند θ=0° (موازٍ للمجال) يكون sinθ=0 فالقوة = صفر.'},
+{q:'وحدة قياس كثافة الفيض المغناطيسي B هي...',o:['أمبير','هنري','تسلا','ويبر'],a:2,h:'رمزها T',e:'كثافة الفيض المغناطيسي تُقاس بالتسلا (T) تيمناً بنيكولا تسلا.'},
+{q:'عزم الازدواج المؤثر على ملف يحمل تياراً في مجال مغناطيسي يُحسب بـ...',o:['τ = NIAB','τ = NIAB sinθ','τ = NIB/A','τ = NAB/I'],a:1,h:'يعتمد على الزاوية',e:'τ = N × I × A × B × sinθ حيث N عدد اللفات وA مساحة الملف.'},
+{q:'مبدأ عمل المحرك الكهربي هو تحويل...',o:['طاقة كهربية لحرارية','طاقة ميكانيكية لكهربية','طاقة كهربية لميكانيكية','طاقة كيميائية لكهربية'],a:2,h:'عكس المولد',e:'المحرك الكهربي يحوّل الطاقة الكهربية إلى طاقة ميكانيكية بتأثير المجال المغناطيسي على التيار.'},
+{q:'الجلفانومتر جهاز يُستخدم للكشف عن...',o:['فرق الجهد','المقاومة','التيارات الضعيفة جداً','الشحنة المخزنة'],a:2,h:'حساس جداً',e:'الجلفانومتر يكشف ويقيس التيارات الكهربية الضعيفة جداً ويعمل على مبدأ تأثير المجال على التيار.'},
+{q:'لتحويل الجلفانومتر إلى أميتر يُضاف له...',o:['مقاومة كبيرة على التوازي','مقاومة صغيرة (شنت) على التوازي','مقاومة كبيرة على التوالي','مكثف على التوازي'],a:1,h:'لتحمّل تيارات كبيرة',e:'يُضاف للجلفانومتر مقاومة صغيرة (شنت) على التوازي لتحمّل الجزء الأكبر من التيار.'},
+{q:'لتحويل الجلفانومتر إلى فولتميتر يُضاف له...',o:['مقاومة صغيرة على التوالي','مقاومة كبيرة على التوالي','مقاومة صغيرة على التوازي','مكثف'],a:1,h:'لقياس جهود عالية',e:'يُضاف للجلفانومتر مقاومة كبيرة على التوالي (مضاعف) ليتحمّل الجهود الكبيرة.'},
+{q:'القوة على جسيم شحنته q يتحرك بسرعة v في مجال مغناطيسي B (قوة لورنتز) = ...',o:['F = qvB sinθ','F = qvB/sinθ','F = q/(vB)','F = v/(qB)'],a:0,h:'قوة لورنتز',e:'قوة لورنتز: F = q × v × B × sinθ حيث θ الزاوية بين v و B.'},
+{q:'جسيم مشحون يدخل مجالاً مغناطيسياً عمودياً على اتجاه سرعته، يسير في مسار...',o:['مستقيم','مكافئ','دائري','لولبي فقط'],a:2,h:'القوة عمودية على السرعة دائماً',e:'قوة لورنتز عمودية على السرعة فلا تؤثر على السرعة بل تغير اتجاهها فيسير الجسيم في دائرة.'},
+{q:'في المحدد السرعوي (فلتر السرعة) تكون قوة المجال الكهربي = ...',o:['قوة لورنتز','مجموع القوتين','حاصل ضرب القوتين','الفرق بين القوتين'],a:0,h:'حالة الاتزان',e:'في المحدد السرعوي: qE = qvB، أي قوة المجال الكهربي = قوة المجال المغناطيسي، فيمر الجسيم بخط مستقيم.'},
+{q:'أي من التالي صحيح عن مقاومة الأميتر المثالي؟',o:['لا نهائية','مرتفعة جداً','صفر','مساوية للمقاومة الخارجية'],a:2,h:'حتى لا يؤثر على التيار',e:'مقاومة الأميتر المثالي = صفر حتى لا يغير قيمة التيار المراد قياسه.'},
+{q:'أي من التالي صحيح عن مقاومة الفولتميتر المثالي؟',o:['صفر','منخفضة جداً','لا نهائية','مساوية للمقاومة الخارجية'],a:2,h:'حتى لا يسحب تياراً',e:'مقاومة الفولتميتر المثالي = لا نهائية حتى لا يسحب تياراً يؤثر على قراءته.'},
+{q:'المجال المغناطيسي في مركز ملف دائري نصف قطره r يحمل تياراً I يساوي...',o:['B = μ₀I/(2r)','B = μ₀I/r','B = 2μ₀I/r','B = μ₀I/(4r)'],a:0,h:'B = μ₀I/2r',e:'المجال في مركز ملف دائري: B = μ₀I/(2r) حيث μ₀ = 4π×10⁻⁷ T.m/A.'},
+{q:'المجال المغناطيسي داخل ملف لولبي (سلينويد) يحمل تياراً I...',o:['B = μ₀nI','B = μ₀I/n','B = nI/μ₀','B = μ₀/nI'],a:0,h:'n = عدد اللفات لكل متر',e:'المجال داخل السلينويد: B = μ₀ × n × I حيث n عدد اللفات في وحدة الطول.'},
+{q:'القوة بين سلكين متوازيين يحملان تيارين بنفس الاتجاه...',o:['تنافرية','تجاذبية','معدومة','تتغير اتجاهها'],a:1,h:'التيارات المتوازية المتشابهة تتجاذب',e:'سلكان يحملان تيارين في نفس الاتجاه يتجاذبان، وإذا كانا في اتجاهين متعاكسين تنافرا.'},
+{q:'البوصلة في حضور سلك يحمل تياراً تنحرف لأن...',o:['الجهد الكهربي يحركها','المجال المغناطيسي المنشأ بالتيار يؤثر عليها','الحرارة تؤثر في المعدن','التيار يشحن الإبرة'],a:1,h:'اكتشاف أورستد',e:'التيار الكهربي ينشئ مجالاً مغناطيسياً يؤثر على إبرة البوصلة ويحرفها.'},
+{q:'وحدة الأمبير تُعرَّف بدلالة...',o:['المجال الكهربي','القوة بين سلكين متوازيين','الشحنة الكهربية','فرق الجهد'],a:1,h:'التعريف الأساسي للأمبير',e:'الأمبير يُعرَّف بأنه شدة التيار الذي إذا سرى في سلكين متوازيين طول كل منهم متر وبينهما متر، كانت القوة 2×10⁻⁷ N.'},
+{q:'لو أردنا مضاعفة المجال المغناطيسي داخل سلينويد مع ثبات كل العوامل الأخرى فنضاعف...',o:['طول السلينويد','شدة التيار المار فيه','قطره','مادة القلب'],a:1,h:'B = μ₀nI',e:'من B = μ₀nI عند ثبات n ومضاعفة I يتضاعف B.'},
+{q:'ما القوة الكهرومغناطيسية المؤثرة على جسيم شحنته 2×10⁻⁶ C يتحرك بسرعة 3×10⁴ m/s عمودياً على مجال 0.5T؟',o:['3×10⁻² N','0.03 N','30 mN','كل ما سبق صحيح'],a:3,h:'F = qvB',e:'F = q×v×B = 2×10⁻⁶ × 3×10⁴ × 0.5 = 0.03 N = 30 mN = 3×10⁻² N، كلها صحيحة.'}
+],
+// ═══ فصل 3: الحث الكهرومغناطيسي ═══
+3:[
+{q:'من اكتشف ظاهرة الحث الكهرومغناطيسي؟',o:['أورستد','أمبير','فاراداي','ماكسويل'],a:2,h:'عالم إنجليزي 1831م',e:'مايكل فاراداي اكتشف الحث الكهرومغناطيسي عام 1831م مستقلاً عن هنري الأمريكي.'},
+{q:'تنص قاعدة لنز على أن التيار المحثوث...',o:['يعزز التغير في الفيض','يعاكس التغير في الفيض الذي أحدثه','يتناسب مع المقاومة','يتناسب مع الجهد'],a:1,h:'مبدأ حفظ الطاقة',e:'قاعدة لنز: التيار المحثوث ينشئ مجالاً مغناطيسياً يعاكس التغير في الفيض (انعكاس قانون حفظ الطاقة).'},
+{q:'ينص قانون فاراداي على أن القوة الدافعة الكهربية المستحثة تساوي...',o:['معدل تغير كثافة المجال','معدل التغير السلبي في الفيض المغناطيسي','معدل تغير الجهد','معدل تغير التيار'],a:1,h:'ε = -ΔΦ/Δt',e:'قانون فاراداي: ε = -N(ΔΦ/Δt)، معدل التغير السالب للفيض عبر الملف.'},
+{q:'الفيض المغناطيسي Φ يُحسب بالقانون...',o:['Φ = B×A×sinθ','Φ = B×A×cosθ','Φ = B/A','Φ = A/B'],a:1,h:'θ بين B والعمود على السطح',e:'Φ = B × A × cosθ حيث θ الزاوية بين خطوط المجال والعمود على السطح، ووحدته الويبر (Wb).'},
+{q:'وحدة قياس الفيض المغناطيسي هي...',o:['تسلا','هنري','ويبر','فاراد'],a:2,h:'رمزها Wb',e:'الفيض المغناطيسي يُقاس بالويبر (Wb = T·m²).'},
+{q:'وحدة قياس الحث الذاتي هي...',o:['فاراد','هنري','تسلا','ويبر'],a:1,h:'رمزها H',e:'وحدة الحث الذاتي الهنري (H) تيمناً بالعالم جوزيف هنري.'},
+{q:'المحول الكهربي يعمل وفق مبدأ...',o:['قانون أوم','الحث المتبادل بين ملفين','قانون كيرشوف','التأثير الكهروضوئي'],a:1,h:'تغير الفيض يُحدث ق.د.ك',e:'المحول يعمل بالحث المتبادل؛ تغير التيار في الملف الأول يُنشئ فيضاً متغيراً يحثّ ق.د.ك في الملف الثاني.'},
+{q:'في محول كهربي V₁=220V وN₁=1000 لفة وN₂=500 لفة، قيمة V₂ تساوي...',o:['440 V','110 V','220 V','55 V'],a:1,h:'V₁/V₂ = N₁/N₂',e:'V₂ = V₁ × (N₂/N₁) = 220 × (500/1000) = 110 V. هذا محول خافض للجهد.'},
+{q:'المحول الرافع للجهد يكون فيه عدد لفات الثانوي...',o:['أقل من الأولي','مساوياً للأولي','أكبر من الأولي','لا علاقة له بالجهد'],a:2,h:'N₂ > N₁ → V₂ > V₁',e:'في المحول الرافع N₂ > N₁ فيكون V₂ > V₁ مع انخفاض في شدة التيار.'},
+{q:'المولد الكهربي يحول...',o:['كهربية لميكانيكية','ميكانيكية لكهربية','حرارية لكهربية','ضوئية لكهربية'],a:1,h:'عكس المحرك',e:'المولد يحوّل الطاقة الميكانيكية (الدوران) إلى طاقة كهربية بمبدأ الحث الكهرومغناطيسي.'},
+{q:'القوة الدافعة الكهربية المستحثة في سلك يتحرك بسرعة v في مجال B وطوله L...',o:['ε = BLv sinθ','ε = BLv/sinθ','ε = BL/v','ε = v/BL'],a:0,h:'ε = BLv عند θ=90°',e:'ε = B × L × v × sinθ، عند حركة السلك عمودياً على المجال sinθ=1 فـ ε = BLv.'},
+{q:'الحث الذاتي ظاهرة تحدث عندما...',o:['يتغير الجهد الخارجي','يتغير التيار في الدائرة فيُحدث ق.د.ك تعاكس التغير','تتوقف الدائرة','تزداد المقاومة'],a:1,h:'ε = -L(ΔI/Δt)',e:'الحث الذاتي: تغير التيار في الملف ينشئ فيضاً متغيراً يُحدث ق.د.ك مستحثة تعاكس التغير.'},
+{q:'معامل الحث الذاتي L لملف يعبّر عن...',o:['مقاومة الملف','قدرة الملف على مقاومة تغير التيار','سعة الملف','مساحة الملف'],a:1,h:'كلما زاد L زادت مقاومة التغير',e:'معامل الحث الذاتي L يقيس مقدرة الملف على مقاومة التغير في التيار الكهربي.'},
+{q:'الطاقة المخزنة في ملف حثي L يمر فيه تيار I تساوي...',o:['E = LI','E = ½LI²','E = L²I','E = LI²'],a:1,h:'مثل طاقة الحركة ½mv²',e:'الطاقة المخزنة في الملف: E = ½ × L × I²، تخزّن في شكل مجال مغناطيسي.'},
+{q:'محول مثالي: إذا رُفع الجهد الأولي لضعفيه مع ثبات عدد اللفات، فالتيار الثانوي...',o:['يتضاعف','يُنصَّف','يبقى ثابتاً','يُلغى'],a:0,h:'الطاقة محفوظة P₁ = P₂',e:'في المحول المثالي: V₁I₁ = V₂I₂، إذا تضاعف V₁ تضاعف I₂ مع ثبات N.'},
+{q:'لماذا تُنقَل الكهرباء عبر أسلاك نقل الطاقة بجهد مرتفع جداً؟',o:['لزيادة التيار','لتقليل الفقد في الحرارة (I²R)','لزيادة الحمل الكهربي','لرفع كفاءة المحول'],a:1,h:'P فقد = I²R',e:'رفع الجهد يقلل التيار (P=VI) وبما أن الفقد = I²R فتقليل I يقلل الفقد بشكل كبير.'},
+{q:'في تجربة فاراداي: عند إدخال مغناطيس في ملف، ينشأ تيار محثوث. هذا التيار يتوقف عند...',o:['إخراج المغناطيس','توقف حركة المغناطيس','تغيير المجال','تقليل عدد اللفات'],a:1,h:'التيار يحتاج لتغير الفيض',e:'التيار المحثوث يحتاج لتغير في الفيض المغناطيسي، فعند توقف المغناطيس يتوقف التيار.'}
+],
+// ═══ فصل 4: دوائر التيار المتردد ═══
+4:[
+{q:'التيار المتردد هو تيار...',o:['ثابت الاتجاه والقيمة','يتغير قيمته واتجاهه بشكل دوري','نبضي في اتجاه واحد','لا نهائي القيمة'],a:1,h:'AC = Alternating Current',e:'التيار المتردد (AC) تيار تتغير قيمته واتجاهه بشكل دوري (منحنى جيبي في الغالب).'},
+{q:'قيمة التيار الفعّال (RMS) إذا كانت القيمة العظمى I₀ = 10A تساوي...',o:['10 A','7.07 A','14.14 A','5 A'],a:1,h:'I_rms = I₀/√2',e:'I_rms = I₀/√2 = 10/1.414 ≈ 7.07 A. القيمة الفعالة هي القيمة المكافئة للتيار المستمر.'},
+{q:'في ملف نقي (مقاومة صفر) متصل بمصدر تيار متردد، العلاقة بين الجهد والتيار هي...',o:['الجهد يتأخر عن التيار بـ 90°','الجهد يتقدم على التيار بـ 90°','الجهد والتيار في طور واحد','الجهد يتقدم بـ 45°'],a:1,h:'خاصية الملف الحثي',e:'في الملف النقي: الجهد يتقدم على التيار بزاوية 90° (ربع دورة). الملف يقاوم تغير التيار.'},
+{q:'في مكثف نقي متصل بمصدر تيار متردد، العلاقة بين الجهد والتيار هي...',o:['الجهد يتقدم على التيار بـ 90°','الجهد يتأخر عن التيار بـ 90°','الجهد والتيار في طور واحد','الجهد يتأخر بـ 45°'],a:1,h:'خاصية المكثف',e:'في المكثف النقي: الجهد يتأخر عن التيار بزاوية 90°. المكثف يقاوم تغير الجهد.'},
+{q:'المفاعلة السعوية Xc للمكثف تُحسب بـ...',o:['Xc = ωC','Xc = 1/(ωC)','Xc = ωL','Xc = L/ω'],a:1,h:'f عالٍ → Xc صغير',e:'Xc = 1/(ω×C) = 1/(2πfC) وتُقاس بالأوم. تتناسب عكسياً مع التردد.'},
+{q:'المفاعلة الحثية XL للملف تُحسب بـ...',o:['XL = 1/(ωL)','XL = ωL','XL = L/R','XL = R/L'],a:1,h:'f عالٍ → XL كبير',e:'XL = ω×L = 2π×f×L وتُقاس بالأوم. تتناسب طردياً مع التردد والحث الذاتي.'},
+{q:'المعاوقة الكلية Z في دائرة RLC على التوالي تساوي...',o:['R + XL + XC','√(R² + (XL-XC)²)','R × XL × XC','XL + XC - R'],a:1,h:'معادلة بيتاغورس',e:'Z = √(R² + (XL - XC)²) وتُقاس بالأوم.'},
+{q:'الرنين الكهربي في دائرة RLC يحدث عندما...',o:['R = Z','XL = XC','Z = XL','R = 0'],a:1,h:'أصغر معاوقة',e:'الرنين يحدث عند XL = XC، وعندها Z = R (أدنى قيمة للمعاوقة) وأعلى قيمة للتيار.'},
+{q:'عند تردد الرنين في دائرة RLC، شدة التيار تكون...',o:['صفراً','أدنى ما يمكن','أعلى ما يمكن','ثابتة'],a:2,h:'Z = R فقط عند الرنين',e:'عند الرنين XL=XC فـ Z=R (الأدنى)، وبما أن I=V/Z يكون التيار أعلى ما يمكن.'},
+{q:'تردد الرنين f₀ في دائرة LC يساوي...',o:['f₀ = 2π√(LC)','f₀ = 1/(2π√(LC))','f₀ = √(LC)/2π','f₀ = 2π/LC'],a:1,h:'صيغة تومسون',e:'f₀ = 1/(2π√(LC)) وتُعرف بمعادلة تومسون لتردد الرنين الطبيعي للدائرة.'},
+{q:'الدائرة المهتزة (دائرة الرنين) تتكون من...',o:['R وC فقط','R وL فقط','L وC على التوازي','ثلاث مقاومات'],a:2,h:'دائرة LC',e:'دائرة الرنين المهتزة تتكون من ملف حثي L ومكثف C متوصلَين معاً (على التوازي عادةً).'},
+{q:'معامل الجودة Q لدائرة الرنين يعبّر عن...',o:['انخفاض التردد','حدة وانتقائية الرنين','مقدار الطاقة الكلية','مقاومة الدائرة'],a:1,h:'Q = XL/R عند الرنين',e:'Q = XL/R = ωL/R يعبّر عن حدة الرنين؛ كلما كبر Q كانت الدائرة أكثر انتقائية للتردد.'},
+{q:'جهد التيار المتردد المنزلي في مصر قيمته الفعالة...',o:['110 V','220 V','380 V','440 V'],a:1,h:'الجهد المنزلي المعتاد',e:'جهد التيار المتردد المنزلي في مصر والدول العربية هو 220V فعال بتردد 50 Hz.'},
+{q:'تردد التيار المتردد في مصر هو...',o:['25 Hz','60 Hz','50 Hz','100 Hz'],a:2,h:'معيار أوروبي',e:'تردد التيار المتردد في مصر ومعظم الدول العربية والأوروبية هو 50 Hz.'},
+{q:'إذا كانت المفاعلة الحثية XL=30Ω والمفاعلة السعوية XC=30Ω والمقاومة R=10Ω، فالمعاوقة Z تساوي...',o:['70 Ω','10 Ω','30 Ω','0 Ω'],a:1,h:'حالة الرنين',e:'Z = √(R²+(XL-XC)²) = √(10²+(30-30)²) = √(100+0) = 10 Ω. هذه حالة الرنين.'}
+],
+// ═══ فصل 5: ازدواجية الموجة والجسيم ═══
+5:[
+{q:'التأثير الكهروضوئي هو...',o:['انبعاث الضوء من المعدن عند تسخينه','انبعاث إلكترونات من سطح معدن بتأثير الضوء','انعكاس الضوء على المعدن','تأين الغاز بالضوء'],a:1,h:'اكتشفه هرتز 1887م',e:'التأثير الكهروضوئي: انبعاث إلكترونات من سطح معدن عند سقوط ضوء تردده أعلى من تردد العتبة.'},
+{q:'فسّر آينشتاين التأثير الكهروضوئي باقتراح أن الضوء يتكون من...',o:['موجات مستمرة','حزم طاقة متقطعة (فوتونات)','جسيمات مشحونة','موجات كهرومغناطيسية مستمرة فقط'],a:1,h:'نوبل 1921م',e:'آينشتاين 1905م: الضوء يتكون من كميات طاقة متقطعة تُسمى فوتونات، طاقة كل منها E = hf.'},
+{q:'طاقة الفوتون E تُحسب بالقانون...',o:['E = mc²','E = hf','E = ½mv²','E = qV'],a:1,h:'h ثابت بلانك = 6.63×10⁻³⁴ J.s',e:'طاقة الفوتون E = h × f حيث h ثابت بلانك وf تردد الضوء.'},
+{q:'ما المقصود بتردد العتبة في التأثير الكهروضوئي؟',o:['أعلى تردد في الطيف المرئي','أدنى تردد يستطيع إطلاق إلكترونات من المعدن','تردد الإلكترون المنبعث','تردد ضوء الليزر'],a:1,h:'يعتمد على طبيعة المعدن',e:'تردد العتبة f₀ هو أدنى تردد للضوء الساقط الذي يستطيع إطلاق إلكترونات. تحته لا ينبعث شيء.'},
+{q:'طاقة الإلكترون الحركية القصوى في التأثير الكهروضوئي تُحسب بـ...',o:['KE = hf','KE = hf₀','KE = hf - hf₀','KE = hf + hf₀'],a:2,h:'طاقة الفوتون - طاقة الانبعاث',e:'KE_max = hf - hf₀ = hf - W حيث W دالة الشغل (طاقة ربط الإلكترون بالمعدن).'},
+{q:'إشعاع الجسم الأسود: الجسم الأسود المثالي هو جسم يمتص...',o:['الضوء المرئي فقط','الأشعة تحت الحمراء فقط','كل الإشعاعات الكهرومغناطيسية الساقطة عليه','الحرارة فقط'],a:2,h:'امتصاص مثالي',e:'الجسم الأسود المثالي يمتص جميع الإشعاعات بجميع الأطوال الموجية ويعيد إصدارها حسب درجة حرارته.'},
+{q:'وضع ماكس بلانك فرضية الكم عام 1900م التي تقول...',o:['الطاقة تنبعث بشكل مستمر','الطاقة تنبعث على هيئة كميات متقطعة (كوانتا)','الإلكترونات موجات','المادة طاقة'],a:1,h:'نقطة تحول في الفيزياء',e:'بلانك 1900م: الطاقة لا تنبعث بشكل مستمر بل على شكل كميات متقطعة (كوانتا)، الواحدة = hf.'},
+{q:'تأثير كومبتون يُثبت أن الضوء له...',o:['طبيعة موجية فقط','طبيعة جسيمية (يمتلك زخماً)','طاقة كهربية','سرعة لا نهائية'],a:1,h:'اصطدام الفوتون بإلكترون',e:'كومبتون: تشتت الأشعة السينية بإلكترونات حرة مع زيادة طولها الموجي يثبت أن للفوتون زخماً p=h/λ.'},
+{q:'اقترح لويس دي بروي عام 1924م أن للمادة...',o:['شحنة كهربية مزدوجة','طبيعة موجية (طول موجي)','طاقة لا نهائية','سرعة ثابتة'],a:1,h:'ازدواجية موجة-جسيم للمادة',e:'دي بروي اقترح أن للمادة طبيعة موجية؛ الطول الموجي λ = h/(mv) = h/p.'},
+{q:'الطول الموجي لدي بروي لجسيم كتلته m وسرعته v يُحسب بـ...',o:['λ = mv/h','λ = h/(mv)','λ = hv/m','λ = m/(hv)'],a:1,h:'λ = h/p',e:'λ = h/p = h/(mv) حيث h ثابت بلانك وp الزخم الخطي للجسيم.'},
+{q:'المجهر الإلكتروني يستخدم مبدأ...',o:['الطول الموجي للضوء المرئي','الطبيعة الموجية للإلكترونات (دي بروي)','الأشعة السينية','الليزر'],a:1,h:'دقة عالية جداً',e:'المجهر الإلكتروني يستخدم الطبيعة الموجية للإلكترونات المتسارعة، وطولها الموجي أصغر بكثير من الضوء.'},
+{q:'في التأثير الكهروضوئي، زيادة شدة الضوء (مع ثبات التردد فوق العتبة) تؤدي إلى...',o:['زيادة طاقة كل إلكترون منبعث','لا تأثير على الإلكترونات','زيادة عدد الإلكترونات المنبعثة','توقف التأثير'],a:2,h:'شدة أعلى = فوتونات أكثر',e:'زيادة الشدة تعني عدداً أكبر من الفوتونات، فيزيد عدد الإلكترونات المنبعثة دون تغيير طاقة كل منها.'},
+{q:'جهد الإيقاف في التأثير الكهروضوئي هو...',o:['الجهد اللازم لإطلاق الإلكترون','الجهد الكافي لإيقاف أسرع الإلكترونات المنبعثة','الجهد اللازم لتسخين المعدن','جهد المصدر الضوئي'],a:1,h:'eV_s = KE_max',e:'جهد الإيقاف Vs هو الجهد الكافي لإيقاف أسرع الإلكترونات المنبعثة: e×Vs = KE_max.'},
+{q:'في تأثير كومبتون، الإلكترون المتشتت يكتسب...',o:['طاقة وزخماً من الفوتون','جزءاً من طاقة الفوتون وزخماً','لا شيء','شحنة سالبة إضافية'],a:1,h:'تحفظ الطاقة والزخم',e:'الفوتون يعطي جزءاً من طاقته وزخمه للإلكترون، ويستمر بطول موجي أطول وطاقة أقل.'},
+{q:'الازدواجية في فيزياء الكم تعني...',o:['وجود نوعين من الضوء','أن الضوء والمادة تُظهر خواص موجية وجسيمية','وجود إلكترونين لكل ذرة','تضاعف الطاقة'],a:1,h:'Wave-Particle Duality',e:'الازدواجية الموجية-الجسيمية: كل من الضوء والمادة يمكن أن تتصرف كموجة وكجسيم حسب التجربة.'}
+],
+// ═══ فصل 6: الأطياف الذرية ═══
+6:[
+{q:'نموذج بور للذرة يشبه مبدأ...',o:['الكهرومغناطيسية','المجموعة الشمسية','الديناميكا الحرارية','الكيمياء العضوية'],a:1,h:'الكواكب حول الشمس',e:'نموذج بور 1913م: الإلكترونات تدور في مدارات دائرية محددة حول النواة كالكواكب حول الشمس.'},
+{q:'وفق نموذج بور، الإلكترون يُصدر فوتوناً عندما...',o:['يدور في مداره الأساسي','ينتقل من مدار أعلى طاقة إلى مدار أقل','يصطدم بالنواة','يزداد سرعته'],a:1,h:'طاقة الفوتون = فرق الطاقتين',e:'انتقال الإلكترون من مدار طاقة عالية En لمدار أقل Em يُصدر فوتوناً طاقته E = hf = En - Em.'},
+{q:'طاقة مستويات الطاقة في ذرة الهيدروجين تُحسب بـ...',o:['En = -13.6/n² eV','En = 13.6/n eV','En = -13.6×n eV','En = -13.6×n² eV'],a:0,h:'n رقم المدار',e:'طاقة المستوى n: En = -13.6/n² بالإلكترون فولت. عند n=1: E₁=-13.6 eV (الحالة الأساسية).'},
+{q:'طاقة الإلكترون في المستوى الثالث (n=3) لذرة الهيدروجين تساوي...',o:['-13.6 eV','-3.4 eV','-1.51 eV','-0.85 eV'],a:2,h:'E = -13.6/n²',e:'E₃ = -13.6/3² = -13.6/9 ≈ -1.51 eV'},
+{q:'جهد تأين ذرة الهيدروجين من حالتها الأساسية يساوي...',o:['3.4 V','13.6 V','1.51 V','6.8 V'],a:1,h:'طاقة n=1 بالإلكترون فولت',e:'جهد التأين = 13.6 V لأن E₁ = -13.6 eV، الطاقة اللازمة لسحب الإلكترون من المستوى الأول.'},
+{q:'سلسلة بالمر في طيف الهيدروجين تتكون من خطوط في المنطقة...',o:['الأشعة فوق البنفسجية','المنطقة المرئية','الأشعة تحت الحمراء','الأشعة السينية'],a:1,h:'الانتقالات للمستوى n=2',e:'سلسلة بالمر: انتقالات الإلكترون من مستويات أعلى للمستوى n=2، تقع في المنطقة المرئية (الضوء الملون).'},
+{q:'سلسلة لايمان في طيف الهيدروجين تقع في منطقة...',o:['المرئية','فوق البنفسجية (UV)','تحت الحمراء','الأشعة السينية'],a:1,h:'الانتقالات للمستوى n=1',e:'سلسلة لايمان: انتقالات للمستوى الأول n=1، طاقتها عالية فتقع في منطقة الأشعة فوق البنفسجية.'},
+{q:'الطيف الخطي (المتقطع) لعنصر ما يُستخدم كـ...',o:['وحدة قياس الضوء','بصمة مميزة للعنصر','مصدر للطاقة','مقياس للمقاومة'],a:1,h:'التعرف على العناصر',e:'كل عنصر له طيف خطي فريد يُشبه بصمة الأصابع؛ يُستخدم لتحديد العناصر في النجوم والمختبرات.'},
+{q:'تجربة فرانك وهيرتز أثبتت...',o:['أن الضوء موجات','تكميم طاقة الذرة (الطاقة تُمتص بكميات محددة)','أن الإلكترون موجة','وجود النواة الذرية'],a:1,h:'1914م - تأكيد نموذج بور',e:'فرانك وهيرتز 1914م: الذرات تمتص طاقة الإلكترونات بمقادير محددة فقط، مؤكدةً تكميم الطاقة.'},
+{q:'طيف الامتصاص يحدث عندما...',o:['تُضاء ذرات الغاز','يمر ضوء أبيض خلال غاز بارد فيمتص الغاز أطوالاً موجية محددة','تنبعث إلكترونات من معدن','يسخن المعدن'],a:1,h:'عكس طيف الانبعاث',e:'طيف الامتصاص: ضوء أبيض يمر عبر غاز بارد فتمتص ذراته أطواله الموجية المميزة فتظهر خطوط سوداء.'},
+{q:'ما طاقة الفوتون المنبعث عند انتقال إلكترون في ذرة هيدروجين من n=3 إلى n=2؟',o:['1.89 eV','3.4 eV','1.51 eV','13.6 eV'],a:0,h:'ΔE = E3 - E2',e:'E₂=-3.4 eV، E₃=-1.51 eV، ΔE = E₃-E₂ = -1.51-(-3.4) = 1.89 eV. هذا خط بالمر الأحمر (Hα).'},
+{q:'في نموذج بور، كلما زاد رقم المدار n...',o:['قلّت طاقة الإلكترون','ازدادت طاقة الإلكترون (أصبحت أقل سالبية)','زادت جاذبية النواة للإلكترون','ثبتت الطاقة'],a:1,h:'E_n = -13.6/n²',e:'كلما زاد n كلما كانت En أقل سالبية (تقترب من الصفر) أي زادت الطاقة الكلية للإلكترون.'},
+{q:'الطاقة اللازمة لنقل إلكترون من المستوى الأول للمستوى الثاني في ذرة الهيدروجين...',o:['3.4 eV','10.2 eV','13.6 eV','1.89 eV'],a:1,h:'E₂-E₁ = -3.4-(-13.6)',e:'ΔE = E₂ - E₁ = -3.4 - (-13.6) = 10.2 eV. هذه أقل طاقة إثارة لذرة الهيدروجين.'}
+],
+// ═══ فصل 7: الليزر ═══
+7:[
+{q:'LASER اختصار لـ...',o:['Light Absorbed by Stimulated Electrons','Light Amplification by Stimulated Emission of Radiation','Laser Amplified Signal Energy','Light Automatic Stimulated Emission Rate'],a:1,h:'تضخيم الضوء بالانبعاث المستحث',e:'LASER = Light Amplification by Stimulated Emission of Radiation (تضخيم الضوء بالانبعاث المستحث).'},
+{q:'أهم خصائص ضوء الليزر أنه...',o:['أبيض اللون','أحادي اللون ومتماسك ومتوازٍ','متعدد الأطوال الموجية','دائماً في المنطقة المرئية فقط'],a:1,h:'Coherent + Monochromatic + Collimated',e:'ضوء الليزر: أحادي اللون (طول موجي واحد)، متماسك (الموجات في طور واحد)، ومتوازٍ جداً.'},
+{q:'الانبعاث المستحث (المحفوز) يعني...',o:['انبعاث الضوء من الذرة تلقائياً','فوتون ساقط يحفّز ذرة مثارة لانبعاث فوتون مطابق له','امتصاص الفوتون','انبعاث إلكترون'],a:1,h:'أساس مبدأ الليزر',e:'الانبعاث المستحث: فوتون يمر بذرة في حالة مثارة يُحفّزها لانبعاث فوتون مطابق له في التردد والطور والاتجاه.'},
+{q:'الانعكاس الكثافي (Population Inversion) في الليزر يعني...',o:['أن المرايا تعكس الضوء','عدد الذرات المثارة أكبر من عدد الذرات في الحالة الأساسية','أن الضوء ينعكس كلياً','تضاعف الطاقة'],a:1,h:'شرط أساسي للتضخيم',e:'الانعكاس الكثافي: حالة غير طبيعية يكون فيها عدد الذرات في المستوى المثار أكبر من المستوى الأساسي.'},
+{q:'المرنان الضوئي في الليزر يتكون من...',o:['ملفين كهربيين','مرآتين: إحداهما عاكسة تاماً والأخرى شبه عاكسة','مكثف وملف','عدستين محدبتين'],a:1,h:'لتضخيم الضوء',e:'المرنان الضوئي: مرآتان متقابلتان (إحداهما عاكسة 100% والأخرى 95-98%) تُسمح للضوء بالخروج من الجانب الأقل عكساً.'},
+{q:'الألياف الضوئية تعمل على مبدأ...',o:['الحيود','الانعكاس الكلي الداخلي','الانكسار الخارجي','التداخل'],a:1,h:'Total Internal Reflection',e:'الألياف الضوئية تعتمد على الانعكاس الكلي الداخلي؛ الضوء ينعكس داخل الليف دون خسارة ويصل لمسافات بعيدة.'},
+{q:'شرط الانعكاس الكلي الداخلي هو أن تكون زاوية السقوط...',o:['أصغر من الزاوية الحرجة','أكبر من الزاوية الحرجة','مساوية 45°','صفراً'],a:1,h:'θ > θ_c',e:'الانعكاس الكلي يحدث عندما تكون زاوية سقوط الضوء (من وسط أكثف لأخف) أكبر من الزاوية الحرجة.'},
+{q:'الليزر يُستخدم في الجراحة لأن...',o:['ضوءه أبيض','يمكن تركيز طاقته العالية على منطقة صغيرة جداً بدقة','إضاءته قوية','يُعقّم تلقائياً'],a:1,h:'دقة وتركيز الطاقة',e:'الليزر يُستخدم في الجراحة لأنه يُركّز طاقة عالية على مساحة صغيرة جداً بدقة متناهية.'},
+{q:'ليزر الروبي هو نوع من الليزر...',o:['الغازي','الصلب','شبه الموصل','الكيميائي'],a:1,h:'أول ليزر صُنع 1960م',e:'ليزر الروبي: من نوع الليزر الصلب، يستخدم بلورة الكورندوم (الياقوت)، أول ليزر صنعه ثيودور ميمان 1960م.'},
+{q:'تطبيقات الليزر الصناعية تشمل...',o:['القص فقط','القص واللحام والحفر والنقش بدقة عالية','الطلاء فقط','التبريد'],a:1,h:'الليزر CO₂',e:'الليزر يُستخدم صناعياً في القص واللحام والثقب والنقش بدقة عالية جداً ولا تلامسي.'},
+{q:'الليزر الغازي (He-Ne) يُصدر ضوءاً بلون...',o:['أزرق','أخضر','أحمر','أصفر'],a:2,h:'λ = 632.8 nm',e:'ليزر الهيليوم-نيون (He-Ne) يُصدر ضوءاً أحمر بطول موجي 632.8 nm، يُستخدم في الماسحات الضوئية.'},
+{q:'شبه الموصل المستخدم في ليزر الثنائي (Diode Laser) هو...',o:['السيليكون النقي','وصلة P-N من أشباه الموصلات','الجرمانيوم النقي','الكوارتز'],a:1,h:'ليزر صغير وفعّال',e:'ليزر الثنائي يعمل بوصلة P-N من أشباه الموصلات (GaAs مثلاً)، يُستخدم في الاتصالات والأقراص الضوئية.'}
+],
+// ═══ فصل 8: الإلكترونيات الحديثة ═══
+8:[
+{q:'أشباه الموصلات هي مواد...',o:['توصيلها عالٍ جداً','عازلة كهربياً تماماً','توصيلها بين الموصلات والعوازل','فائقة التوصيل عند الصفر المطلق'],a:2,h:'Si و Ge',e:'أشباه الموصلات (كالسيليكون والجرمانيوم) موصليتها بين الموصلات والعوازل وتعتمد على درجة الحرارة.'},
+{q:'يُعدّ السيليكون أكثر أشباه الموصلات استخداماً في الإلكترونيات لأن...',o:['مقاومته الطبيعية عالية','يُصنّع بنقاء عالٍ وكثير في الطبيعة وسهل التطعيم','لونه مميز','يمتص الأشعة فوق البنفسجية'],a:1,h:'رقمه الذري 14',e:'السيليكون متوفر بكثرة ويمكن تنقيته بدرجة عالية جداً ويتطعّم بسهولة وبتحكم دقيق.'},
+{q:'التطعيم (Doping) في أشباه الموصلات يُغرض منه...',o:['زيادة الكثافة','التحكم في الموصلية الكهربية','تغيير اللون','رفع نقطة الانصهار'],a:1,h:'إضافة شوائب محكومة',e:'التطعيم: إضافة كميات ضبط من الشوائب لزيادة عدد الإلكترونات الحرة (نوع N) أو الثقوب (نوع P).'},
+{q:'شبه الموصل نوع N (N-type) يتكون بإضافة عنصر...',o:['ثنائي التكافؤ','ثلاثي التكافؤ','خماسي التكافؤ','رباعي التكافؤ'],a:2,h:'يعطي إلكتروناً زائداً',e:'نوع N: يُطعَّم بعنصر خماسي التكافؤ (كالفوسفور) فيُعطي إلكتروناً حراً زائداً.'},
+{q:'شبه الموصل نوع P (P-type) يتكون بإضافة عنصر...',o:['خماسي التكافؤ','ثنائي التكافؤ','ثلاثي التكافؤ','سداسي التكافؤ'],a:2,h:'يُحدث ثقباً',e:'نوع P: يُطعَّم بعنصر ثلاثي التكافؤ (كالإنديوم أو البورون) فيُحدث ثقباً (نقصاً في الإلكترونات).'},
+{q:'الوصلة ثنائية القطب (P-N Junction / الديود) وظيفتها الأساسية...',o:['تضخيم الإشارات','تخزين الطاقة','تقويم التيار (السماح بمروره في اتجاه واحد)','قياس الجهد'],a:2,h:'Rectification',e:'الديود يسمح بمرور التيار في اتجاه واحد فقط (من P إلى N)، يُستخدم لتحويل التيار المتردد لمستمر.'},
+{q:'في الانحياز الأمامي للوصلة P-N...',o:['الوصلة تمنع التيار','حاجز الجهد يزيد','الوصلة تُمرّر تياراً كبيراً','الثقوب والإلكترونات تبتعد عن الوصلة'],a:2,h:'Forward Bias',e:'الانحياز الأمامي: P موجبة وN سالبة، فيُخفَض حاجز الجهد ويمر تيار كبير.'},
+{q:'في الانحياز العكسي للوصلة P-N...',o:['يمر تيار كبير','تُمرَّر الوصلة','يزيد حاجز الجهد ولا يمر سوى تيار ضعيف جداً','يتكسر الثنائي دائماً'],a:2,h:'Reverse Bias',e:'الانحياز العكسي: N موجبة وP سالبة، يزيد حاجز الجهد ولا يمر سوى تيار تسرب ضعيف جداً.'},
+{q:'الترانزستور ثنائي القطب (BJT) يتكون من...',o:['طبقتين: N وP','ثلاث طبقات: PNP أو NPN','أربع طبقات','طبقة واحدة'],a:1,h:'ثلاثة أطراف',e:'الترانزستور BJT يتكون من ثلاث طبقات من أشباه الموصلات: PNP أو NPN، وله ثلاثة أطراف.'},
+{q:'الأطراف الثلاثة للترانزستور هي...',o:['مصبّ وبوابة ومصدر','قاعدة وباعث وجامع','أنودة وكاثودة وشبكة','أولي وثانوي وتحكم'],a:1,h:'Base, Emitter, Collector',e:'الترانزستور BJT له ثلاثة أطراف: القاعدة (Base)، الباعث (Emitter)، والجامع (Collector).'},
+{q:'الترانزستور يُستخدم أساساً كـ...',o:['مخزن للطاقة','مضخّم للإشارات ومفتاح إلكتروني','مقاومة متغيرة فقط','مكثف متغير'],a:1,h:'تطبيقان رئيسيان',e:'الترانزستور يُستخدم: (1) لتضخيم الإشارات الكهربية الضعيفة، (2) كمفتاح إلكتروني في الدوائر الرقمية.'},
+{q:'البوابات المنطقية الأساسية في الإلكترونيات الرقمية هي...',o:['AND وOR فقط','AND وOR وNOT','NAND وNOR فقط','XOR وXNOR فقط'],a:1,h:'البوابات الأساسية الثلاث',e:'البوابات المنطقية الأساسية: AND (و)، OR (أو)، NOT (لا/عاكس). منها تتكون كل البوابات الأخرى.'},
+{q:'الإلكترونيات الرقمية تعتمد على نظام...',o:['العشري (0-9)','الثنائي (0 و1 فقط)','السداسي عشري','الثماني'],a:1,h:'Binary System',e:'الإلكترونيات الرقمية تتعامل مع إشارتين فقط: عالية=1 ومنخفضة=0 (نظام ثنائي).'},
+{q:'الثنائي الضوئي (LED) هو...',o:['مقاومة ضوئية','ثنائي قطب يُصدر ضوءاً عند تمرير تيار','مستشعر ضوئي','مصدر ليزر صغير'],a:1,h:'Light Emitting Diode',e:'LED: ثنائي قطب (وصلة P-N) يُصدر ضوءاً مرئياً أو غير مرئي عند مرور التيار في الاتجاه الأمامي.'},
+{q:'الفرق الرئيسي بين الترانزستور والصمام الإلكتروني...',o:['الترانزستور أكبر حجماً','الترانزستور أصغر وأوثوق وأقل استهلاكاً للطاقة','الصمام أدق في التضخيم','لا فرق جوهري'],a:1,h:'ثورة الإلكترونيات',e:'الترانزستور (1947م) ثوّر الإلكترونيات: أصغر حجماً، أطول عمراً، أقل استهلاكاً وأكثر موثوقية من الصمامات.'},
+{q:'الدائرة المتكاملة (Integrated Circuit - IC) هي...',o:['دائرة كبيرة الحجم','دوائر إلكترونية مصغّرة على رقاقة سيليكون واحدة','مجموعة ترانزستورات منفصلة','دائرة كهربية عادية'],a:1,h:'الميكروشيب',e:'الدائرة المتكاملة IC: آلاف أو ملايين المكونات الإلكترونية (ترانزستورات، مقاومات...) على رقاقة سيليكون صغيرة.'},
+{q:'الترانزستور ذو التأثير الحقلي MOSFET يتحكم فيه...',o:['التيار المباشر للقاعدة','جهد البوابة (Gate) الكهربي','المقاومة الداخلية فقط','شدة المجال المغناطيسي'],a:1,h:'Voltage-Controlled',e:'MOSFET: ترانزستور يتحكم فيه جهد البوابة Gate، استهلاكه للطاقة أقل من BJT ويُستخدم في الرقائق الإلكترونية.'},
+{q:'ما المقصود بالإلكترونيات التناظرية (Analog)؟',o:['تتعامل مع إشارات ثنائية','تتعامل مع إشارات مستمرة تأخذ قيماً لا نهائية','تعمل بالتيار المتردد فقط','تتعامل مع الأرقام فقط'],a:1,h:'صوت + فيديو + حساسات',e:'الإلكترونيات التناظرية تتعامل مع إشارات مستمرة (كالصوت والصورة) يمكنها أخذ أي قيمة.'}
+]
+};
+
+
+// ══════════════════════════════════════════
+// PHYSICS SYSTEM
+// ══════════════════════════════════════════
+var PM = [
+  {n:'الفصل 1: التيار الكهربي وقانون أوم وكيرشوف', s:'التيار • المقاومة • قوانين الدوائر', key:1},
+  {n:'الفصل 2: التأثير المغناطيسي للتيار الكهربي', s:'القوى المغناطيسية • الجلفانومتر • المحرك', key:2},
+  {n:'الفصل 3: الحث الكهرومغناطيسي', s:'فاراداي • لنز • المولد • المحول', key:3},
+  {n:'الفصل 4: دوائر التيار المتردد', s:'الرنين • المعاوقة • RLC', key:4},
+  {n:'الفصل 5: ازدواجية الموجة والجسيم', s:'الكهروضوء • الفوتون • دي بروي', key:5},
+  {n:'الفصل 6: الأطياف الذرية', s:'نموذج بور • الأطياف • التأين', key:6},
+  {n:'الفصل 7: الليزر', s:'الانبعاث المستحث • الألياف الضوئية', key:7},
+  {n:'الفصل 8: الإلكترونيات الحديثة', s:'أشباه الموصلات • الديود • الترانزستور', key:8}
+];
+
+function buildPhysList(){
+  var el=$('physList'); if(!el) return;
+  el.innerHTML='';
+  PM.forEach(function(ch,i){
+    var qArr=PQ[ch.key]||[];
+    var div=document.createElement('div');
+    div.className='ch-card ch-g';
+    div.onclick=(function(key,name){return function(){startPhysChap(key,name);};})(ch.key, ch.n);
+    div.innerHTML='<div class="ch-num" style="color:#9c27b0">'+(i+1)+'</div>'+
+      '<div class="ch-inf"><div class="ch-name">'+ch.n+'</div><div class="ch-sub">'+ch.s+'</div></div>'+
+      '<span class="ch-q" style="background:rgba(156,39,176,.1);color:#9c27b0">'+qArr.length+' س</span>';
+    el.appendChild(div);
+  });
+}
+
+function startPhysChap(key, name){
+  var pool=(PQ[key]||[]).map(function(q){return Object.assign({},q,{_p:true});});
+  if(!pool.length){toast('لا توجد أسئلة في هذا الفصل بعد','err');return;}
+  S.qs=shuf(pool.slice());
+  S.basePool=pool.slice();
+  S.cur=0;S.score=0;S.correct=0;S.streak=0;S.wrongs=[];
+  S.subj='p';S.label=name;
+  currentExam=null;
+  $('gTitle').textContent='⚡ '+name;
+  $('stopInfBtn').style.display='flex';
+  $('finishExamBtn').style.display='none';
+  goScreen('gameScreen');
+  loadQ();
+}
+
+function quickPhysExam(mode){
+  var pool=[];
+  Object.keys(PQ).forEach(function(k){
+    var arr=PQ[k];
+    if(mode==='unit1'&&parseInt(k)<=4) pool=pool.concat(arr);
+    else if(mode==='unit2'&&parseInt(k)>=5) pool=pool.concat(arr);
+    else if(mode==='all'||mode==='hard') pool=pool.concat(arr);
+  });
+  pool=pool.map(function(q){return Object.assign({},q,{_p:true});});
+  pool=shuf(pool);
+  if(mode==='hard') pool=pool.filter(function(q){return Math.random()<0.6;}).slice(0,20);
+  else pool=pool.slice(0,25);
+  if(!pool.length){toast('لا توجد أسئلة','err');return;}
+  S.qs=pool;S.basePool=pool.slice();
+  S.cur=0;S.score=0;S.correct=0;S.streak=0;S.wrongs=[];
+  S.subj='p';S.label='اختبار فيزياء';
+  currentExam=null;
+  $('gTitle').textContent='⚡ اختبار فيزياء';
+  $('stopInfBtn').style.display='flex';
+  $('finishExamBtn').style.display='none';
+  goScreen('gameScreen');
+  loadQ();
+}
+
+// ══════════════════════════════════════════
+// EXAM NAVIGATION (التنقل بين أسئلة الامتحان)
+// ══════════════════════════════════════════
+var examAnswers = {};   // {qIndex: {chosen, correct, correct_idx}}
+var examNavMode = false; // true only for teacher custom exams
+
+function initExamNav(){
+  examAnswers = {};
+  var navBar = $('examNavBar');
+  var navBtns = $('examNavBtns');
+  if(!navBar || !navBtns) return;
+  if(examNavMode){
+    navBar.style.display = 'block';
+    renderExamNav();
+  } else {
+    navBar.style.display = 'none';
+    if(navBtns) navBtns.innerHTML = '';
+  }
+}
+
+function renderExamNav(){
+  var navBtns = $('examNavBtns');
+  if(!navBtns || !examNavMode) return;
+  navBtns.innerHTML = '';
+  var allAnswered = true;
+  S.qs.forEach(function(q, i){
+    var btn = document.createElement('button');
+    var ans = examAnswers[i];
+    if(!ans) allAnswered = false;
+    var isCurrent = (i === S.cur);
+    var bg, border, color;
+    if(ans){
+      bg = ans.correct ? 'var(--green2)' : 'var(--hist2)';
+      border = ans.correct ? 'var(--green2)' : 'var(--hist2)';
+      color = '#fff';
+    } else if(isCurrent){
+      bg = 'rgba(33,150,243,.15)';
+      border = 'var(--geo2)';
+      color = 'var(--geo2)';
+    } else {
+      bg = 'var(--bg3)';
+      border = 'var(--border)';
+      color = 'var(--text2)';
+    }
+    btn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;'+
+      'min-width:30px;height:30px;padding:0 5px;border-radius:7px;'+
+      'border:2px solid '+border+';background:'+bg+';color:'+color+';'+
+      'font-size:.72rem;font-weight:700;cursor:pointer;margin:0 2px;'+
+      'font-family:Tajawal,sans-serif;transition:all .2s;flex-shrink:0;';
+    btn.textContent = i+1;
+    if(isCurrent) btn.style.transform = 'scale(1.12)';
+    btn.onclick = (function(idx){ return function(){ goToQuestion(idx); }; })(i);
+    navBtns.appendChild(btn);
+  });
+  // Show finish button ONLY when all answered
+  var finBtn = $('finishExamBtn');
+  if(finBtn) finBtn.style.display = allAnswered ? 'inline-flex' : 'none';
+}
+
+function goToQuestion(idx){
+  if(!examNavMode) return;
+  if(idx < 0 || idx >= S.qs.length) return;
+  clearInterval(S.timer);
+  S.cur = idx;
+  S.answered = false;
+  S.hintUsed = false;
+  loadQ();
+  // Re-apply answered visual state
+  var ans = examAnswers[idx];
+  if(ans){
+    S.answered = true;
+    clearInterval(S.timer);
+    var opts = document.querySelectorAll('.opt');
+    opts.forEach(function(o, i){
+      o.classList.add('disabled');
+      if(i === ans.chosen) o.classList.add(ans.correct ? 'correct' : 'wrong');
+      if(!ans.correct && i === ans.correct_idx) o.classList.add('correct');
+    });
+    // Show explanation if exists
+    var q = S.qs[idx];
+    var vis = getExamVis ? getExamVis() : {showExp:true};
+    if(vis.showExp && q.e){
+      var qExp = $('qExp');
+      if(qExp){
+        qExp.textContent = '📖 ' + q.e;
+        qExp.style.color = ans.correct ? '#7ec8a0' : '#e8b88a';
+        qExp.classList.add('show');
+      }
+    }
+  }
+  renderExamNav();
+  // Scroll nav to current button
+  var navBtns = $('examNavBtns');
+  var navBar = $('examNavBar');
+  if(navBtns && navBar){
+    var btn = navBtns.children[idx];
+    if(btn) navBar.scrollLeft = btn.offsetLeft - navBar.offsetWidth/2 + btn.offsetWidth/2;
+  }
+}
+
+function skipQExam(){
+  // In exam mode: jump to next unanswered question
+  var nextIdx = -1;
+  // Search forward first
+  for(var i = S.cur + 1; i < S.qs.length; i++){
+    if(!examAnswers[i]){ nextIdx = i; break; }
+  }
+  // Then wrap around
+  if(nextIdx === -1){
+    for(var j = 0; j < S.cur; j++){
+      if(!examAnswers[j]){ nextIdx = j; break; }
+    }
+  }
+  if(nextIdx !== -1){
+    goToQuestion(nextIdx);
+    toast('⏭ انتقلت للسؤال ' + (nextIdx+1), 'ok');
+  } else {
+    toast('✅ كل الأسئلة تمت الإجابة عليها — يمكنك الإنهاء', 'ok');
+    var finBtn = $('finishExamBtn');
+    if(finBtn){ finBtn.style.display='inline-flex'; finBtn.style.animation='bump .4s'; }
+  }
 }
 
 // ══════════════════════════════════════════
@@ -5794,10 +6898,20 @@ function appendPcMsg(m){
   var bubbleR=isMe?'14px 14px 4px 14px':'14px 14px 14px 4px';
   var content='';
   if(m.img&&m.img.startsWith('data:')){
-    // Image message
-    content='<img src="'+m.img+'" style="max-width:200px;max-height:200px;border-radius:10px;display:block;cursor:pointer" '+
-      'onclick="viewPcImg(this.src)" alt="صورة">';
-    if(m.msg) content+='<div style="font-size:.82rem;margin-top:5px;padding:0 2px">'+safeHtml(m.msg)+'</div>';
+    var mimeMatch=m.img.match(/^data:([^;]+)/);
+    var mime=mimeMatch?mimeMatch[1]:'';
+    if(mime.startsWith('image/')){
+      // Image message
+      content='<img src="'+m.img+'" style="max-width:220px;max-height:220px;border-radius:10px;display:block;cursor:pointer" '+
+        'onclick="viewPcImg(this.src)" alt="صورة">';
+      if(m.msg&&m.msg!=='📷 صورة') content+='<div style="font-size:.82rem;margin-top:5px;padding:0 2px">'+safeHtml(m.msg)+'</div>';
+    } else {
+      // File download
+      var fname=m.msg&&m.msg.startsWith('📎 ')?m.msg.slice(3):'ملف';
+      content='<a href="'+m.img+'" download="'+safeHtml(fname)+'" style="display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none">'+
+        '<span style="font-size:1.3rem">📎</span><span style="font-size:.8rem;text-decoration:underline">'+safeHtml(fname)+'</span></a>';
+    }
+    if(m.msg&&!m.msg.startsWith('📎')&&!m.msg.startsWith('📷')) content+='<div style="font-size:.82rem;margin-top:5px;padding:0 2px">'+safeHtml(m.msg)+'</div>';
     div.innerHTML='<div style="max-width:75%;background:'+bubbleBg+';color:'+bubbleClr+';'+
       'border-radius:'+bubbleR+';padding:7px;overflow:hidden">'+content+'</div>'+
       '<div style="font-size:.58rem;color:var(--text2);margin-top:2px;padding:0 4px">'+time+'</div>';
@@ -5919,6 +7033,78 @@ CREATE POLICY "open" ON messages
 </div>
 
 
+<!-- ══ GROUPS LIST OVERLAY ══ -->
+<div id="groupsOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9980;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border)">
+    <button onclick="closeGroups()" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:.9rem">←</button>
+    <div style="flex:1;font-size:.95rem;font-weight:bold">👥 القروبات</div>
+    <button onclick="showCreateGroup()" style="padding:7px 14px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.8rem;cursor:pointer">+ إنشاء</button>
+  </div>
+  <div id="groupsList" style="flex:1;overflow-y:auto;padding:12px"></div>
+</div>
+
+<!-- ══ CREATE GROUP OVERLAY ══ -->
+<div id="createGroupOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9982;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border)">
+    <button onclick="closeCreateGroup()" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:.9rem">←</button>
+    <div style="flex:1;font-size:.95rem;font-weight:bold">➕ إنشاء قروب جديد</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:14px">
+    <input class="inp" id="groupNameInp" placeholder="اسم القروب..." style="margin-bottom:10px">
+    <div style="font-size:.78rem;color:var(--text2);margin-bottom:8px">أضف أعضاء من أصدقائك:</div>
+    <div id="groupMemberPicker" style="margin-bottom:14px"></div>
+    <button onclick="createGroup()" style="width:100%;padding:12px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.9rem;font-weight:bold;cursor:pointer">✅ إنشاء القروب</button>
+  </div>
+</div>
+
+<!-- ══ GROUP CHAT OVERLAY ══ -->
+<div id="groupChatOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9985;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border)">
+    <button onclick="closeGroupChat()" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:.9rem">←</button>
+    <div id="grpChatIcon" style="width:38px;height:38px;border-radius:50%;background:var(--geo2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">👥</div>
+    <div style="flex:1">
+      <div id="grpChatName" style="font-size:.9rem;font-weight:bold"></div>
+      <div id="grpChatMembers" style="font-size:.62rem;color:var(--text2)"></div>
+    </div>
+    <button onclick="showGroupInfo()" style="background:var(--bg3);border:none;border-radius:8px;padding:6px 10px;color:var(--text2);cursor:pointer;font-size:.8rem">⚙️</button>
+  </div>
+  <div id="grpMsgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px"></div>
+  <div style="padding:10px 12px;background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:7px;align-items:flex-end">
+    <label style="padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:1rem;flex-shrink:0" title="إرسال ملف/صورة">
+      📎<input type="file" accept="*/*" style="display:none" onchange="sendGroupFile(this)">
+    </label>
+    <input id="grpMsgInp" class="inp" placeholder="اكتب رسالة..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendGroupMsg()">
+    <button onclick="sendGroupMsg()" style="padding:10px 14px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.85rem;cursor:pointer;flex-shrink:0">إرسال</button>
+  </div>
+</div>
+
+<!-- ══ GROUP INFO OVERLAY ══ -->
+<div id="groupInfoOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9988;align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div id="grpInfoName" style="font-size:1rem;font-weight:bold"></div>
+      <button onclick="$('groupInfoOverlay').style.display='none'" style="background:var(--bg3);border:none;border-radius:8px;padding:5px 10px;color:var(--text);cursor:pointer">✕</button>
+    </div>
+    <!-- QR for group -->
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:.75rem;color:var(--text2);margin-bottom:8px">🔗 QR للانضمام للقروب</div>
+      <div id="grpQrDiv" style="margin:0 auto;width:fit-content"></div>
+      <button onclick="copyGrpCode()" style="margin-top:8px;padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.75rem;cursor:pointer">📋 نسخ الكود</button>
+    </div>
+    <!-- Scan to join -->
+    <div style="margin-bottom:14px">
+      <button onclick="scanToJoinGroup()" style="width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border);background:var(--bg3);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.8rem;cursor:pointer">📷 مسح QR للانضمام لقروب</button>
+    </div>
+    <div style="font-size:.75rem;color:var(--text2);margin-bottom:8px">الأعضاء:</div>
+    <div id="grpInfoMembers"></div>
+    <div style="margin-top:14px">
+      <div style="font-size:.75rem;color:var(--text2);margin-bottom:6px">إضافة عضو من الأصدقاء:</div>
+      <div id="grpAddMemberList"></div>
+    </div>
+    <button onclick="leaveGroup(currentGroupId)" style="width:100%;margin-top:14px;padding:10px;border-radius:10px;border:none;background:rgba(231,76,60,.1);color:var(--hist2);font-family:Tajawal,sans-serif;font-size:.85rem;cursor:pointer">🚪 مغادرة القروب</button>
+  </div>
+</div>
+
 <!-- ══ PRIVATE CHAT OVERLAY ══ -->
 <div id="privateChatOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9990;flex-direction:column">
   <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border)">
@@ -5935,9 +7121,9 @@ CREATE POLICY "open" ON messages
   </div>
   <div id="pcMsgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px"></div>
   <div style="padding:10px 12px;background:var(--bg2);border-top:1px solid var(--border);display:flex;gap:7px;align-items:flex-end">
-    <label style="padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:1rem;flex-shrink:0" title="إرسال صورة">
-      🖼️
-      <input type="file" accept="image/*" style="display:none" onchange="sendPrivateImage(this)">
+    <label style="padding:9px 11px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;font-size:1rem;flex-shrink:0" title="إرسال ملف/صورة">
+      📎
+      <input type="file" accept="*/*" style="display:none" onchange="sendPrivateImage(this)">
     </label>
     <input id="pcMsgInp" class="inp" placeholder="اكتب رسالة..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendPrivateMsg()">
     <button onclick="sendPrivateMsg()" style="padding:10px 14px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.85rem;cursor:pointer;flex-shrink:0">إرسال</button>
