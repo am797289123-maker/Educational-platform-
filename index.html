@@ -817,7 +817,55 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
   </div>
 </div>
 
-<div class="set-section" id="exportSection" style="display:none">
+<!-- Notification Settings -->
+    <div class="set-section" id="notifSettingsSection">
+      <div class="set-hd">🔔 إعدادات الإشعارات</div>
+      <div class="set-row" style="margin-bottom:10px">
+        <div><div class="set-lbl">تفعيل الإشعارات</div><div class="set-sub">إشعارات الرسائل والطلبات</div></div>
+        <button id="notifMasterTog" onclick="toggleNotifMaster()" style="padding:5px 14px;border-radius:20px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.1);color:#27ae60;font-family:Tajawal,sans-serif;font-size:.72rem;font-weight:700;cursor:pointer">✅ مفعّل</button>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:.78rem;font-weight:bold">📬 الطلبات والرسائل</div>
+          <button onclick="toggleNotifEvent('inputRequired')" id="tog_inputRequired" style="padding:3px 12px;border-radius:15px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.1);color:#27ae60;font-family:Tajawal,sans-serif;font-size:.68rem;cursor:pointer">✅ مفعّل</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:.7rem;color:var(--text2)">الصوت:</span>
+          <button onclick="setNotifSound('inputRequired','system')" style="padding:2px 10px;border-radius:10px;border:1px solid rgba(33,150,243,.4);background:rgba(33,150,243,.12);color:var(--geo2);font-family:Tajawal,sans-serif;font-size:.65rem;cursor:pointer">🔊 نظام</button>
+          <button onclick="testNotifSound('inputRequired')" style="padding:2px 10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.65rem;cursor:pointer">▶ تجربة</button>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:.78rem;font-weight:bold">🎉 إتمام المهام</div>
+          <button onclick="toggleNotifEvent('taskComplete')" id="tog_taskComplete" style="padding:3px 12px;border-radius:15px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.1);color:#27ae60;font-family:Tajawal,sans-serif;font-size:.68rem;cursor:pointer">✅ مفعّل</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:.7rem;color:var(--text2)">الصوت:</span>
+          <button onclick="setNotifSound('taskComplete','system')" style="padding:2px 10px;border-radius:10px;border:1px solid rgba(33,150,243,.4);background:rgba(33,150,243,.12);color:var(--geo2);font-family:Tajawal,sans-serif;font-size:.65rem;cursor:pointer">🔊 نظام</button>
+          <button onclick="testNotifSound('taskComplete')" style="padding:2px 10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.65rem;cursor:pointer">▶ تجربة</button>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:10px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div style="font-size:.78rem;font-weight:bold">⏰ تنبيه عدم النشاط</div>
+          <button onclick="toggleNotifEvent('idleAlert')" id="tog_idleAlert" style="padding:3px 12px;border-radius:15px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.68rem;cursor:pointer">⭕ معطّل</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:.7rem;color:var(--text2)">بعد:</span>
+          <select id="idleTimeoutSel" onchange="setIdleTimeout(this.value)" style="padding:3px 8px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:Tajawal,sans-serif;font-size:.68rem">
+            <option value="30">30 ثانية</option>
+            <option value="60" selected>دقيقة</option>
+            <option value="120">دقيقتان</option>
+            <option value="300">5 دقائق</option>
+          </select>
+          <button onclick="testNotifSound('idleAlert')" style="padding:2px 10px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.65rem;cursor:pointer">▶ تجربة</button>
+        </div>
+      </div>
+      <button onclick="requestNotifPermission();toast('✅ تم طلب إذن الإشعارات','ok')" style="width:100%;padding:9px;border-radius:10px;border:1px solid rgba(33,150,243,.3);background:rgba(33,150,243,.08);color:var(--geo2);font-family:Tajawal,sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:4px">🔔 اطلب إذن الإشعارات</button>
+    </div>
+
+    <div class="set-section" id="exportSection" style="display:none">
       <div class="set-hd">💾 بياناتي</div>
       <div class="set-row">
         <div><div class="set-lbl">تصدير بياناتك</div><div class="set-sub">إحصائيات، سجل الجلسات، اختباراتك</div></div>
@@ -873,7 +921,13 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
       <div class="rl-stat"><div class="rl-stat-v" id="rlAvg">—</div><div class="rl-stat-l">متوسط</div></div>
       <div class="rl-stat"><div class="rl-stat-v" id="rlTop">—</div><div class="rl-stat-l">أعلى</div></div>
     </div>
+    <!-- Tabs: Results | Participants -->
+    <div style="display:none;gap:6px;margin-bottom:10px" id="rlTabsBox">
+      <button id="rlTabResults" onclick="switchRlTab('results')" style="flex:1;padding:8px;border-radius:10px;border:1px solid rgba(39,174,96,.4);background:rgba(39,174,96,.12);color:var(--green2);font-family:Tajawal,sans-serif;font-size:.78rem;font-weight:700;cursor:pointer">📊 نتائج الطلاب</button>
+      <button id="rlTabPartic" onclick="switchRlTab('partic')" style="flex:1;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-family:Tajawal,sans-serif;font-size:.78rem;font-weight:700;cursor:pointer">👥 الداخلون</button>
+    </div>
     <div id="rlList"></div>
+    <div id="rlParticList" style="display:none"></div>
   </div>
 </div>
 
@@ -1434,13 +1488,6 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
     </div>
 
     <!-- Participants List -->
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:.82rem;font-weight:700;color:var(--text3)">👥 من دخل الامتحان</div>
-        <button onclick="renderParticipants(currentExam)" style="padding:3px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:.65rem;cursor:pointer;font-family:Tajawal,sans-serif">🔄 تحديث</button>
-      </div>
-      <div id="participantsList"><div style="text-align:center;padding:12px;color:var(--text3);font-size:.75rem">لا يوجد طلاب دخلوا بعد</div></div>
-    </div>
 
     <div class="qr-btns">
       <button class="btn-copy" onclick="shareExam()" style="background:linear-gradient(135deg,rgba(39,174,96,.15),rgba(39,174,96,.05));border-color:rgba(39,174,96,.3);color:#27ae60;font-size:.92rem;padding:14px">📤 مشاركة واتساب / تيليجرام</button>
@@ -2763,9 +2810,15 @@ function loadByCode(){
   toast('❌ كود غير صحيح — تأكد من نسخ الكود الطويل كاملاً','err');
 }
 function showScannedExam(exam){
+  // Check if exam is closed
+  if(exam.examOpen===false){
+    toast('🔒 هذا الامتحان مغلق حالياً — انتظر المعلم يفتحه','err');
+    return;
+  }
   scannedExam=exam;
   var title=exam.title||'امتحان';
-  var meta=(exam.qs?exam.qs.length:0)+' سؤال • '+(exam.timeLimit||30)+' ث للسؤال';
+  var durTxt=exam.examDuration>0?' • ⏱ '+(exam.examDuration<60?exam.examDuration+'د':(Math.floor(exam.examDuration/60)+'س'+(exam.examDuration%60?Math.floor(exam.examDuration%60)+'د':''))):'';
+  var meta=(exam.qs?exam.qs.length:0)+' سؤال • '+(exam.timeLimit||30)+' ث للسؤال'+durTxt;
   // Update small result div
   $('srName').textContent=title;
   $('srMeta').textContent=meta;
@@ -2773,9 +2826,14 @@ function showScannedExam(exam){
   el.style.cssText='display:block!important;margin-top:13px;background:rgba(39,174,96,.09);border:1px solid rgba(39,174,96,.25);border-radius:12px;padding:16px;';
   // Show popup overlay
   $('popupExamName').textContent=title;
-  $('popupExamMeta').textContent=meta;
+  $('popupExamMeta').textContent=meta+(exam.refSheet?' 📖':'');
   var popup=$('examFoundPopup');
   popup.style.display='flex';
+  // Pre-fill entry form if logged in
+  var ni=$('entryName'),pi=$('entryPhone');
+  if(ni&&userName&&userName!=='زائر') ni.value=userName;
+  if(pi&&userPhone&&userPhone!=='guest') pi.value=userPhone;
+  updateEntryBtn();
 }
 function closeExamPopup(){
   var popup=$('examFoundPopup');
@@ -3229,8 +3287,7 @@ function buildQrScreen(exam){
     openBtn.style.color=isOpen?'#27ae60':'var(--hist2)';
     openBtn.style.borderColor=isOpen?'rgba(39,174,96,.3)':'rgba(192,57,43,.3)';
   }
-  // Render participants
-  setTimeout(function(){renderParticipants(exam);},100);
+
   $('examCodeShort').textContent=exam.code.substring(0,32)+'...';
   $('examCodeLong').textContent=exam.code;
   var link=exam.link||buildExamLink(exam);
@@ -3868,14 +3925,95 @@ function openResultsPicker(){
   goScreen('resultsListScreen');
 }
 
+var _currentRlExam=null;
+function switchRlTab(tab){
+  var rtBtn=$('rlTabResults'),rpBtn=$('rlTabPartic');
+  var rlL=$('rlList'),rlP=$('rlParticList');
+  if(tab==='results'){
+    if(rtBtn){rtBtn.style.background='rgba(39,174,96,.12)';rtBtn.style.color='var(--green2)';rtBtn.style.borderColor='rgba(39,174,96,.4)';}
+    if(rpBtn){rpBtn.style.background='var(--bg3)';rpBtn.style.color='var(--text2)';rpBtn.style.borderColor='var(--border)';}
+    if(rlL)rlL.style.display='block';
+    if(rlP)rlP.style.display='none';
+  } else {
+    if(rpBtn){rpBtn.style.background='rgba(33,150,243,.12)';rpBtn.style.color='var(--geo2)';rpBtn.style.borderColor='rgba(33,150,243,.4)';}
+    if(rtBtn){rtBtn.style.background='var(--bg3)';rtBtn.style.color='var(--text2)';rtBtn.style.borderColor='var(--border)';}
+    if(rlL)rlL.style.display='none';
+    if(rlP){rlP.style.display='block';renderRlParticipants(_currentRlExam);}
+  }
+}
+
+function callStudent(phone, name){
+  if(!phone) return;
+  var clean=phone.replace(/[^0-9+]/g,'');
+  // Show call options
+  var opts='<div style="text-align:center;padding:8px">'+
+    '<div style="font-size:.9rem;font-weight:bold;margin-bottom:12px">📞 '+safeHtml(name||phone)+'</div>'+
+    '<div style="display:flex;gap:8px;justify-content:center">'+
+      '<a href="tel:'+clean+'" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;background:rgba(39,174,96,.12);border:1px solid rgba(39,174,96,.3);border-radius:12px;text-decoration:none;color:#27ae60">'+
+        '<span style="font-size:1.5rem">📞</span><span style="font-size:.7rem;font-weight:bold">مكالمة هاتفية</span></a>'+
+      '<a href="https://wa.me/'+clean+'" target="_blank" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);border-radius:12px;text-decoration:none;color:#25d366">'+
+        '<span style="font-size:1.5rem">💬</span><span style="font-size:.7rem;font-weight:bold">واتساب</span></a>'+
+      '<a href="facetime:'+clean+'" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;background:rgba(33,150,243,.12);border:1px solid rgba(33,150,243,.3);border-radius:12px;text-decoration:none;color:var(--geo2)">'+
+        '<span style="font-size:1.5rem">📹</span><span style="font-size:.7rem;font-weight:bold">فيديو</span></a>'+
+    '</div>'+
+  '</div>';
+  showPopup('اتصل بـ '+safeHtml(name||'الطالب'), opts);
+}
+
+function renderRlParticipants(exam){
+  var el=$('rlParticList'); if(!el) return;
+  if(!exam){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3)">اختر اختباراً أولاً</div>';return;}
+  el.innerHTML='<div style="text-align:center;padding:10px;color:var(--text3);font-size:.75rem">⏳ جاري التحميل...</div>';
+  var examKey=exam.code||exam.title||'exam';
+  var room='exam_p_'+examKey.substring(0,40);
+  function displayList(list){
+    if(!list.length){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3)">لا يوجد طلاب دخلوا بعد</div>';return;}
+    var html='<div style="font-size:.72rem;color:var(--text2);margin-bottom:8px">'+list.length+' طالب دخل الامتحان</div>';
+    list.forEach(function(p,i){
+      var nm=safeHtml(p.name||p.msg||'طالب');
+      var ph=p.phone||'';
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:10px;margin-bottom:6px">'+
+        '<div style="width:26px;height:26px;border-radius:50%;background:rgba(33,150,243,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:bold;color:var(--geo2)">'+(i+1)+'</div>'+
+        '<div style="flex:1"><div style="font-size:.8rem;font-weight:bold">'+nm+'</div>'+
+        '<div style="font-size:.65rem;color:var(--text2)">'+ph+(p.group&&p.group!=='—'?' • '+safeHtml(p.group):'')+'</div></div>'+
+        '<div style="font-size:.6rem;color:var(--text3);margin-left:4px">'+(p.joinedAt||new Date(p.ts||Date.now()).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}))+'</div>'+
+        (ph?'<button data-ph="'+ph+'" data-nm="'+nm+'" onclick="callStudent(this.dataset.ph,this.dataset.nm)" style="padding:4px 8px;border-radius:8px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.08);color:#27ae60;font-size:.7rem;cursor:pointer;font-family:Tajawal,sans-serif">📞</button>':'')+
+      '</div>';
+    });
+    el.innerHTML=html;
+  }
+  var lkey='y3_participants_'+examKey;
+  var local=[];
+  try{local=JSON.parse(localStorage.getItem(lkey)||'[]');}catch(e){}
+  if(local.length)displayList(local);
+  if(!IS_LOCAL){
+    var cfg=chatCfg||loadChatConfig();
+    if(cfg){
+      sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&order=ts.asc&limit=200')
+        .then(function(r){return r.json();})
+        .then(function(msgs){
+          if(!msgs||!Array.isArray(msgs))return;
+          var seen={};var list=[];
+          msgs.forEach(function(m){if(!seen[m.phone]){seen[m.phone]=true;list.push(m);}});
+          local.forEach(function(lp){if(!seen[lp.phone]){seen[lp.phone]=true;list.push(lp);}});
+          displayList(list);
+        }).catch(function(){if(!local.length)displayList([]);});
+    }
+  }
+}
+
 function openResultsForExam(i){
   var ex=savedExams[i];if(!ex)return;
+  _currentRlExam=ex;
   var code=ex.code||ex.title;
   var results=loadExamResults(code);
   $('rlChooseExam').style.display='none';
   $('rlExamNameBox').style.display='block';
   $('rlExamNameBox').textContent='📝 '+ex.title;
   $('rlExamTitle').textContent=ex.title;
+  // Show tabs
+  var tabsBox=$('rlTabsBox');if(tabsBox)tabsBox.style.display='flex';
+  switchRlTab('results');
   // Summary stats
   $('rlTotal').textContent=results.length;
   if(results.length){
@@ -4501,17 +4639,27 @@ function stuView(phone){
     }
   }catch(e){}
   // Build popup
+  // Compute stats from exam results too
+  var totalFromExams=0, correctFromExams=0;
+  examResults.forEach(function(r){totalFromExams+=(r.total||0);correctFromExams+=(r.correct||0);});
+  var totalQ=Math.max(s.totalQ||0, totalFromExams);
+  var totalCorrect=Math.max(s.totalCorrect||0, correctFromExams);
+  var acc2=totalQ>0?Math.round(totalCorrect/totalQ*100):0;
   var html='<div style="padding:4px">' +
     '<div style="font-size:1rem;font-weight:bold;margin-bottom:4px">👤 '+s.name+'</div>' +
     '<div style="font-size:.8rem;color:var(--text2);margin-bottom:12px">📱 '+s.phone+'</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">' +
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px">' +
       '<div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">' +
-        '<div style="font-size:1.1rem;font-weight:bold">'+acc+'%</div>' +
-        '<div style="font-size:.65rem;color:var(--text2)">الدقة الكلية</div>' +
+        '<div style="font-size:1rem;font-weight:bold">'+acc2+'%</div>' +
+        '<div style="font-size:.62rem;color:var(--text2)">الدقة</div>' +
       '</div>' +
       '<div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">' +
-        '<div style="font-size:1.1rem;font-weight:bold">'+(s.totalQ||0)+'</div>' +
-        '<div style="font-size:.65rem;color:var(--text2)">إجمالي الأسئلة</div>' +
+        '<div style="font-size:1rem;font-weight:bold">'+examResults.length+'</div>' +
+        '<div style="font-size:.62rem;color:var(--text2)">اختبارات</div>' +
+      '</div>' +
+      '<div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center">' +
+        '<div style="font-size:1rem;font-weight:bold">'+totalQ+'</div>' +
+        '<div style="font-size:.62rem;color:var(--text2)">أسئلة</div>' +
       '</div>' +
     '</div>';
   if(examResults.length){
@@ -4535,6 +4683,15 @@ function stuView(phone){
   }
   if(s.banned) html+='<div style="margin-top:10px;color:var(--hist2);font-size:.75rem">🚫 محظور منذ: '+s.bannedAt+'</div>';
   html+='<div style="font-size:.65rem;color:var(--text2);margin-top:8px">آخر ظهور: '+s.lastSeen+'</div>';
+  // Call buttons
+  var clean=(s.phone||'').replace(/[^0-9+]/g,'');
+  if(clean){
+    html+='<div style="display:flex;gap:8px;margin-top:12px">'+
+      '<a href="tel:'+clean+'" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:11px;text-decoration:none;color:#27ae60;font-size:.78rem;font-weight:bold">📞 مكالمة</a>'+
+      '<a href="https://wa.me/'+clean+'" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);border-radius:11px;text-decoration:none;color:#25d366;font-size:.78rem;font-weight:bold">💬 واتساب</a>'+
+      '<a href="facetime:'+clean+'" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;background:rgba(33,150,243,.1);border:1px solid rgba(33,150,243,.3);border-radius:11px;text-decoration:none;color:var(--geo2);font-size:.78rem;font-weight:bold">📹 فيديو</a>'+
+    '</div>';
+  }
   html+='</div>';
   showPopup('تفاصيل الطالب', html);
 }
@@ -4754,6 +4911,8 @@ function openSettings(){
     var _sess2=JSON.parse(localStorage.getItem('y3_session')||'null');
     if(_sess2&&_sess2.role==='t') role='t';
   }catch(e){}
+  // Load notification settings UI
+  setTimeout(loadNotifSettingsUI, 50);
   goScreen('settingsScreen');
 }
 
@@ -5539,10 +5698,102 @@ function initSocialFeatures(){
   requestNotifPermission();
 }
 
+// ══════════════════════════════════════════
+// NOTIFICATION CONFIG SYSTEM
+// ══════════════════════════════════════════
+var NOTIF_CONFIG = {
+  notifications: {
+    enabled: true,
+    events: {
+      inputRequired: {   // طلب صداقة / رسالة تحتاج رد
+        enabled: true,
+        sound: 'system',
+        customPath: ''
+      },
+      taskComplete: {    // قبول طلب / انتهاء امتحان
+        enabled: true,
+        sound: 'system',
+        customPath: ''
+      },
+      idleAlert: {       // لا يوجد نشاط لفترة
+        enabled: false,
+        timeout: 60,
+        sound: 'system',
+        customPath: ''
+      }
+    }
+  }
+};
+
+// Load saved config from localStorage
+(function(){
+  try{
+    var saved=JSON.parse(localStorage.getItem('y3_notif_cfg')||'null');
+    if(saved&&saved.notifications) NOTIF_CONFIG=saved;
+  }catch(e){}
+})();
+
+function saveNotifConfig(){
+  try{localStorage.setItem('y3_notif_cfg',JSON.stringify(NOTIF_CONFIG));}catch(e){}
+}
+
+// ── Sound playback ──
+var _audioCtx=null;
+function getAudioCtx(){
+  if(!_audioCtx) try{_audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  return _audioCtx;
+}
+
+function playNotifSound(eventType){
+  var cfg=NOTIF_CONFIG.notifications;
+  if(!cfg||!cfg.enabled) return;
+  var ev=cfg.events[eventType];
+  if(!ev||!ev.enabled) return;
+  if(ev.sound==='custom'&&ev.customPath){
+    try{var a=new Audio(ev.customPath);a.volume=0.6;a.play().catch(function(){});}catch(e){}
+    return;
+  }
+  // System sound via Web Audio API
+  try{
+    var ctx=getAudioCtx(); if(!ctx) return;
+    var osc=ctx.createOscillator();
+    var gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    var freqs={inputRequired:[880,660],taskComplete:[523,659,784],idleAlert:[440]};
+    var f=freqs[eventType]||[660];
+    gain.gain.setValueAtTime(0.3,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+    osc.frequency.setValueAtTime(f[0],ctx.currentTime);
+    if(f[1]) osc.frequency.setValueAtTime(f[1],ctx.currentTime+0.15);
+    if(f[2]) osc.frequency.setValueAtTime(f[2],ctx.currentTime+0.3);
+    osc.type='sine';
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.5);
+  }catch(e){}
+}
+
+// ── Idle alert timer ──
+var _idleTimer=null;
+function resetIdleTimer(){
+  var cfg=NOTIF_CONFIG.notifications;
+  if(!cfg||!cfg.enabled) return;
+  var idle=cfg.events.idleAlert;
+  if(!idle||!idle.enabled) return;
+  clearTimeout(_idleTimer);
+  _idleTimer=setTimeout(function(){
+    playNotifSound('idleAlert');
+    sendBrowserNotif('⏰ تذكير','لا يوجد نشاط منذ فترة — هل أنت بخير؟');
+  },(idle.timeout||60)*1000);
+}
+['click','touchstart','keydown','scroll'].forEach(function(ev){
+  document.addEventListener(ev,resetIdleTimer,{passive:true});
+});
+
 function requestNotifPermission(){
   if('Notification' in window && Notification.permission==='default'){
     Notification.requestPermission();
   }
+  resetIdleTimer();
 }
 
 function sendBrowserNotif(title, body, icon){
@@ -5986,6 +6237,7 @@ function pollGroupInvites(){
               toast('📨 تمت إضافتك لقروب: '+data.groupName,'ok');
               sendBrowserNotif('👥 تمت إضافتك لقروب',data.fromName+' أضافك لـ '+data.groupName);
               addNotifBadge(1,{type:'group',from:data.fromName||'شخص',msg:'أضافك لـ '+(data.groupName||''),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+              playNotifSound('taskComplete');
             }
           }
           if(data.type==='group_join'&&data.groupId){
@@ -7180,6 +7432,7 @@ function pollFriendRequests(){
               changed=true;
               sendBrowserNotif('📬 طلب إضافة جديد',(data.fromName||'شخص')+' يريد إضافتك كصديق');
               addNotifBadge(1,{type:'friend',from:data.fromName||'شخص',msg:'يريد إضافتك كصديق',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+              playNotifSound('inputRequired');
               addNotifBadge(1);
             }
           }
@@ -7198,6 +7451,7 @@ function pollFriendRequests(){
               saveContacts(contacts);
               sendBrowserNotif('🎉 قبول طلب الإضافة',data.fromName+' قبل طلبك!');
               addNotifBadge(1,{type:'friend',from:data.fromName||'شخص',msg:'قبل طلب إضافتك! 🎉',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+              playNotifSound('taskComplete');
               addNotifBadge(1);
               toast('🎉 '+data.fromName+' قبل طلب الإضافة!','ok');
               changed=true;
@@ -7425,6 +7679,7 @@ function pollPrivateMsgs(){
       if(!chatOpen||currentPcPhone!==newFromOther[0].phone){
         sendBrowserNotif('💬 رسالة خاصة جديدة', (newFromOther[0].name||'شخص')+': '+newFromOther[0].msg.substring(0,60));
         addNotifBadge(1,{type:'message',from:newFromOther[0].name||'شخص',msg:newFromOther[0].msg.substring(0,60),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+        playNotifSound('inputRequired');
         addNotifBadge(newFromOther.length);
       }
     }
@@ -7675,17 +7930,31 @@ function startExamWithEntry(){
   var group=($('entryGroup')||{}).value.trim();
   if(!name||name.length<2){toast('⚠️ اكتب اسمك','err');return;}
   if(!phone||phone.length<10){toast('⚠️ اكتب رقم هاتفك','err');return;}
-  // Save entry info
+  // Save entry info to session
   if(!userName||userName==='زائر'){userName=name;userPhone=phone;}
-  // Record participant with group
+  // Record participant
   if(scannedExam){
-    var key='y3_participants_'+(scannedExam.code||scannedExam.title);
+    var examKey=scannedExam.code||scannedExam.title||'exam';
+    var pEntry={name:name,phone:phone,group:group||'—',
+      joinedAt:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}),
+      examCode:examKey};
+    // Save to local
+    var lkey='y3_participants_'+examKey;
     try{
-      var list=JSON.parse(localStorage.getItem(key)||'[]');
+      var list=JSON.parse(localStorage.getItem(lkey)||'[]');
       if(!list.find(function(p){return p.phone===phone;})){
-        list.push({name:name,phone:phone,group:group||'—',
-          joinedAt:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
-        localStorage.setItem(key,JSON.stringify(list));
+        list.push(pEntry);
+        localStorage.setItem(lkey,JSON.stringify(list));
+      }
+    }catch(e){}
+    // Push to Supabase so teacher sees it (room = exam code first 40 chars)
+    try{
+      if(!IS_LOCAL){
+        var room='exam_p_'+examKey.substring(0,40);
+        var payload={room:room,name:name,phone:phone,
+          msg:group||'—',img:null,ts:Date.now()};
+        var cfg=chatCfg||loadChatConfig();
+        if(cfg) sbSocial('messages',{method:'POST',body:JSON.stringify(payload)}).catch(function(){});
       }
     }catch(e){}
   }
@@ -7695,26 +7964,54 @@ function startExamWithEntry(){
 
 // ══ Participants list in qrShare screen ══
 function renderParticipants(exam){
-  var key='y3_participants_'+(exam.code||exam.title);
-  var list=[];
-  try{list=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
   var el=$('participantsList'); if(!el) return;
-  if(!list.length){
-    el.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.75rem">لا يوجد طلاب دخلوا بعد</div>';
-    return;
+  el.innerHTML='<div style="text-align:center;padding:10px;color:var(--text3);font-size:.75rem">⏳ جاري التحميل...</div>';
+  var examKey=(exam&&(exam.code||exam.title))||'exam';
+  var room='exam_p_'+examKey.substring(0,40);
+  function displayList(list){
+    if(!el) return;
+    if(!list.length){
+      el.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.75rem">لا يوجد طلاب دخلوا بعد</div>';
+      return;
+    }
+    var html='';
+    list.forEach(function(p,i){
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:10px;margin-bottom:6px">'+
+        '<div style="width:28px;height:28px;border-radius:50%;background:rgba(33,150,243,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:bold;color:var(--geo2)">'+(i+1)+'</div>'+
+        '<div style="flex:1">'+
+          '<div style="font-size:.8rem;font-weight:bold">'+safeHtml(p.name||p.msg||'طالب')+'</div>'+
+          '<div style="font-size:.65rem;color:var(--text2)">'+(p.phone||'')+((p.group&&p.group!=='—')||(p.msg&&p.msg!=='—')?' • '+safeHtml(p.group||p.msg||''):'')+'</div>'+
+        '</div>'+
+        '<div style="font-size:.62rem;color:var(--text3)">'+(p.joinedAt||new Date(p.ts||Date.now()).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}))+'</div>'+
+      '</div>';
+    });
+    el.innerHTML=html;
   }
-  var html='';
-  list.forEach(function(p,i){
-    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:10px;margin-bottom:6px">'+
-      '<div style="width:28px;height:28px;border-radius:50%;background:rgba(33,150,243,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:bold;color:var(--geo2)">'+(i+1)+'</div>'+
-      '<div style="flex:1">'+
-        '<div style="font-size:.8rem;font-weight:bold">'+safeHtml(p.name)+'</div>'+
-        '<div style="font-size:.65rem;color:var(--text2)">'+p.phone+(p.group&&p.group!=='—'?' • '+safeHtml(p.group):'')+'</div>'+
-      '</div>'+
-      '<div style="font-size:.62rem;color:var(--text3)">'+p.joinedAt+'</div>'+
-    '</div>';
-  });
-  el.innerHTML=html;
+  // First show local
+  var lkey='y3_participants_'+examKey;
+  var local=[];
+  try{local=JSON.parse(localStorage.getItem(lkey)||'[]');}catch(e){}
+  if(local.length) displayList(local);
+  // Then fetch from Supabase
+  if(!IS_LOCAL){
+    var cfg=chatCfg||loadChatConfig();
+    if(cfg){
+      sbSocial('messages?room=eq.'+encodeURIComponent(room)+'&order=ts.asc&limit=200')
+        .then(function(r){return r.json();})
+        .then(function(msgs){
+          if(!msgs||!Array.isArray(msgs)||!msgs.length){if(!local.length)displayList([]);return;}
+          // Deduplicate by phone
+          var seen={};
+          var list=[];
+          msgs.forEach(function(m){
+            if(!seen[m.phone]){seen[m.phone]=true;list.push(m);}
+          });
+          // Merge with local
+          local.forEach(function(lp){if(!seen[lp.phone]){seen[lp.phone]=true;list.push(lp);}});
+          displayList(list);
+        }).catch(function(){displayList(local);});
+    }
+  }
 }
 
 // ══ Toggle exam open/close from qrShare ══
@@ -7732,6 +8029,73 @@ function toggleExamOpenFromShare(){
   var idx=savedExams.findIndex(function(e){return e.code===currentExam.code;});
   if(idx>-1) savedExams[idx].examOpen=currentExam.examOpen;
   toast(currentExam.examOpen?'🔓 الامتحان مفتوح':'🔒 الامتحان مغلق','ok');
+}
+
+// ══ Notification Settings UI Functions ══
+function toggleNotifMaster(){
+  var cfg=NOTIF_CONFIG.notifications;
+  cfg.enabled=!cfg.enabled;
+  saveNotifConfig();
+  var btn=$('notifMasterTog');
+  if(btn){btn.textContent=cfg.enabled?'✅ مفعّل':'⭕ معطّل';
+    btn.style.background=cfg.enabled?'rgba(39,174,96,.1)':'var(--bg3)';
+    btn.style.color=cfg.enabled?'#27ae60':'var(--text2)';
+    btn.style.borderColor=cfg.enabled?'rgba(39,174,96,.3)':'var(--border)';}
+  toast(cfg.enabled?'🔔 الإشعارات مفعّلة':'🔕 الإشعارات معطّلة','ok');
+}
+
+function toggleNotifEvent(evName){
+  var ev=NOTIF_CONFIG.notifications.events[evName]; if(!ev) return;
+  ev.enabled=!ev.enabled;
+  saveNotifConfig();
+  var btn=$('tog_'+evName);
+  if(btn){btn.textContent=ev.enabled?'✅ مفعّل':'⭕ معطّل';
+    btn.style.background=ev.enabled?'rgba(39,174,96,.1)':'var(--bg2)';
+    btn.style.color=ev.enabled?'#27ae60':'var(--text2)';
+    btn.style.borderColor=ev.enabled?'rgba(39,174,96,.3)':'var(--border)';}
+  toast(ev.enabled?'✅ تم تفعيل الإشعار':'⭕ تم إيقاف الإشعار','ok');
+}
+
+function setNotifSound(evName, soundType){
+  var ev=NOTIF_CONFIG.notifications.events[evName]; if(!ev) return;
+  ev.sound=soundType;
+  saveNotifConfig();
+}
+
+function testNotifSound(evName){
+  var origEnabled=NOTIF_CONFIG.notifications.events[evName]&&NOTIF_CONFIG.notifications.events[evName].enabled;
+  if(NOTIF_CONFIG.notifications.events[evName]) NOTIF_CONFIG.notifications.events[evName].enabled=true;
+  playNotifSound(evName);
+  if(NOTIF_CONFIG.notifications.events[evName]) NOTIF_CONFIG.notifications.events[evName].enabled=origEnabled;
+  toast('🔊 اختبار الصوت','ok');
+}
+
+function setIdleTimeout(val){
+  NOTIF_CONFIG.notifications.events.idleAlert.timeout=parseInt(val)||60;
+  saveNotifConfig();
+  resetIdleTimer();
+}
+
+function loadNotifSettingsUI(){
+  var cfg=NOTIF_CONFIG.notifications;
+  // Master
+  var mBtn=$('notifMasterTog');
+  if(mBtn){mBtn.textContent=cfg.enabled?'✅ مفعّل':'⭕ معطّل';
+    mBtn.style.background=cfg.enabled?'rgba(39,174,96,.1)':'var(--bg3)';
+    mBtn.style.color=cfg.enabled?'#27ae60':'var(--text2)';
+    mBtn.style.borderColor=cfg.enabled?'rgba(39,174,96,.3)':'var(--border)';}
+  // Events
+  ['inputRequired','taskComplete','idleAlert'].forEach(function(evName){
+    var ev=cfg.events[evName]; if(!ev) return;
+    var btn=$('tog_'+evName);
+    if(btn){btn.textContent=ev.enabled?'✅ مفعّل':'⭕ معطّل';
+      btn.style.background=ev.enabled?'rgba(39,174,96,.1)':'var(--bg2)';
+      btn.style.color=ev.enabled?'#27ae60':'var(--text2)';
+      btn.style.borderColor=ev.enabled?'rgba(39,174,96,.3)':'var(--border)';}
+  });
+  // Idle timeout
+  var sel=$('idleTimeoutSel');
+  if(sel) sel.value=NOTIF_CONFIG.notifications.events.idleAlert.timeout||60;
 }
 
 function scrollPcMsgs(){var el=$('pcMsgs');if(el)el.scrollTop=el.scrollHeight;}
