@@ -865,6 +865,21 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
       <button onclick="requestNotifPermission();toast('✅ تم طلب إذن الإشعارات','ok')" style="width:100%;padding:9px;border-radius:10px;border:1px solid rgba(33,150,243,.3);background:rgba(33,150,243,.08);color:var(--geo2);font-family:Tajawal,sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;margin-top:4px">🔔 اطلب إذن الإشعارات</button>
     </div>
 
+    <!-- Call Server Settings -->
+    <div class="set-section">
+      <div class="set-hd">📡 سيرفر المكالمات</div>
+      <div class="set-row" style="margin-bottom:8px">
+        <div><div class="set-lbl">رابط السيرفر</div><div class="set-sub" id="callServerStatus">غير متصل</div></div>
+        <div id="callServerDot" style="width:10px;height:10px;border-radius:50%;background:#e74c3c;flex-shrink:0"></div>
+      </div>
+      <input id="callServerInp" type="url" placeholder="https://your-server.onrender.com" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:Tajawal,sans-serif;font-size:.75rem;margin-bottom:8px;direction:ltr;text-align:left" />
+      <div style="display:flex;gap:6px">
+        <button onclick="saveCallServer()" style="flex:1;padding:8px;border-radius:10px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.1);color:#27ae60;font-family:Tajawal,sans-serif;font-size:.75rem;font-weight:700;cursor:pointer">💾 حفظ</button>
+        <button onclick="testCallServer()" style="flex:1;padding:8px;border-radius:10px;border:1px solid rgba(33,150,243,.3);background:rgba(33,150,243,.1);color:var(--geo2);font-family:Tajawal,sans-serif;font-size:.75rem;font-weight:700;cursor:pointer">🔌 اختبار</button>
+      </div>
+    </div>
+    </div>
+
     <div class="set-section" id="exportSection" style="display:none">
       <div class="set-hd">💾 بياناتي</div>
       <div class="set-row">
@@ -3943,21 +3958,7 @@ function switchRlTab(tab){
 }
 
 function callStudent(phone, name){
-  if(!phone) return;
-  var clean=phone.replace(/[^0-9+]/g,'');
-  // Show call options
-  var opts='<div style="text-align:center;padding:8px">'+
-    '<div style="font-size:.9rem;font-weight:bold;margin-bottom:12px">📞 '+safeHtml(name||phone)+'</div>'+
-    '<div style="display:flex;gap:8px;justify-content:center">'+
-      '<a href="tel:'+clean+'" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;background:rgba(39,174,96,.12);border:1px solid rgba(39,174,96,.3);border-radius:12px;text-decoration:none;color:#27ae60">'+
-        '<span style="font-size:1.5rem">📞</span><span style="font-size:.7rem;font-weight:bold">مكالمة هاتفية</span></a>'+
-      '<a href="https://wa.me/'+clean+'" target="_blank" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);border-radius:12px;text-decoration:none;color:#25d366">'+
-        '<span style="font-size:1.5rem">💬</span><span style="font-size:.7rem;font-weight:bold">واتساب</span></a>'+
-      '<a href="facetime:'+clean+'" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;background:rgba(33,150,243,.12);border:1px solid rgba(33,150,243,.3);border-radius:12px;text-decoration:none;color:var(--geo2)">'+
-        '<span style="font-size:1.5rem">📹</span><span style="font-size:.7rem;font-weight:bold">فيديو</span></a>'+
-    '</div>'+
-  '</div>';
-  showPopup('اتصل بـ '+safeHtml(name||'الطالب'), opts);
+  startCall(phone, name, 'audio');
 }
 
 function renderRlParticipants(exam){
@@ -3977,7 +3978,10 @@ function renderRlParticipants(exam){
         '<div style="flex:1"><div style="font-size:.8rem;font-weight:bold">'+nm+'</div>'+
         '<div style="font-size:.65rem;color:var(--text2)">'+ph+(p.group&&p.group!=='—'?' • '+safeHtml(p.group):'')+'</div></div>'+
         '<div style="font-size:.6rem;color:var(--text3);margin-left:4px">'+(p.joinedAt||new Date(p.ts||Date.now()).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}))+'</div>'+
-        (ph?'<button data-ph="'+ph+'" data-nm="'+nm+'" onclick="callStudent(this.dataset.ph,this.dataset.nm)" style="padding:4px 8px;border-radius:8px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.08);color:#27ae60;font-size:.7rem;cursor:pointer;font-family:Tajawal,sans-serif">📞</button>':'')+
+        (ph?'<div style="display:flex;gap:4px">' +
+        '<button onclick="startCall(\'' +ph.replace(/\'/g,'')+  '\',\'' +nm.replace(/\'/g,'')+  '\',\'audio\')" style="padding:4px 8px;border-radius:8px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.08);color:#27ae60;font-size:.75rem;cursor:pointer;font-family:Tajawal,sans-serif">📞</button>' +
+        '<button onclick="startCall(\'' +ph.replace(/\'/g,'')+  '\',\'' +nm.replace(/\'/g,'')+  '\',\'video\')" style="padding:4px 8px;border-radius:8px;border:1px solid rgba(33,150,243,.3);background:rgba(33,150,243,.08);color:var(--geo2);font-size:.75rem;cursor:pointer;font-family:Tajawal,sans-serif">📹</button>' +
+        '</div>':'')+
       '</div>';
     });
     el.innerHTML=html;
@@ -4683,13 +4687,13 @@ function stuView(phone){
   }
   if(s.banned) html+='<div style="margin-top:10px;color:var(--hist2);font-size:.75rem">🚫 محظور منذ: '+s.bannedAt+'</div>';
   html+='<div style="font-size:.65rem;color:var(--text2);margin-top:8px">آخر ظهور: '+s.lastSeen+'</div>';
-  // Call buttons
+  // Call buttons (in-app WebRTC)
   var clean=(s.phone||'').replace(/[^0-9+]/g,'');
   if(clean){
-    html+='<div style="display:flex;gap:8px;margin-top:12px">'+
-      '<a href="tel:'+clean+'" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:11px;text-decoration:none;color:#27ae60;font-size:.78rem;font-weight:bold">📞 مكالمة</a>'+
-      '<a href="https://wa.me/'+clean+'" target="_blank" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.3);border-radius:11px;text-decoration:none;color:#25d366;font-size:.78rem;font-weight:bold">💬 واتساب</a>'+
-      '<a href="facetime:'+clean+'" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px;background:rgba(33,150,243,.1);border:1px solid rgba(33,150,243,.3);border-radius:11px;text-decoration:none;color:var(--geo2);font-size:.78rem;font-weight:bold">📹 فيديو</a>'+
+    var nm2=s.name.replace(/'/g,'');
+    html+='<div style="display:flex;gap:8px;margin-top:12px">' +
+      '<button onclick="closePopup();startCall(\''+clean+'\',\''+nm2+'\',\'audio\')" style="flex:1;padding:10px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:11px;color:#27ae60;font-size:.78rem;font-weight:bold;cursor:pointer;font-family:Tajawal,sans-serif">☎️ صوت</button>' +
+      '<button onclick="closePopup();startCall(\''+clean+'\',\''+nm2+'\',\'video\')" style="flex:1;padding:10px;background:rgba(33,150,243,.1);border:1px solid rgba(33,150,243,.3);border-radius:11px;color:var(--geo2);font-size:.78rem;font-weight:bold;cursor:pointer;font-family:Tajawal,sans-serif">📹 فيديو</button>' +
     '</div>';
   }
   html+='</div>';
@@ -4913,6 +4917,7 @@ function openSettings(){
   }catch(e){}
   // Load notification settings UI
   setTimeout(loadNotifSettingsUI, 50);
+  setTimeout(loadCallServerUI, 50);
   goScreen('settingsScreen');
 }
 
@@ -5694,6 +5699,7 @@ function initSocialFeatures(){
     startFriendReqPoll();
     pollGroupInvites();
     setInterval(pollGroupNotifications, 15000);
+    startIncomingCallPoll();
   }
   requestNotifPermission();
 }
@@ -8031,6 +8037,40 @@ function toggleExamOpenFromShare(){
   toast(currentExam.examOpen?'🔓 الامتحان مفتوح':'🔒 الامتحان مغلق','ok');
 }
 
+
+// ── Call server settings ──
+function loadCallServerUI(){
+  var inp=$('callServerInp');
+  if(inp) inp.value=SOCKET_SERVER;
+  checkCallServerStatus();
+}
+function saveCallServer(){
+  var url=($('callServerInp')||{}).value.trim();
+  if(!url) return;
+  SOCKET_SERVER=url;
+  localStorage.setItem('y3_socket_server',url);
+  _socket=null; _socketReady=false;
+  initSocket();
+  toast('✅ تم حفظ السيرفر','ok');
+  setTimeout(checkCallServerStatus,2000);
+}
+function testCallServer(){
+  toast('⏳ جاري الاتصال...','ok');
+  _socket=null; _socketReady=false;
+  initSocket();
+  setTimeout(checkCallServerStatus,3000);
+}
+function checkCallServerStatus(){
+  var dot=$('callServerDot'), st=$('callServerStatus');
+  if(_socketReady){
+    if(dot){dot.style.background='#27ae60';}
+    if(st) st.textContent='متصل ✅';
+  } else {
+    if(dot){dot.style.background='#e74c3c';}
+    if(st) st.textContent='غير متصل — تحقق من الرابط';
+  }
+}
+
 // ══ Notification Settings UI Functions ══
 function toggleNotifMaster(){
   var cfg=NOTIF_CONFIG.notifications;
@@ -8098,11 +8138,261 @@ function loadNotifSettingsUI(){
   if(sel) sel.value=NOTIF_CONFIG.notifications.events.idleAlert.timeout||60;
 }
 
-function scrollPcMsgs(){var el=$('pcMsgs');if(el)el.scrollTop=el.scrollHeight;}
+// ══════════════════════════════════════════
+// WEBRTC IN-APP CALLS (Socket.IO signaling)
+// ══════════════════════════════════════════
+var _pc = null;
+var _localStream = null;
+var _callRoom = null;
+var _callType = 'audio';
+var _callRole = null;   // 'caller' | 'callee'
+var _callPeer = null;
+var _callTimer = null;
+var _callSecs = 0;
+var _muted = false;
+var _speakerOff = false;
+var _socket = null;
+var _socketReady = false;
 
-function showPcOffline(){
-  var el=$('pcMsgs');
-  if(el) el.innerHTML='<div style="text-align:center;padding:30px;color:var(--text2);font-size:.8rem">⚠️ الدردشة غير متصلة<br><small>فعّل إعدادات الدردشة أولاً</small></div>';
+var STUN_CFG = {
+  iceServers: [
+    {urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']}
+  ]
+};
+
+// ── Socket.IO server URL (configurable) ──
+var SOCKET_SERVER = localStorage.getItem('y3_socket_server') || 'https://y3-call-server.glitch.me';
+
+function initSocket(){
+  if(_socket) return;
+  if(typeof io === 'undefined'){
+    // Load socket.io dynamically
+    var s=document.createElement('script');
+    s.src='https://cdn.socket.io/4.4.1/socket.io.min.js';
+    s.onload=function(){connectSocket();};
+    document.head.appendChild(s);
+  } else {
+    connectSocket();
+  }
+}
+
+function connectSocket(){
+  try{
+    _socket=io(SOCKET_SERVER, {transports:['websocket','polling'],timeout:8000});
+    _socket.on('connect',function(){
+      _socketReady=true;
+      // Join personal room (phone number)
+      _socket.emit('join', userPhone);
+      console.log('Socket connected');
+    });
+    _socket.on('disconnect',function(){_socketReady=false;});
+    _socket.on('offer', handleSocketOffer);
+    _socket.on('answer', handleSocketAnswer);
+    _socket.on('ice-candidate', handleSocketIce);
+    _socket.on('incoming', handleIncomingCall);
+    _socket.on('reject', function(){endCall(true);toast('❌ رفض الاتصال','err');});
+    _socket.on('end', function(){endCall(true);});
+    _socket.on('accept', function(){if(_callRole==='caller') createOffer();});
+  }catch(e){console.warn('Socket error',e);}
+}
+
+function emitToRoom(evt, data){
+  if(!_socket||!_callRoom) return;
+  _socket.emit(evt, {to:_callRoom, data:data, from:userPhone, fromName:userName});
+}
+
+// ── Incoming signal handlers ──
+function handleSocketOffer(pkg){
+  if(!pkg||pkg.to!==userPhone) return;
+  handleOffer(pkg.data, pkg.callType||'audio');
+}
+function handleSocketAnswer(pkg){
+  if(!pkg||pkg.to!==userPhone) return;
+  if(_pc) _pc.setRemoteDescription(new RTCSessionDescription(pkg.data)).catch(function(){});
+}
+function handleSocketIce(pkg){
+  if(!pkg||pkg.to!==userPhone) return;
+  if(_pc&&pkg.data) _pc.addIceCandidate(new RTCIceCandidate(pkg.data)).catch(function(){});
+}
+function handleIncomingCall(pkg){
+  if(!pkg||pkg.to!==userPhone) return;
+  if(_callRole) return; // already in call
+  _callPeer={phone:pkg.from, name:pkg.fromName||pkg.from};
+  _callType=pkg.callType||'audio';
+  _callRole='callee';
+  _callRoom=pkg.from; // reply to caller's phone
+  playNotifSound('inputRequired');
+  showCallOverlay('incoming');
+}
+
+// ── Start outgoing call ──
+function startCall(phone, name, type){
+  if(IS_LOCAL){toast('المكالمات تحتاج إنترنت','err');return;}
+  if(!userPhone||userPhone==='guest'){toast('يجب تسجيل الدخول أولاً','err');return;}
+  _callType=type||'audio';
+  _callPeer={phone:phone, name:name};
+  _callRole='caller';
+  _callRoom=phone; // send to callee's phone room
+  // Close any popup
+  var pop=$('popupOverlay'); if(pop) pop.style.display='none';
+  showCallOverlay('outgoing');
+  initSocket();
+  // Notify callee
+  setTimeout(function(){
+    if(_socket&&_socketReady){
+      _socket.emit('incoming',{to:phone, from:userPhone, fromName:userName, callType:_callType});
+    } else {
+      toast('⚠️ لم يتصل بالسيرفر بعد — حاول مرة ثانية','err');
+      endCall(true);
+    }
+  }, _socketReady?0:2000);
+  // Get media
+  getMedia(function(stream){
+    _localStream=stream;
+    if(_callType==='video'){
+      var lv=$('localVideo'); if(lv){lv.srcObject=stream;}
+      $('callVideoArea').style.display='block';
+    }
+  });
+}
+
+// ── Accept incoming call ──
+function acceptCall(){
+  $('incomingCallBtns').style.display='none';
+  $('callControls').style.display='flex';
+  $('callStatus').textContent='جاري الاتصال...';
+  if(_socket) _socket.emit('accept',{to:_callRoom, from:userPhone});
+  getMedia(function(stream){
+    _localStream=stream;
+    if(_callType==='video'){
+      var lv=$('localVideo'); if(lv){lv.srcObject=stream;}
+      $('callVideoArea').style.display='block';
+    }
+    setupPeerConnection();
+  });
+}
+
+// ── Create offer (caller side) ──
+function createOffer(){
+  setupPeerConnection();
+  _pc.createOffer().then(function(offer){
+    return _pc.setLocalDescription(offer);
+  }).then(function(){
+    var offerData=_pc.localDescription.toJSON();
+    offerData.callType=_callType;
+    if(_socket) _socket.emit('offer',{to:_callRoom, from:userPhone, data:offerData, callType:_callType});
+  }).catch(function(e){console.warn(e);});
+}
+
+// ── Handle offer (callee side) ──
+function handleOffer(offer, type){
+  _callType=type||'audio';
+  setupPeerConnection();
+  _pc.setRemoteDescription(new RTCSessionDescription(offer)).then(function(){
+    return _pc.createAnswer();
+  }).then(function(answer){
+    return _pc.setLocalDescription(answer);
+  }).then(function(){
+    if(_socket) _socket.emit('answer',{to:_callRoom, from:userPhone, data:_pc.localDescription.toJSON()});
+  }).catch(function(e){console.warn(e);});
+}
+
+// ── RTCPeerConnection ──
+function setupPeerConnection(){
+  if(_pc) _pc.close();
+  _pc=new RTCPeerConnection(STUN_CFG);
+  if(_localStream) _localStream.getTracks().forEach(function(t){_pc.addTrack(t,_localStream);});
+  _pc.ontrack=function(e){
+    var rv=$('remoteVideo');
+    if(rv&&e.streams[0]){
+      rv.srcObject=e.streams[0];
+      if(_callType==='video') $('callVideoArea').style.display='block';
+    }
+    $('callStatus').textContent='متصل ✅';
+    startCallTimer();
+  };
+  _pc.onicecandidate=function(e){
+    if(e.candidate&&_socket)
+      _socket.emit('ice-candidate',{to:_callRoom, from:userPhone, data:e.candidate.toJSON()});
+  };
+  _pc.onconnectionstatechange=function(){
+    if(_pc&&(_pc.connectionState==='disconnected'||_pc.connectionState==='failed')) endCall(true);
+  };
+}
+
+// ── Get media ──
+function getMedia(cb){
+  var constraints={audio:true, video:_callType==='video'?{facingMode:'user'}:false};
+  navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+    cb(stream);
+  }).catch(function(err){
+    toast('🎤 تعذر الوصول للميكروفون/الكاميرا','err');
+    endCall(true);
+  });
+}
+
+// ── Reject ──
+function rejectCall(){
+  if(_socket&&_callRoom) _socket.emit('reject',{to:_callRoom, from:userPhone});
+  endCall(true);
+}
+
+// ── End call ──
+function endCall(silent){
+  if(!silent&&_socket&&_callRoom) _socket.emit('end',{to:_callRoom, from:userPhone});
+  clearInterval(_callTimer); _callTimer=null; _callSecs=0;
+  if(_pc){_pc.close();_pc=null;}
+  if(_localStream){_localStream.getTracks().forEach(function(t){t.stop();});_localStream=null;}
+  var rv=$('remoteVideo'); if(rv) rv.srcObject=null;
+  var lv=$('localVideo'); if(lv) lv.srcObject=null;
+  _callRoom=null; _callRole=null; _callPeer=null;
+  var ov=$('callOverlay'); if(ov) ov.style.display='none';
+}
+
+// ── Show call overlay ──
+function showCallOverlay(mode){
+  var ov=$('callOverlay'); if(!ov) return;
+  ov.style.display='flex';
+  $('callName').textContent=_callPeer?(_callPeer.name||_callPeer.phone):'';
+  $('callVideoArea').style.display='none';
+  $('callTimer').style.display='none';
+  if(mode==='incoming'){
+    $('callStatus').textContent=(_callType==='video'?'📹':'📞')+' مكالمة واردة';
+    $('callControls').style.display='none';
+    $('incomingCallBtns').style.display='flex';
+  } else {
+    $('callStatus').textContent='جاري الاتصال...';
+    $('callControls').style.display='flex';
+    $('incomingCallBtns').style.display='none';
+  }
+}
+
+// ── Timer ──
+function startCallTimer(){
+  $('callTimer').style.display='block';
+  _callSecs=0;
+  _callTimer=setInterval(function(){
+    _callSecs++;
+    var m=Math.floor(_callSecs/60), s=_callSecs%60;
+    $('callTimer').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+  },1000);
+}
+
+// ── Controls ──
+function toggleMute(){
+  _muted=!_muted;
+  if(_localStream) _localStream.getAudioTracks().forEach(function(t){t.enabled=!_muted;});
+  var btn=$('muteBtn'); if(btn) btn.textContent=_muted?'🔇':'🎤';
+}
+function toggleSpeaker(){
+  _speakerOff=!_speakerOff;
+  var btn=$('speakerBtn'); if(btn) btn.textContent=_speakerOff?'🔈':'🔊';
+}
+
+// ── Init socket on login ──
+function startIncomingCallPoll(){
+  if(IS_LOCAL) return;
+  initSocket();
 }
 
 </script>
@@ -8297,6 +8587,38 @@ CREATE POLICY "open" ON messages
     </label>
     <input id="pcMsgInp" class="inp" placeholder="اكتب رسالة..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')sendPrivateMsg()">
     <button onclick="sendPrivateMsg()" style="padding:10px 14px;border-radius:10px;border:none;background:var(--geo2);color:#fff;font-family:Tajawal,sans-serif;font-size:.85rem;cursor:pointer;flex-shrink:0">إرسال</button>
+  </div>
+</div>
+
+
+<!-- ═══ IN-APP CALL OVERLAY ═══ -->
+<div id="callOverlay" style="display:none;position:fixed;inset:0;background:rgba(7,6,15,.97);z-index:99999;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 20px 50px">
+  <!-- Top: caller info -->
+  <div style="text-align:center">
+    <div id="callAvatar" style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,rgba(33,150,243,.3),rgba(245,197,24,.2));display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 16px;border:3px solid rgba(33,150,243,.4)">👤</div>
+    <div id="callName" style="font-size:1.3rem;font-weight:bold;color:#fff;margin-bottom:6px"></div>
+    <div id="callStatus" style="font-size:.85rem;color:rgba(255,255,255,.6)">جاري الاتصال...</div>
+    <div id="callTimer" style="font-size:.8rem;color:rgba(255,255,255,.5);margin-top:4px;display:none">00:00</div>
+  </div>
+
+  <!-- Middle: remote video (hidden for audio) -->
+  <div id="callVideoArea" style="display:none;width:100%;max-width:360px;border-radius:16px;overflow:hidden;position:relative">
+    <video id="remoteVideo" autoplay playsinline style="width:100%;border-radius:16px;background:#000"></video>
+    <video id="localVideo" autoplay playsinline muted style="position:absolute;bottom:10px;right:10px;width:90px;border-radius:10px;background:#111;border:2px solid rgba(255,255,255,.2)"></video>
+  </div>
+
+  <!-- Bottom: call controls -->
+  <div>
+    <div style="display:flex;gap:20px;justify-content:center;margin-bottom:16px" id="callControls">
+      <button onclick="toggleMute()" id="muteBtn" style="width:56px;height:56px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:1.4rem;cursor:pointer">🎤</button>
+      <button onclick="endCall()" style="width:70px;height:70px;border-radius:50%;border:none;background:#e74c3c;color:#fff;font-size:1.6rem;cursor:pointer">📵</button>
+      <button onclick="toggleSpeaker()" id="speakerBtn" style="width:56px;height:56px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:1.4rem;cursor:pointer">🔊</button>
+    </div>
+    <!-- Incoming call buttons (hidden by default) -->
+    <div id="incomingCallBtns" style="display:none;flex;gap:30px;justify-content:center">
+      <button onclick="rejectCall()" style="width:62px;height:62px;border-radius:50%;border:none;background:#e74c3c;color:#fff;font-size:1.5rem;cursor:pointer">📵</button>
+      <button onclick="acceptCall()" style="width:62px;height:62px;border-radius:50%;border:none;background:#27ae60;color:#fff;font-size:1.5rem;cursor:pointer">📞</button>
+    </div>
   </div>
 </div>
 
