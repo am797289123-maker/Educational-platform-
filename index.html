@@ -604,6 +604,53 @@ select.inp{cursor:pointer;}
 
 </style>
 
+
+<link rel="manifest" id="pwaManifest">
+<meta name="theme-color" content="#07060f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+// ── Inline PWA Manifest ──
+(function(){
+  var manifest={
+    name:'منصة ثالثة ثانوي',short_name:'ثالثة ثانوي',
+    start_url:'./',display:'standalone',
+    background_color:'#07060f',theme_color:'#07060f',
+    icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%2307060f"/><text y=".9em" font-size="80" x="10">🎓</text></svg>',sizes:'512x512',type:'image/svg+xml'}]
+  };
+  var blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  var el=document.getElementById('pwaManifest');
+  if(el) el.href=URL.createObjectURL(blob);
+})();
+
+// ── Service Worker Registration ──
+if('serviceWorker' in navigator){
+  var swCode=`
+self.addEventListener('push',function(e){
+  var data=e.data?e.data.json():{};
+  self.registration.showNotification(data.title||'منصة ثالثة ثانوي',{
+    body:data.body||'',icon:data.icon||'',badge:data.badge||'',
+    tag:data.tag||'y3_notif',renotify:true,
+    data:{url:data.url||self.location.origin}
+  });
+});
+self.addEventListener('notificationclick',function(e){
+  e.notification.close();
+  e.waitUntil(clients.openWindow(e.notification.data.url||'/'));
+});
+self.addEventListener('install',function(){self.skipWaiting();});
+self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());});
+`;
+  try{
+    var swBlob=new Blob([swCode],{type:'application/javascript'});
+    var swUrl=URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl).then(function(reg){
+      window._swReg=reg;
+    }).catch(function(){});
+  }catch(e){}
+}
+</script>
 </head>
 <body>
 
@@ -611,7 +658,7 @@ select.inp{cursor:pointer;}
 <!-- ═══ PROFILE / HISTORY ═══ -->
 <div id="profileScreen" class="screen">
   <div class="app-hdr">
-    <button class="hdr-back" onclick="goScreen(role==='t'?'teacherHome':'studentHome')">←</button>
+    <button class="hdr-back" onclick="goBackHome()">←</button>
     <div class="hdr-info"><div class="hdr-title">👤 ملفي الشخصي</div><div class="hdr-sub">إحصائياتي وسجل إجاباتي</div></div>
   </div>
   <div class="prof-body">
@@ -702,7 +749,7 @@ select.inp{cursor:pointer;}
 <!-- ═══ SETTINGS ═══ -->
 <div id="settingsScreen" class="screen">
   <div class="app-hdr">
-    <button class="hdr-back" onclick="goScreen(role==='t'?'teacherHome':'studentHome')">←</button>
+    <button class="hdr-back" onclick="goBackHome()">←</button>
     <div class="hdr-info"><div class="hdr-title">⚙️ الإعدادات</div><div class="hdr-sub">تخصيص المنصة</div></div>
   </div>
   <div class="set-body">
@@ -714,6 +761,7 @@ select.inp{cursor:pointer;}
           <div><div class="set-lbl" id="setUserName">—</div><div class="set-sub" id="setUserPhone">—</div></div>
           <div class="hdr-badge" id="setUserRole" style="font-size:.65rem">—</div>
         </div>
+        <div id="setUserExtra" style="margin-top:8px;padding:8px 10px;background:var(--bg3);border-radius:10px;font-size:.75rem;color:var(--text2);display:none"></div>
         <button onclick="logout()" style="width:100%;margin-top:10px;padding:10px;border-radius:11px;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:var(--hist2);font-family:Tajawal,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer" onclick="logout()">🚪 تسجيل الخروج</button>
         <div id="deletePendingBox" style="display:none;margin-top:10px;padding:10px;border-radius:11px;border:1px solid rgba(245,197,24,.2);background:rgba(245,197,24,.06);font-size:.75rem;color:var(--gold2);text-align:center"></div>
         <button onclick="requestDeleteAccount()" id="btnDeleteAccount" style="width:100%;margin-top:8px;padding:9px;border-radius:11px;border:1px solid rgba(120,60,60,.3);background:transparent;color:var(--text2);font-family:Tajawal,sans-serif;font-size:.75rem;cursor:pointer">🗑 طلب حذف الحساب</button>
@@ -971,6 +1019,11 @@ select.inp{cursor:pointer;}
       <div class="hdr-sub" id="sName"></div>
     </div>
     <div class="hdr-badge s">طالب</div>
+    <div style="position:relative">
+      <button class="hdr-back" onclick="toggleNotifDropdown()" title="الإشعارات" id="notifBellBtn">🔔</button>
+      <span id="headerNotifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:.6rem;align-items:center;justify-content:center;font-weight:bold;padding:0 3px;pointer-events:none"></span>
+      <div id="notifDropdown" style="display:none;position:absolute;top:36px;left:-180px;width:280px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:999;max-height:320px;overflow-y:auto"></div>
+    </div>
     <button class="hdr-back" onclick="goProfile()" title="ملفي" style="margin-left:0">👤</button>
     <button class="hdr-back" onclick="openSettings()" title="إعدادات">⚙️</button>
     <button class="hdr-back" onclick="swTab('q');window.scrollTo(0,0)" title="مسح QR اختبار" style="background:rgba(33,150,243,.15);border-color:rgba(33,150,243,.4);color:var(--geo2)">📷</button>
@@ -1060,7 +1113,7 @@ select.inp{cursor:pointer;}
           <div class="sr-ok">✅ تم العثور على الامتحان!</div>
           <div class="sr-name" id="srName"></div>
           <div class="sr-meta" id="srMeta"></div>
-          <button class="btn-start-exam" onclick="startScannedExam()">▶ ابدأ الامتحان</button>
+          <button class="btn-start-exam" onclick="openExamEntryForm()">▶ ابدأ الامتحان</button>
         </div>
 
         <!-- Exam Found Popup -->
@@ -1072,10 +1125,18 @@ select.inp{cursor:pointer;}
             <div style="font-size:1.1rem;font-weight:bold;color:var(--green2);margin-bottom:6px">تم العثور على الامتحان!</div>
             <div id="popupExamName" style="font-size:1rem;font-weight:bold;margin-bottom:4px"></div>
             <div id="popupExamMeta" style="font-size:.8rem;color:var(--text2);margin-bottom:20px"></div>
-            <button onclick="startScannedExam();closeExamPopup();" style="width:100%;padding:14px;
+            <!-- Student entry form -->
+            <div id="examEntryForm" style="text-align:right;margin-bottom:12px">
+              <input id="entryName" class="inp" placeholder="اسمك الكامل" style="margin-bottom:8px;font-size:.85rem"
+                oninput="updateEntryBtn()">
+              <input id="entryPhone" class="inp" placeholder="رقم هاتفك" type="tel" style="margin-bottom:8px;font-size:.85rem"
+                oninput="updateEntryBtn()">
+              <input id="entryGroup" class="inp" placeholder="المجموعة (اختياري)" style="margin-bottom:8px;font-size:.85rem">
+            </div>
+            <button id="entryStartBtn" onclick="startExamWithEntry()" style="width:100%;padding:14px;
               border-radius:12px;border:none;background:var(--green2);color:#fff;
-              font-size:1rem;font-weight:bold;cursor:pointer;margin-bottom:10px">
-              ▶ ابدأ الامتحان الآن
+              font-size:1rem;font-weight:bold;cursor:pointer;margin-bottom:10px;opacity:.5" disabled>
+              ▶ ابدأ الامتحان
             </button>
             <button onclick="closeExamPopup()" style="width:100%;padding:10px;border-radius:12px;
               border:1px solid var(--border);background:transparent;color:var(--text2);
@@ -1159,6 +1220,11 @@ select.inp{cursor:pointer;}
       <div class="hdr-sub" id="tName"></div>
     </div>
     <div class="hdr-badge t">معلم</div>
+    <div style="position:relative">
+      <button class="hdr-back" onclick="toggleNotifDropdown()" title="الإشعارات">🔔</button>
+      <span id="headerNotifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:.6rem;align-items:center;justify-content:center;font-weight:bold;padding:0 3px;pointer-events:none"></span>
+      <div id="notifDropdownT" style="display:none;position:absolute;top:36px;left:-20px;width:280px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:999;max-height:320px;overflow-y:auto"></div>
+    </div>
     <button class="hdr-back" onclick="goProfile()" title="ملفي">👤</button>
     <button class="hdr-back" onclick="openSettings()" title="إعدادات">⚙️</button>
     <button class="hdr-back" onclick="logout()" title="خروج">🚪</button>
@@ -1227,7 +1293,59 @@ select.inp{cursor:pointer;}
       </div>
     </div>
 
-    <!-- Answer Visibility Settings -->
+    <!-- Exam Total Duration -->
+    <div class="form-card">
+      <div class="fc-title">⏰ مدة الامتحان الكاملة</div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <div style="flex:1">
+          <div style="font-size:.67rem;color:var(--text2);margin-bottom:4px;text-align:center">ساعات</div>
+          <select class="inp" id="exDurHour" onchange="updDurSummary()" style="text-align:center;padding:10px 6px;">
+            <option value="0">٠ س</option>
+            <option value="1">١ س</option>
+            <option value="2">٢ س</option>
+            <option value="3">٣ س</option>
+          </select>
+        </div>
+        <div style="font-size:1.2rem;color:var(--text2);padding-bottom:12px">:</div>
+        <div style="flex:1">
+          <div style="font-size:.67rem;color:var(--text2);margin-bottom:4px;text-align:center">دقائق</div>
+          <select class="inp" id="exDurMin" onchange="updDurSummary()" style="text-align:center;padding:10px 6px;">
+            <option value="0">٠ د</option>
+            <option value="10">١٠ د</option>
+            <option value="15">١٥ د</option>
+            <option value="20">٢٠ د</option>
+            <option value="30" selected>٣٠ د</option>
+            <option value="45">٤٥ د</option>
+          </select>
+        </div>
+      </div>
+      <div style="font-size:.65rem;color:var(--text2);text-align:center;margin-top:4px" id="durSummary">مدة الامتحان: ٣٠ دقيقة</div>
+      <div style="font-size:.6rem;color:var(--text3);text-align:center;margin-top:2px">٠ = بدون حد زمني للامتحان</div>
+      </div>
+    </div>
+
+    <!-- Reference Sheet -->
+    <div class="form-card">
+      <div class="fc-title">📚 ورقة مرجعية (قوانين / مصطلحات)</div>
+      <div style="font-size:.72rem;color:var(--text2);margin-bottom:8px">اختياري — تظهر للطالب كزر 📖 أثناء الامتحان</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <button id="tog_refSheet" class="tog-btn" data-on="0" onclick="toggleTog(this);toggleRefSheet()" style="background:rgba(255,255,255,.05)">بدون ورقة مرجعية</button>
+      </div>
+      <div id="refSheetBox" style="display:none">
+        <textarea class="inp" id="exRefSheet" placeholder="اكتب القوانين والمصطلحات هنا...&#10;مثال:&#10;قانون نيوتن الأول: الجسم يظل ساكناً أو متحركاً بخط مستقيم&#10;س = م × ز" style="min-height:120px;font-size:.8rem;line-height:1.7;direction:rtl"></textarea>
+      </div>
+    </div>
+
+    <!-- Exam Open/Close Control -->
+    <div class="form-card">
+      <div class="fc-title">🔒 حالة الامتحان</div>
+      <div style="display:flex;gap:8px">
+        <button id="tog_examOpen" class="tog-btn" data-on="1" onclick="toggleTog(this);updExamStatus()" style="flex:1;background:rgba(39,174,96,.1);color:#27ae60;border-color:rgba(39,174,96,.3)">🔓 مفتوح</button>
+      </div>
+      <div style="font-size:.62rem;color:var(--text2);margin-top:6px;text-align:center" id="examStatusHint">الطلاب يقدروا يدخلوا الامتحان الآن</div>
+    </div>
+
+        <!-- Answer Visibility Settings -->
     <div class="form-card">
       <div class="fc-title">👁️ إظهار الإجابات للطالب</div>
       <div style="display:flex;flex-direction:column;gap:8px;">
@@ -1310,6 +1428,20 @@ select.inp{cursor:pointer;}
     </div>
 
     <div class="qr-link-box" id="qrLinkBox"></div>
+    <!-- Exam Open/Close Toggle -->
+    <div style="padding:0 0 10px 0">
+      <button id="examOpenToggleBtn" onclick="toggleExamOpenFromShare()" style="width:100%;padding:11px;border-radius:12px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.1);color:#27ae60;font-family:Tajawal,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer">🔓 مفتوح — اضغط لإغلاق</button>
+    </div>
+
+    <!-- Participants List -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--text3)">👥 من دخل الامتحان</div>
+        <button onclick="renderParticipants(currentExam)" style="padding:3px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:.65rem;cursor:pointer;font-family:Tajawal,sans-serif">🔄 تحديث</button>
+      </div>
+      <div id="participantsList"><div style="text-align:center;padding:12px;color:var(--text3);font-size:.75rem">لا يوجد طلاب دخلوا بعد</div></div>
+    </div>
+
     <div class="qr-btns">
       <button class="btn-copy" onclick="shareExam()" style="background:linear-gradient(135deg,rgba(39,174,96,.15),rgba(39,174,96,.05));border-color:rgba(39,174,96,.3);color:#27ae60;font-size:.92rem;padding:14px">📤 مشاركة واتساب / تيليجرام</button>
       <button class="btn-copy" onclick="copyLongCode()" style="background:linear-gradient(135deg,rgba(245,197,24,.12),rgba(245,197,24,.04));border-color:rgba(245,197,24,.3);color:#f5c518">📋 نسخ الكود الطويل (لأجهزة أخرى)</button>
@@ -1920,6 +2052,15 @@ var examActive=false;
 var cheatCountdownTimer=null;
 
 function $(id){return document.getElementById(id);}
+function goBackHome(){
+  // Always read from session to determine correct home screen
+  try{
+    var s=JSON.parse(localStorage.getItem('y3_session')||'null');
+    if(s&&s.role==='t'){ role='t'; goScreen('teacherHome'); return; }
+  }catch(e){}
+  goScreen(role==='t'?'teacherHome':'studentHome');
+}
+
 function goScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.style.display='none';s.classList.remove('active');});
   var t=$(id);
@@ -2095,22 +2236,9 @@ function doLogin(){
       toast('🚫 هذا الرقم مسجل باسم "'+lock.savedName+'" — استخدم نفس الاسم أو رقماً آخر','err');
       return;
     }
-    // Check device lock (prevent one device = multiple accounts)
-    var devLock=checkDeviceLock(phone);
-    if(!devLock.ok){
-      toast('🚫 هذا الجهاز ('+getDeviceName()+') مرتبط بحساب آخر — '+devLock.savedName+' ('+devLock.savedPhone+')','err');
-      return;
-    }
     lockDevice(phone,name);
   }
-  // Role lock: once a phone is registered as student/teacher, it stays that way
-  var savedRole=null;
-  try{var ri=JSON.parse(localStorage.getItem('y3_identity_'+phone)||'null');if(ri&&ri.role) savedRole=ri.role;}catch(e){}
-  if(savedRole && savedRole!==r){
-    var rName=savedRole==='s'?'طالب':'معلم';
-    toast('🚫 هذا الحساب مسجل كـ'+rName+' — لا يمكن تغيير الدور','err');
-    return;
-  }
+  // No role lock - teacher can always login as teacher on any device
   userName=name; userPhone=phone; role=r;
   loadStats();
   // Save login avatar if picked (first time only — won't overwrite existing)
@@ -2150,6 +2278,16 @@ function doLogin(){
     goScreen('studentHome');
   } else {
     $('tName').textContent=userName+' — '+userPhone;
+    // Force-save teacher role to identity
+    try{
+      var ikey='y3_identity_'+userPhone;
+      var idata=JSON.parse(localStorage.getItem(ikey)||'{}');
+      idata.role='t'; idata.name=userName; idata.phone=userPhone;
+      idata.teacherSubject=teacherSubject;
+      localStorage.setItem(ikey,JSON.stringify(idata));
+      localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,
+        role:'t',gender:userGender,stream:userStream,teacherSubject:teacherSubject,lang:appLang}));
+    }catch(e){}
     renderTeacherStudents();
     goScreen('teacherHome');
   }
@@ -2645,15 +2783,27 @@ function closeExamPopup(){
 }
 function startScannedExam(){if(!scannedExam)return;$('scanResult').style.display='none';loadCustomExam(scannedExam);}
 function loadCustomExam(exam){
+  // Check if exam is open
+  if(exam.examOpen===false){
+    toast('🔒 هذا الامتحان مغلق حالياً — انتظر المعلم يفتحه','err');
+    return;
+  }
   S.subj='c';
   S.examCode=exam.code||exam.title||('ex_'+Date.now());
   S.qs=(exam.qs||[]).map(function(q){return Object.assign({},q,{_g:false});});
   S.label='📋 '+exam.title;
   currentExam=exam;
   $('gTitle').textContent=S.label;
+  // Show refSheet button if exam has reference sheet
+  var rsBtn=$('refSheetBtn');
+  if(rsBtn) rsBtn.style.display=(exam.refSheet?'block':'none');
   // Exam mode: hide finish, hide stop infinite
   var fb=$('finishExamBtn'); if(fb) fb.style.display='none';
   var si=$('stopInfBtn'); if(si) si.style.display='none';
+  // Show exam duration countdown if set
+  if(exam.examDuration>0){
+    startExamDurationTimer(exam.examDuration*60);
+  }
   // Enable exam nav
   examAnswers={};
   examNavMode=true;
@@ -2661,6 +2811,31 @@ function loadCustomExam(exam){
   goScreen('gameScreen');
   setTimeout(function(){ initExamNav(); loadQ(); },200);
 }
+
+// ── Exam total duration timer ──
+var _examDurTimer=null;
+function startExamDurationTimer(totalSecs){
+  if(_examDurTimer) clearInterval(_examDurTimer);
+  var remaining=totalSecs;
+  var el=$('gProg');
+  function tick(){
+    if(remaining<=0){
+      clearInterval(_examDurTimer);
+      toast('⏰ انتهى وقت الامتحان!','err');
+      setTimeout(confirmFinishExam,1500);
+      return;
+    }
+    var h=Math.floor(remaining/3600);
+    var m=Math.floor((remaining%3600)/60);
+    var s=remaining%60;
+    var txt='⏱ '+(h?h+'س ':'')+pad2(m)+'د:'+pad2(s)+'ث';
+    if(el) el.textContent=txt;
+    remaining--;
+  }
+  tick();
+  _examDurTimer=setInterval(tick,1000);
+}
+function pad2(n){return n<10?'0'+n:''+n;}
 function confirmFinishExam(){
   if(examNavMode){
     var remaining = S.qs.length - Object.keys(examAnswers).length;
@@ -2982,8 +3157,17 @@ function saveExam(){
   // Collect exam-level visibility settings
   function togVal(id){var el=$(id);return el?el.getAttribute('data-on')==='1':true;}
   var vis={showAns:togVal('tog_showAns'),showExp:togVal('tog_showExp'),showResult:togVal('tog_showResult'),showWrongs:togVal('tog_showWrongs')};
+  var durHour=parseInt($('exDurHour')?$('exDurHour').value:0)||0;
+  var durMin=parseInt($('exDurMin')?$('exDurMin').value:30)||30;
+  var examDuration=(durHour*60+durMin)||0; // total minutes, 0=no limit
+  var refSheetTog=$('tog_refSheet');
+  var hasRef=refSheetTog&&refSheetTog.getAttribute('data-on')==='1';
+  var refSheet=hasRef?($('exRefSheet').value||'').trim():'';
+  var openTog=$('tog_examOpen');
+  var examOpen=openTog?openTog.getAttribute('data-on')==='1':true;
   var exam={title:title,subj:$('exSubj').value,timeLimit:timeLimit,qs:qs,vis:vis,
-    date:new Date().toLocaleDateString('ar-EG'),createdBy:userName};
+    date:new Date().toLocaleDateString('ar-EG'),createdBy:userName,creatorPhone:userPhone,
+    examDuration:examDuration,refSheet:refSheet,examOpen:examOpen,participants:[]};
   exam.code=generateCode(exam); // The FULL self-contained code (works on any device)
   exam.link=buildExamLink(exam);
   savedExams.push(exam);
@@ -2998,6 +3182,10 @@ function saveExam(){
 function generateCode(exam){
   try{
     var mini={t:exam.title,s:exam.subj||'h',l:exam.timeLimit||30,
+      d:exam.examDuration||0,
+      ref:exam.refSheet||'',
+      open:exam.examOpen!==false?1:0,
+      cp:exam.creatorPhone||'',
       q:(exam.qs||[]).map(function(q){return [q.q,q.o,q.a,q.h||'',q.e||'',q.img||''];})};
     var json=JSON.stringify(mini);
     var b64=btoa(unescape(encodeURIComponent(json)));
@@ -3015,6 +3203,9 @@ function decodeCode(code){
     if(!mini||!mini.q||!mini.q.length) return null;
     return {
       title:mini.t||'امتحان',subj:mini.s||'h',timeLimit:mini.l||30,
+      examDuration:mini.d||0,refSheet:mini.ref||'',
+      examOpen:mini.open!==0,creatorPhone:mini.cp||'',
+      participants:mini.participants||[],
       qs:mini.q.map(function(r){return {q:r[0],o:r[1],a:r[2],h:r[3]||'',e:r[4]||'',img:r[5]||''};}),
       code:code
     };
@@ -3029,6 +3220,17 @@ function buildExamLink(exam){
 function buildQrScreen(exam){
   currentExam=exam;
   $('qrTitle').textContent='\u2705 '+exam.title;
+  // Set open/close button state
+  var openBtn=$('examOpenToggleBtn');
+  if(openBtn){
+    var isOpen=exam.examOpen!==false;
+    openBtn.textContent=isOpen?'🔓 مفتوح — اضغط لإغلاق':'🔒 مغلق — اضغط لفتح';
+    openBtn.style.background=isOpen?'rgba(39,174,96,.1)':'rgba(192,57,43,.1)';
+    openBtn.style.color=isOpen?'#27ae60':'var(--hist2)';
+    openBtn.style.borderColor=isOpen?'rgba(39,174,96,.3)':'rgba(192,57,43,.3)';
+  }
+  // Render participants
+  setTimeout(function(){renderParticipants(exam);},100);
   $('examCodeShort').textContent=exam.code.substring(0,32)+'...';
   $('examCodeLong').textContent=exam.code;
   var link=exam.link||buildExamLink(exam);
@@ -4481,6 +4683,20 @@ function openSettings(){
     var rb=$('setUserRole');
     rb.textContent=role==='t'?'معلم':'طالب';
     rb.className='hdr-badge '+(role==='t'?'t':'s');
+    // Show subject/stream info
+    var extra=$('setUserExtra');
+    if(extra){
+      var extraTxt='';
+      if(role==='t'){
+        var subjNames={h:'📜 تاريخ',g:'🗺️ جغرافيا',a:'📝 عربي',s:'📊 إحصاء',p:'⚡ فيزياء'};
+        extraTxt='المادة: '+(subjNames[teacherSubject]||teacherSubject||'—');
+      } else {
+        var streamNames={adabi:'📜 أدبي',olom:'🔬 علمي علوم',riada:'📐 علمي رياضة'};
+        extraTxt='الشعبة: '+(streamNames[userStream]||userStream||'—');
+      }
+      extra.textContent=extraTxt;
+      extra.style.display='block';
+    }
     // Force-save correct role to identity every time settings opens
     try{
       var ikey='y3_identity_'+userPhone;
@@ -4533,6 +4749,11 @@ function openSettings(){
   if(cur) cur.classList.add('sel');
   // Load backup settings
   try{loadBackupSettings();}catch(e){}
+  // Safety: ensure role variable is correct
+  try{
+    var _sess2=JSON.parse(localStorage.getItem('y3_session')||'null');
+    if(_sess2&&_sess2.role==='t') role='t';
+  }catch(e){}
   goScreen('settingsScreen');
 }
 
@@ -4567,6 +4788,11 @@ function goProfile(){
   // Hide stats section for teacher
   var statsEl=document.querySelector('#profileScreen .prof-stats-grid');
   if(statsEl) statsEl.closest('.prof-card').style.display=role==='t'?'':'block';
+  // Safety: ensure role variable is correct before going to profile
+  try{
+    var _sess=JSON.parse(localStorage.getItem('y3_session')||'null');
+    if(_sess&&_sess.role==='t') role='t';
+  }catch(e){}
   goScreen('profileScreen');
 }
 
@@ -5192,12 +5418,20 @@ try{ checkLogin(); }catch(e){}
     // Restore session — cross-check with identity lock
     var savedIdent=null;
     try{savedIdent=JSON.parse(localStorage.getItem('y3_identity_'+sess.phone)||'null');}catch(e){}
-    // Trust identity role over session role (identity is permanent)
-    var restoredRole = (savedIdent&&savedIdent.role) ? savedIdent.role : sess.role;
+    // Trust identity role over session role, BUT teacher session always wins
+    var restoredRole = sess.role==='t' ? 't' : ((savedIdent&&savedIdent.role) ? savedIdent.role : sess.role);
     userName=sess.name; userPhone=sess.phone; role=restoredRole; pickedRole=restoredRole;
     userGender=sess.gender||(savedIdent&&savedIdent.gender)||'m';
     userStream=sess.stream||(savedIdent&&savedIdent.stream)||(restoredRole==='t'?'':'adabi');
     teacherSubject=sess.teacherSubject||(savedIdent&&savedIdent.teacherSubject)||(restoredRole==='t'?'h':'');
+    // If restored as teacher, ensure role stays 't' in identity
+    if(restoredRole==='t'){
+      try{
+        var ikey2='y3_identity_'+sess.phone;
+        var idata2=JSON.parse(localStorage.getItem(ikey2)||'{}');
+        if(idata2.role!=='t'){idata2.role='t';localStorage.setItem(ikey2,JSON.stringify(idata2));}
+      }catch(e){}
+    }
     // Update session with corrected role
     try{localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,role:restoredRole,gender:userGender,stream:userStream,teacherSubject:teacherSubject}));}catch(e){}
     appLang=sess.lang||'ar';
@@ -5230,14 +5464,14 @@ try{ checkLogin(); }catch(e){}
   try{
     var sess=JSON.parse(localStorage.getItem('y3_session')||'null');
     if(!sess||!sess.phone||!sess.role) return;
-    var key='y3_identity_'+sess.phone;
-    var ident=JSON.parse(localStorage.getItem(key)||'{}');
-    // Only add role to identity if identity has NO role (first time)
-    // Never override existing identity role
-    if(!ident.role && sess.role){
-      ident.role=sess.role;
+    // Teacher session always wins - never downgrade teacher to student
+    if(sess.role==='t'){
+      var key='y3_identity_'+sess.phone;
+      var ident=JSON.parse(localStorage.getItem(key)||'{}');
+      ident.role='t';
       ident.name=sess.name||ident.name||'';
       ident.phone=sess.phone;
+      ident.teacherSubject=sess.teacherSubject||ident.teacherSubject||'h';
       localStorage.setItem(key,JSON.stringify(ident));
     }
   }catch(e){}
@@ -5315,30 +5549,47 @@ function sendBrowserNotif(title, body, icon){
   if(!('Notification' in window)) return;
   if(Notification.permission!=='granted') return;
   try{
-    var n=new Notification(title,{
-      body:body||'',
-      icon:icon||'',
-      badge:'',
-      tag:'y3_notif_'+Date.now(),
-      renotify:true,
-      requireInteraction:false
-    });
-    n.onclick=function(){window.focus();n.close();};
-    setTimeout(function(){n.close();},8000);
+    // Try via Service Worker (needed for badge support)
+    var swReg=window._swReg||null;
+    if(swReg && swReg.showNotification){
+      swReg.showNotification(title,{
+        body:body||'',icon:icon||'',tag:'y3_notif_'+Date.now(),
+        renotify:true,requireInteraction:false,
+        actions:[{action:'open',title:'فتح التطبيق'}]
+      });
+    } else {
+      var n=new Notification(title,{body:body||'',icon:icon||'',
+        tag:'y3_notif_'+Date.now(),renotify:true});
+      n.onclick=function(){window.focus();n.close();};
+      setTimeout(function(){n.close();},8000);
+    }
   }catch(e){}
 }
 
-// Badge counter on chat FAB
+// ══ NOTIFICATION BADGE SYSTEM ══
 var _notifCount=0;
-function addNotifBadge(count){
+var _notifItems=[]; // {type, from, msg, time}
+
+function addNotifBadge(count, item){
   _notifCount+=count;
+  if(item) _notifItems.push(item);
   updateNotifBadge();
+  updateAppBadge(_notifCount);
 }
 function clearNotifBadge(){
   _notifCount=0;
+  _notifItems=[];
   updateNotifBadge();
+  updateAppBadge(0);
 }
 function updateNotifBadge(){
+  // Update in-app notification counter in header
+  var headerBadge=$('headerNotifBadge');
+  if(headerBadge){
+    headerBadge.textContent=_notifCount>99?'99+':_notifCount;
+    headerBadge.style.display=_notifCount>0?'flex':'none';
+  }
+  // Update chat FAB badge
   var fab=$('chatFab'); if(!fab) return;
   var badge=fab.querySelector('.notif-badge');
   if(_notifCount>0){
@@ -5357,6 +5608,50 @@ function updateNotifBadge(){
   }
 }
 
+// ── App icon badge (PWA - shows number on app icon) ──
+function updateAppBadge(count){
+  try{
+    if('setAppBadge' in navigator){
+      if(count>0) navigator.setAppBadge(count).catch(function(){});
+      else navigator.clearAppBadge().catch(function(){});
+    }
+  }catch(e){}
+}
+
+// ── In-app notification dropdown ──
+function toggleNotifDropdown(){
+  // Support both student and teacher dropdowns
+  var dd=$('notifDropdown')||$('notifDropdownT');
+  if(!dd) return;
+  var isOpen=dd.style.display==='block';
+  // Close all dropdowns first
+  [$('notifDropdown'),$('notifDropdownT')].forEach(function(d){if(d)d.style.display='none';});
+  if(!isOpen){
+    dd.style.display='block';
+    renderNotifDropdown(dd);
+    setTimeout(function(){clearNotifBadge();},2000);
+  }
+}
+
+function renderNotifDropdown(dd){
+  if(!dd) dd=$('notifDropdown')||$('notifDropdownT');
+  if(!dd) return;
+  if(!_notifItems.length){
+    dd.innerHTML='<div style="text-align:center;padding:16px;color:var(--text3);font-size:.75rem">لا توجد إشعارات جديدة</div>';
+    return;
+  }
+  var html='<div style="font-size:.72rem;font-weight:bold;color:var(--text3);padding:8px 12px;border-bottom:1px solid var(--border)">الإشعارات</div>';
+  _notifItems.slice().reverse().forEach(function(n){
+    var icons={friend:'👤',message:'💬',group:'👥',exam:'📋'};
+    html+='<div style="display:flex;gap:8px;align-items:flex-start;padding:10px 12px;border-bottom:1px solid var(--border)">'+
+      '<span style="font-size:1.1rem">'+(icons[n.type]||'🔔')+'</span>'+
+      '<div style="flex:1"><div style="font-size:.78rem;font-weight:bold">'+safeHtml(n.from||'')+'</div>'+
+      '<div style="font-size:.7rem;color:var(--text2)">'+safeHtml(n.msg||'')+'</div>'+
+      '<div style="font-size:.6rem;color:var(--text3)">'+n.time+'</div></div>'+
+    '</div>';
+  });
+  dd.innerHTML=html;
+}
 
 function submitEssayAns(){
   var q=S.qs[S.cur]; if(!q||S.answered) return;
@@ -5690,6 +5985,7 @@ function pollGroupInvites(){
               changed=true;
               toast('📨 تمت إضافتك لقروب: '+data.groupName,'ok');
               sendBrowserNotif('👥 تمت إضافتك لقروب',data.fromName+' أضافك لـ '+data.groupName);
+              addNotifBadge(1,{type:'group',from:data.fromName||'شخص',msg:'أضافك لـ '+(data.groupName||''),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
             }
           }
           if(data.type==='group_join'&&data.groupId){
@@ -5755,6 +6051,7 @@ function pollGroupMsgs(){
       if(newFromOther.length){
         playMsgSound();
         sendBrowserNotif('💬 '+getGroupById(currentGroupId).name, newFromOther[0].name+': '+(newFromOther[0].msg||'صورة').substring(0,50));
+      addNotifBadge(newFromOther.length,{type:'message',from:newFromOther[0].name||'شخص',msg:(newFromOther[0].msg||'صورة').substring(0,50),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
       }
     }).catch(function(){});
 }
@@ -6073,6 +6370,7 @@ function pollGroupNotifications(){
             saveGroups(grpList);
           }
           sendBrowserNotif('💬 '+g.name,newMsgs[0].name+': '+(newMsgs[0].msg||'صورة').substring(0,50));
+        addNotifBadge(newMsgs.length,{type:'message',from:newMsgs[0].name||'شخص',msg:'في '+g.name+': '+(newMsgs[0].msg||'صورة').substring(0,40),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
           addNotifBadge(newMsgs.length);
           if($('groupsOverlay').style.display==='flex') renderGroupsList();
         }
@@ -6881,6 +7179,7 @@ function pollFriendRequests(){
               });
               changed=true;
               sendBrowserNotif('📬 طلب إضافة جديد',(data.fromName||'شخص')+' يريد إضافتك كصديق');
+              addNotifBadge(1,{type:'friend',from:data.fromName||'شخص',msg:'يريد إضافتك كصديق',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
               addNotifBadge(1);
             }
           }
@@ -6898,6 +7197,7 @@ function pollFriendRequests(){
               });
               saveContacts(contacts);
               sendBrowserNotif('🎉 قبول طلب الإضافة',data.fromName+' قبل طلبك!');
+              addNotifBadge(1,{type:'friend',from:data.fromName||'شخص',msg:'قبل طلب إضافتك! 🎉',time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
               addNotifBadge(1);
               toast('🎉 '+data.fromName+' قبل طلب الإضافة!','ok');
               changed=true;
@@ -7124,6 +7424,7 @@ function pollPrivateMsgs(){
       playMsgSound();
       if(!chatOpen||currentPcPhone!==newFromOther[0].phone){
         sendBrowserNotif('💬 رسالة خاصة جديدة', (newFromOther[0].name||'شخص')+': '+newFromOther[0].msg.substring(0,60));
+        addNotifBadge(1,{type:'message',from:newFromOther[0].name||'شخص',msg:newFromOther[0].msg.substring(0,60),time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
         addNotifBadge(newFromOther.length);
       }
     }
@@ -7257,6 +7558,182 @@ function quickArabicExam(mode){
   $('gTitle').textContent=S.label;
   resetPlay();
 }
+// ── Exam duration summary ──
+function updDurSummary(){
+  var h=parseInt($('exDurHour')?$('exDurHour').value:0)||0;
+  var m=parseInt($('exDurMin')?$('exDurMin').value:0)||0;
+  var el=$('durSummary'); if(!el) return;
+  if(h===0&&m===0){ el.textContent='مدة الامتحان: بدون حد زمني'; return; }
+  var txt='مدة الامتحان: '+(h?h+' ساعة ':'')+( m?m+' دقيقة':'');
+  el.textContent=txt;
+}
+
+// ── Reference sheet toggle ──
+function toggleRefSheet(){
+  var tog=$('tog_refSheet'); if(!tog) return;
+  var on=tog.getAttribute('data-on')==='1';
+  var box=$('refSheetBox'); if(box) box.style.display=on?'block':'none';
+  if(tog) tog.textContent=on?'✅ يوجد ورقة مرجعية':'بدون ورقة مرجعية';
+}
+
+// ── Exam open/close ──
+function updExamStatus(){
+  var tog=$('tog_examOpen'); if(!tog) return;
+  var open=tog.getAttribute('data-on')==='1';
+  tog.textContent=open?'🔓 مفتوح':'🔒 مغلق';
+  tog.style.background=open?'rgba(39,174,96,.1)':'rgba(192,57,43,.1)';
+  tog.style.color=open?'#27ae60':'var(--hist2)';
+  tog.style.borderColor=open?'rgba(39,174,96,.3)':'rgba(192,57,43,.3)';
+  var hint=$('examStatusHint');
+  if(hint) hint.textContent=open?'الطلاب يقدروا يدخلوا الامتحان الآن':'الامتحان مغلق — الطلاب مش يقدروا يدخلوا';
+}
+
+// ── Override toggleTog to handle refSheet ──
+var _origToggleTog=null;
+(function(){
+  var orig=typeof toggleTog==='function'?toggleTog:null;
+  if(orig) window.toggleTog=function(btn){
+    orig(btn);
+    if(btn&&btn.id==='tog_refSheet') toggleRefSheet();
+  };
+})();
+
+// ══ EXAM PARTICIPANTS ══
+// Save participant when student enters exam
+function recordParticipant(examCode, name, phone){
+  try{
+    var key='y3_participants_'+examCode;
+    var list=JSON.parse(localStorage.getItem(key)||'[]');
+    if(!list.find(function(p){return p.phone===phone;})){
+      list.push({name:name,phone:phone,joinedAt:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+      localStorage.setItem(key,JSON.stringify(list));
+    }
+  }catch(e){}
+}
+function getParticipants(examCode){
+  try{return JSON.parse(localStorage.getItem('y3_participants_'+examCode)||'[]');}catch(e){return [];}
+}
+
+// ══ REFERENCE SHEET BUTTON in game screen ══
+function closeRefSheet(){var o=$('refSheetOverlay');if(o)o.style.display='none';}
+function showRefSheet(){
+  var rs=currentExam&&currentExam.refSheet;
+  if(!rs) return;
+  var overlay=$('refSheetOverlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='refSheetOverlay';
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9995;display:flex;align-items:center;justify-content:center;padding:20px';
+    var inner=document.createElement('div');
+    inner.style.cssText='background:var(--bg2);border-radius:16px;padding:20px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto;position:relative';
+    var closeBtn=document.createElement('button');
+    closeBtn.textContent='✕';
+    closeBtn.setAttribute('onclick','closeRefSheet()');
+    closeBtn.style.cssText='position:absolute;top:10px;left:10px;background:var(--bg3);border:none;border-radius:8px;padding:5px 10px;color:var(--text);cursor:pointer';
+    var title=document.createElement('div');
+    title.style.cssText='font-size:.9rem;font-weight:bold;margin-bottom:12px;text-align:center';
+    title.textContent='📚 الورقة المرجعية';
+    var content=document.createElement('div');
+    content.id='refSheetContent';
+    content.style.cssText='font-size:.82rem;line-height:1.9;white-space:pre-wrap;direction:rtl;color:var(--text)';
+    inner.appendChild(closeBtn);inner.appendChild(title);inner.appendChild(content);
+    overlay.appendChild(inner);
+    document.body.appendChild(overlay);
+  }
+  var cont=document.getElementById('refSheetContent');
+  if(cont) cont.textContent=rs;
+  overlay.style.display='flex';
+}
+
+// ── Student exam entry form ──
+function updateEntryBtn(){
+  var name=($('entryName')||{}).value||'';
+  var phone=($('entryPhone')||{}).value||'';
+  var btn=$('entryStartBtn');
+  if(!btn) return;
+  var ok=name.trim().length>=2 && phone.trim().length>=10;
+  btn.disabled=!ok;
+  btn.style.opacity=ok?'1':'0.5';
+}
+
+function openExamEntryForm(){
+  // Pre-fill if logged in
+  if(userName && userName!=='زائر'){
+    var ni=$('entryName'); if(ni) ni.value=userName;
+  }
+  if(userPhone && userPhone!=='guest'){
+    var pi=$('entryPhone'); if(pi) pi.value=userPhone;
+  }
+  updateEntryBtn();
+  var popup=$('examFoundPopup');
+  if(popup) popup.style.display='flex';
+}
+
+function startExamWithEntry(){
+  var name=($('entryName')||{}).value.trim();
+  var phone=($('entryPhone')||{}).value.trim();
+  var group=($('entryGroup')||{}).value.trim();
+  if(!name||name.length<2){toast('⚠️ اكتب اسمك','err');return;}
+  if(!phone||phone.length<10){toast('⚠️ اكتب رقم هاتفك','err');return;}
+  // Save entry info
+  if(!userName||userName==='زائر'){userName=name;userPhone=phone;}
+  // Record participant with group
+  if(scannedExam){
+    var key='y3_participants_'+(scannedExam.code||scannedExam.title);
+    try{
+      var list=JSON.parse(localStorage.getItem(key)||'[]');
+      if(!list.find(function(p){return p.phone===phone;})){
+        list.push({name:name,phone:phone,group:group||'—',
+          joinedAt:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+        localStorage.setItem(key,JSON.stringify(list));
+      }
+    }catch(e){}
+  }
+  closeExamPopup();
+  startScannedExam();
+}
+
+// ══ Participants list in qrShare screen ══
+function renderParticipants(exam){
+  var key='y3_participants_'+(exam.code||exam.title);
+  var list=[];
+  try{list=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+  var el=$('participantsList'); if(!el) return;
+  if(!list.length){
+    el.innerHTML='<div style="text-align:center;padding:12px;color:var(--text3);font-size:.75rem">لا يوجد طلاب دخلوا بعد</div>';
+    return;
+  }
+  var html='';
+  list.forEach(function(p,i){
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:10px;margin-bottom:6px">'+
+      '<div style="width:28px;height:28px;border-radius:50%;background:rgba(33,150,243,.2);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:bold;color:var(--geo2)">'+(i+1)+'</div>'+
+      '<div style="flex:1">'+
+        '<div style="font-size:.8rem;font-weight:bold">'+safeHtml(p.name)+'</div>'+
+        '<div style="font-size:.65rem;color:var(--text2)">'+p.phone+(p.group&&p.group!=='—'?' • '+safeHtml(p.group):'')+'</div>'+
+      '</div>'+
+      '<div style="font-size:.62rem;color:var(--text3)">'+p.joinedAt+'</div>'+
+    '</div>';
+  });
+  el.innerHTML=html;
+}
+
+// ══ Toggle exam open/close from qrShare ══
+function toggleExamOpenFromShare(){
+  if(!currentExam) return;
+  currentExam.examOpen=!currentExam.examOpen;
+  var btn=$('examOpenToggleBtn');
+  if(btn){
+    btn.textContent=currentExam.examOpen?'🔓 مفتوح — اضغط لإغلاق':'🔒 مغلق — اضغط لفتح';
+    btn.style.background=currentExam.examOpen?'rgba(39,174,96,.1)':'rgba(192,57,43,.1)';
+    btn.style.color=currentExam.examOpen?'#27ae60':'var(--hist2)';
+    btn.style.borderColor=currentExam.examOpen?'rgba(39,174,96,.3)':'rgba(192,57,43,.3)';
+  }
+  // Update in savedExams
+  var idx=savedExams.findIndex(function(e){return e.code===currentExam.code;});
+  if(idx>-1) savedExams[idx].examOpen=currentExam.examOpen;
+  toast(currentExam.examOpen?'🔓 الامتحان مفتوح':'🔒 الامتحان مغلق','ok');
+}
+
 function scrollPcMsgs(){var el=$('pcMsgs');if(el)el.scrollTop=el.scrollHeight;}
 
 function showPcOffline(){
