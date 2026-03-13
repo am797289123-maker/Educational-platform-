@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>منصة ثالثة ثانوي — تاريخ وجغرافيا</title>
-<meta name="application-name" content="ثالثة ثانوي">
+<title>منصة تعليمية</title>
+<meta name="application-name" content="منصة تعليمية">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ثالثة ثانوي">
+<meta name="apple-mobile-web-app-title" content="منصة تعليمية">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#c0392b">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -112,6 +112,26 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 .qtype-btn{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);
   color:var(--text2);font-family:Tajawal,sans-serif;font-size:.72rem;cursor:pointer;}
 .qtype-btn.sel{background:var(--geo2);color:#fff;border-color:var(--geo2);}
+/* Bubble Sheet Styles */
+.bs-model-btn{padding:10px 0;border-radius:10px;font-size:.95rem;font-weight:900;cursor:pointer;font-family:Tajawal,sans-serif;border:2px solid var(--border);background:var(--bg2);color:var(--text2);transition:all .15s;}
+.bs-model-btn.bs-sel{border-color:#9c27b0;background:rgba(156,39,176,.18);color:#9c27b0;}
+.bs-bubble-row{display:flex;align-items:center;gap:0;padding:8px 10px;border-radius:12px;background:var(--bg3);border:1.5px solid var(--border);transition:all .2s;}
+.bs-bubble-row.bs-answered{border-color:rgba(156,39,176,.35);background:rgba(156,39,176,.04);}
+.bs-bubble-row.bs-double{border-color:rgba(255,152,0,.5);background:rgba(255,152,0,.06);}
+.bs-q-num{min-width:28px;font-size:.78rem;font-weight:700;color:var(--text2);text-align:center;}
+.bs-q-txt{flex:1;font-size:.82rem;color:var(--text);line-height:1.4;padding:0 6px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.bs-circle{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,255,255,.18);background:transparent;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;color:var(--text2);transition:all .15s;flex-shrink:0;margin:0 2px;}
+.bs-circle.bs-filled{background:#9c27b0;border-color:#9c27b0;color:#fff;transform:scale(1.08);}
+.bs-circle.bs-double-filled{background:#ff9800;border-color:#ff9800;color:#fff;}
+.bs-ov-dot{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;cursor:pointer;color:var(--text2);transition:all .15s;}
+.bs-ov-dot.bs-ov-done{background:#9c27b0;border-color:#9c27b0;color:#fff;}
+.bs-ov-dot.bs-ov-cur{border-color:var(--geo2);color:var(--geo2);font-weight:900;}
+.bs-opt-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;border:2px solid var(--border);background:var(--bg3);cursor:pointer;font-family:Tajawal,sans-serif;transition:all .15s;width:100%;}
+.bs-opt-btn:active{transform:scale(.97);}
+.bs-opt-btn.bs-opt-sel{border-color:#9c27b0;background:rgba(156,39,176,.1);}
+.bs-opt-bubble{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;flex-shrink:0;transition:all .15s;color:var(--text2);}
+.bs-opt-btn.bs-opt-sel .bs-opt-bubble{background:#9c27b0;border-color:#9c27b0;color:#fff;}
+.bs-opt-text{font-size:.88rem;color:var(--text);line-height:1.4;text-align:right;flex:1;}
 .panel{display:none;}.panel.active{display:block;}
 .sec-hd{font-size:.76rem;font-weight:700;color:var(--text3);margin-bottom:9px;display:flex;align-items:center;gap:5px;}
 .ch-card{background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:11px 13px;
@@ -614,7 +634,7 @@ select.inp{cursor:pointer;}
 // ── Inline PWA Manifest ──
 (function(){
   var manifest={
-    name:'منصة ثالثة ثانوي',short_name:'ثالثة ثانوي',
+    name:'منصة تعليمية',short_name:'تعليمية',
     start_url:'./',display:'standalone',
     background_color:'#07060f',theme_color:'#07060f',
     icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%2307060f"/><text y=".9em" font-size="80" x="10">🎓</text></svg>',sizes:'512x512',type:'image/svg+xml'}]
@@ -629,7 +649,7 @@ if('serviceWorker' in navigator){
   var swCode=`
 self.addEventListener('push',function(e){
   var data=e.data?e.data.json():{};
-  self.registration.showNotification(data.title||'منصة ثالثة ثانوي',{
+  self.registration.showNotification(data.title||'منصة تعليمية',{
     body:data.body||'',icon:data.icon||'',badge:data.badge||'',
     tag:data.tag||'y3_notif',renotify:true,
     data:{url:data.url||self.location.origin}
@@ -894,11 +914,11 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
     <div class="set-section">
       <div class="set-hd">ℹ️ معلومات</div>
       <div class="set-row">
-        <div><div class="set-lbl">الإصدار</div><div class="set-sub">منصة ثالثة ثانوي</div></div>
+        <div><div class="set-lbl">الإصدار</div><div class="set-sub">منصة تعليمية</div></div>
         <div style="font-size:.75rem;color:var(--gold2)">v3.0</div>
       </div>
       <div class="set-row">
-        <div><div class="set-lbl">المادة</div><div class="set-sub">تاريخ وجغرافيا</div></div>
+        <div><div class="set-lbl">المادة</div><div class="set-sub">كل المراحل والمواد</div></div>
         <div style="font-size:.75rem;color:var(--text2)">الثانوية العامة</div>
       </div>
     </div>
@@ -969,8 +989,8 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
     </div>
     <div class="login-logo">
       <span class="login-emoji">🎓</span>
-      <div class="login-title" id="loginTitle">منصة ثالثة ثانوي</div>
-      <div class="login-sub" id="loginSub">تاريخ • جغرافيا • اختبارات ذكية</div>
+      <div class="login-title" id="loginTitle">منصة تعليمية</div>
+      <div class="login-sub" id="loginSub">اختبارات ذكية لكل المراحل</div>
     </div>
     <div class="divider"></div>
     <div style="text-align:center;margin-bottom:12px">
@@ -1017,7 +1037,48 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
       </div>
     </div>
 
-    <!-- Student stream -->
+    <!-- Student: Stage/Grade/Term/Stream (shown based on role=s) -->
+    <!-- المرحلة -->
+    <div id="stageSection" style="display:none">
+      <label class="lbl">🏫 المرحلة الدراسية</label>
+      <div class="role-row" style="flex-wrap:wrap;gap:8px">
+        <div class="role-card" id="stageIbtidai" onclick="pickStage('ibtidai')" ontouchstart="">
+          <span class="ri">📖</span>
+          <div class="rn">ابتدائي</div>
+        </div>
+        <div class="role-card" id="stageIedadi" onclick="pickStage('iedadi')" ontouchstart="">
+          <span class="ri">📗</span>
+          <div class="rn">إعدادي</div>
+        </div>
+        <div class="role-card" id="stageThanawy" onclick="pickStage('thanawy')" ontouchstart="">
+          <span class="ri">🎓</span>
+          <div class="rn">ثانوي</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الصف -->
+    <div id="gradeSection" style="display:none">
+      <label class="lbl">📅 الصف الدراسي</label>
+      <div class="role-row" id="gradeRow" style="flex-wrap:wrap;gap:8px"></div>
+    </div>
+
+    <!-- الترم -->
+    <div id="termSection" style="display:none">
+      <label class="lbl">📆 الترم</label>
+      <div class="role-row" style="gap:8px">
+        <div class="role-card" id="term1Card" onclick="pickTerm(1)" ontouchstart="">
+          <span class="ri">1️⃣</span>
+          <div class="rn">الترم الأول</div>
+        </div>
+        <div class="role-card" id="term2Card" onclick="pickTerm(2)" ontouchstart="">
+          <span class="ri">2️⃣</span>
+          <div class="rn">الترم الثاني</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- الشعبة (ثالثة ثانوي بس) -->
     <div id="streamSection" style="display:none">
       <label class="lbl" id="lblStream">📚 الشعبة</label>
       <div class="role-row">
@@ -1049,30 +1110,50 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
       </div>
     </div>
 
-    <!-- Teacher subject -->
+    <!-- Teacher subject (multi-select) -->
     <div id="teacherSubjectSection" style="display:none">
-      <label class="lbl" id="lblTeacherSubject">📖 مادتك</label>
-      <div class="role-row">
-        <div class="role-card" id="subjHist" onclick="pickTeacherSubject('h')">
-          <span class="ri">📜</span>
-          <div class="rn" id="subjHistLabel">تاريخ</div>
+      <label class="lbl">📖 موادك الدراسية <span style="font-size:.65rem;color:var(--text2)">(اختر واحدة أو أكثر)</span></label>
+      <div class="role-row" style="flex-wrap:wrap;gap:7px">
+        <div class="role-card" id="subjHist" onclick="toggleTeacherSubject('h')" style="min-width:70px;flex:1">
+          <span class="ri">📜</span><div class="rn" id="subjHistLabel">تاريخ</div>
         </div>
-        <div class="role-card" id="subjGeo" onclick="pickTeacherSubject('g')">
-          <span class="ri">🗺️</span>
-          <div class="rn" id="subjGeoLabel">جغرافيا</div>
+        <div class="role-card" id="subjGeo" onclick="toggleTeacherSubject('g')" style="min-width:70px;flex:1">
+          <span class="ri">🗺️</span><div class="rn" id="subjGeoLabel">جغرافيا</div>
         </div>
-        <div class="role-card" id="subjArab" onclick="pickTeacherSubject('a')">
-          <span class="ri">📝</span>
-          <div class="rn" id="subjArabLabel">عربي</div>
+        <div class="role-card" id="subjArab" onclick="toggleTeacherSubject('a')" style="min-width:70px;flex:1">
+          <span class="ri">📝</span><div class="rn">عربي</div>
         </div>
-        <div class="role-card" id="subjStats" onclick="pickTeacherSubject('s')">
-          <span class="ri">📊</span>
-          <div class="rn" id="subjStatsLabel">إحصاء</div>
+        <div class="role-card" id="subjStats" onclick="toggleTeacherSubject('s')" style="min-width:70px;flex:1">
+          <span class="ri">📊</span><div class="rn">إحصاء</div>
         </div>
-        <div class="role-card" id="subjPhys" onclick="pickTeacherSubject('p')">
-          <span class="ri">⚡</span>
-          <div class="rn" id="subjPhysLabel">فيزياء</div>
+        <div class="role-card" id="subjPhys" onclick="toggleTeacherSubject('p')" style="min-width:70px;flex:1">
+          <span class="ri">⚡</span><div class="rn">فيزياء</div>
         </div>
+        <div class="role-card" id="subjChem" onclick="toggleTeacherSubject('c')" style="min-width:70px;flex:1">
+          <span class="ri">🧪</span><div class="rn">كيمياء</div>
+        </div>
+        <div class="role-card" id="subjBio" onclick="toggleTeacherSubject('b')" style="min-width:70px;flex:1">
+          <span class="ri">🧬</span><div class="rn">أحياء</div>
+        </div>
+        <div class="role-card" id="subjMath" onclick="toggleTeacherSubject('m')" style="min-width:70px;flex:1">
+          <span class="ri">📐</span><div class="rn">رياضيات</div>
+        </div>
+        <div class="role-card" id="subjEng" onclick="toggleTeacherSubject('en')" style="min-width:70px;flex:1">
+          <span class="ri">🇬🇧</span><div class="rn">إنجليزي</div>
+        </div>
+      </div>
+      <!-- Teacher grade multi-select -->
+      <label class="lbl" style="margin-top:10px">🏫 الصفوف التي تدرّسها <span style="font-size:.65rem;color:var(--text2)">(اختر واحداً أو أكثر)</span></label>
+      <div class="role-row" style="flex-wrap:wrap;gap:6px" id="teacherGradeRow">
+        <div class="role-card" id="tg_g4" onclick="toggleTeacherGrade('g4')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">رابعة ابتدائي</div></div>
+        <div class="role-card" id="tg_g5" onclick="toggleTeacherGrade('g5')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">خامسة ابتدائي</div></div>
+        <div class="role-card" id="tg_g6" onclick="toggleTeacherGrade('g6')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">سادسة ابتدائي</div></div>
+        <div class="role-card" id="tg_g7" onclick="toggleTeacherGrade('g7')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">أولى إعدادي</div></div>
+        <div class="role-card" id="tg_g8" onclick="toggleTeacherGrade('g8')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">ثانية إعدادي</div></div>
+        <div class="role-card" id="tg_g9" onclick="toggleTeacherGrade('g9')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">ثالثة إعدادي</div></div>
+        <div class="role-card" id="tg_g10" onclick="toggleTeacherGrade('g10')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">أولى ثانوي</div></div>
+        <div class="role-card" id="tg_g11" onclick="toggleTeacherGrade('g11')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">ثانية ثانوي</div></div>
+        <div class="role-card" id="tg_g12" onclick="toggleTeacherGrade('g12')" style="min-width:65px;flex:1"><div class="rn" style="font-size:.72rem">ثالثة ثانوي</div></div>
       </div>
     </div>
 
@@ -1113,6 +1194,8 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
       <button class="stab" id="tab-a" onclick="swTab('a')" style="display:none">📝 عربي</button>
       <button class="stab" id="tab-s" onclick="swTab('s')" style="display:none">📊 إحصاء</button>
       <button class="stab" id="tab-p" onclick="swTab('p')" style="display:none">⚡ فيزياء</button>
+      <button class="stab" id="tab-en" onclick="swTab('en')" style="display:none">🇬🇧 إنجليزي</button>
+      <button class="stab" id="tab-bs" onclick="swTab('bs')" style="display:none">🔘 بابل شيت</button>
       <button class="stab aq" id="tab-q" onclick="swTab('q')" style="display:none">📷 QR</button>
     </div>
     <div class="panel active" id="pnl-h">
@@ -1258,6 +1341,72 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
         <div class="ex-card ex-g" onclick="quickPhysExam('unit2')"><span class="ex-icon">🔬</span><div class="ex-nm">الوحدة الثانية</div><div class="ex-d">فيزياء حديثة</div></div>
       </div>
     </div>
+    <!-- ══ ENGLISH PANEL ══ -->
+    <div class="panel" id="pnl-en">
+      <!-- Quick exams -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div class="ch-card" style="border-color:rgba(33,150,243,.3);cursor:pointer" onclick="quickEnglishExam('t1','all')">
+          <div style="font-size:1.4rem;margin-bottom:4px">📘</div>
+          <div style="font-size:.82rem;font-weight:700;color:#2196f3">ترم أول — شامل</div>
+          <div style="font-size:.7rem;color:var(--text2)">Units 1–6 + Story</div>
+        </div>
+        <div class="ch-card" style="border-color:rgba(33,150,243,.3);cursor:pointer" onclick="quickEnglishExam('t2','all')">
+          <div style="font-size:1.4rem;margin-bottom:4px">📗</div>
+          <div style="font-size:.82rem;font-weight:700;color:#2196f3">ترم ثاني — شامل</div>
+          <div style="font-size:.7rem;color:var(--text2)">Units 7–12 + Story</div>
+        </div>
+        <div class="ch-card" style="border-color:rgba(76,175,80,.3);cursor:pointer" onclick="quickEnglishExam('gr','all')">
+          <div style="font-size:1.4rem;margin-bottom:4px">📐</div>
+          <div style="font-size:.82rem;font-weight:700;color:#4caf50">Grammar — شامل</div>
+          <div style="font-size:.7rem;color:var(--text2)">كل قواعد الجرامر</div>
+        </div>
+        <div class="ch-card" style="border-color:rgba(229,57,53,.3);cursor:pointer" onclick="quickEnglishExam('all','hard')">
+          <div style="font-size:1.4rem;margin-bottom:4px">🔥</div>
+          <div style="font-size:.82rem;font-weight:700;color:#ef5350">تحدي سريع</div>
+          <div style="font-size:.7rem;color:var(--text2)">20 سؤال مختلط</div>
+        </div>
+      </div>
+      <!-- Sections -->
+      <div id="englishList"></div>
+    </div>
+    <!-- ══ BUBBLE SHEET PANEL (Student) ══ -->
+    <div class="panel" id="pnl-bs">
+      <!-- Header card -->
+      <div style="background:linear-gradient(135deg,rgba(156,39,176,.15),rgba(103,58,183,.1));border:1px solid rgba(156,39,176,.25);border-radius:16px;padding:16px;margin-bottom:14px;text-align:center">
+        <div style="font-size:2rem;margin-bottom:6px">🔘</div>
+        <div style="font-size:1rem;font-weight:700;color:#9c27b0;margin-bottom:4px">اختبار البابل شيت</div>
+        <div style="font-size:.78rem;color:var(--text2)">اختبار من معلمك — أجب على الأسئلة واحصل على نتيجتك فوراً</div>
+      </div>
+      <!-- Student fills their info and picks exam -->
+      <div class="form-card">
+        <div class="fc-title">📋 اختر الامتحان</div>
+        <select class="inp" id="stuBubbleExamSelect" onchange="stuBubbleExamChanged()">
+          <option value="">— اختر امتحاناً —</option>
+        </select>
+        <div id="stuBubbleModelBox" style="display:none;margin-top:10px">
+          <div style="font-size:.75rem;color:var(--text2);margin-bottom:6px">رقم نموذجك:</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px" id="stuBubbleModelBtns">
+            <button type="button" id="stuBsModelA" onclick="setStuBubbleModel('A')" class="bs-model-btn bs-sel">A</button>
+            <button type="button" id="stuBsModelB" onclick="setStuBubbleModel('B')" class="bs-model-btn">B</button>
+            <button type="button" id="stuBsModelC" onclick="setStuBubbleModel('C')" class="bs-model-btn">C</button>
+            <button type="button" id="stuBsModelD" onclick="setStuBubbleModel('D')" class="bs-model-btn">D</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="fc-title">👤 بياناتك</div>
+        <input class="inp" id="stuBsName" placeholder="اسمك الكامل">
+        <input class="inp" id="stuBsSubject" placeholder="اسم المادة">
+        <input class="inp" id="stuBsGroup" placeholder="المجموعة (اختياري)">
+        <input class="inp" id="stuBsPhone" placeholder="رقم هاتفك أو رقم جلوسك" type="tel">
+      </div>
+      <div style="padding:0 0 16px">
+        <button class="save-btn" onclick="startStuBubble()" style="width:100%;font-size:1rem;background:linear-gradient(135deg,#9c27b0,#673ab7)">
+          🔘 ابدأ اختبار البابل شيت
+        </button>
+      </div>
+    </div>
+
     <!-- ══ CONTACTS PANEL (legacy - friends now in profile) ══ -->
     <div class="panel" id="pnl-c" style="display:none">
       <div class="sec-hd">👥 أصدقائي ومعلميّ</div>
@@ -1308,6 +1457,7 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
       <div class="ac ac-bank" onclick="bankExam()"><span class="ac-ic">🏦</span><div class="ac-nm">من بنك الأسئلة</div><div class="ac-d">أسئلة جاهزة</div></div>
       <div class="ac ac-list" onclick="openMyExams()"><span class="ac-ic">📋</span><div class="ac-nm">اختباراتي</div><div class="ac-d">عرض وإدارة</div></div>
       <div class="ac ac-stat" onclick="openResultsPicker()"><span class="ac-ic">📊</span><div class="ac-nm">نتائج الطلاب</div><div class="ac-d">إحصائيات</div></div>
+      <div class="ac" style="background:rgba(156,39,176,.08);border-color:rgba(156,39,176,.25)" onclick="openBubbleScan()"><span class="ac-ic">📋</span><div class="ac-nm">نتائج البابل شيت</div><div class="ac-d">سجل الطلاب</div></div>
     </div>
     <div class="saved-box">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -1412,6 +1562,28 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
         <button id="tog_examOpen" class="tog-btn" data-on="1" onclick="toggleTog(this);updExamStatus()" style="flex:1;background:rgba(39,174,96,.1);color:#27ae60;border-color:rgba(39,174,96,.3)">🔓 مفتوح</button>
       </div>
       <div style="font-size:.62rem;color:var(--text2);margin-top:6px;text-align:center" id="examStatusHint">الطلاب يقدروا يدخلوا الامتحان الآن</div>
+      <!-- Auto-close after hours -->
+      <div style="margin-top:12px;padding:10px 12px;background:var(--bg3);border-radius:11px;border:1px solid var(--border)">
+        <div style="font-size:.78rem;font-weight:700;color:var(--text);margin-bottom:8px">⏳ إغلاق تلقائي بعد:</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center">
+          <div>
+            <div style="font-size:.65rem;color:var(--text2);margin-bottom:4px">ساعات</div>
+            <select class="inp" id="exCloseHour" style="text-align:center;padding:8px 4px">
+              <option value="0">بلا حد</option>
+              <option value="1">1 ساعة</option>
+              <option value="2">2 ساعة</option>
+              <option value="3">3 ساعات</option>
+              <option value="6">6 ساعات</option>
+              <option value="12">12 ساعة</option>
+              <option value="24">24 ساعة</option>
+              <option value="48">48 ساعة</option>
+            </select>
+          </div>
+          <div style="font-size:.68rem;color:var(--text2);line-height:1.5;padding-top:14px">
+            🔒 الامتحان يُغلق تلقائياً بعد هذا الوقت من لحظة الحفظ
+          </div>
+        </div>
+      </div>
     </div>
 
         <!-- Answer Visibility Settings -->
@@ -1468,6 +1640,28 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
     </div>
 
     <div class="form-card">
+      <div class="fc-title">📋 نظام النماذج</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button type="button" id="examTypeNormal" class="qtype-btn sel" onclick="setExamType('normal')" style="flex:1">📝 عادي</button>
+        <button type="button" id="examTypeBubble" class="qtype-btn" onclick="setExamType('bubble')" style="flex:1">🔘 بابل شيت</button>
+      </div>
+      <div id="modelCountBox" style="display:none;margin-bottom:8px">
+        <div style="font-size:.72rem;color:var(--text2);margin-bottom:6px">عدد النماذج:</div>
+        <div style="display:flex;gap:8px">
+          <button type="button" id="modelCount1" class="qtype-btn sel" onclick="setModelCount(1)" style="flex:1">نموذج واحد</button>
+          <button type="button" id="modelCount4" class="qtype-btn" onclick="setModelCount(4)" style="flex:1">4 نماذج (A B C D)</button>
+        </div>
+      </div>
+      <div id="bubbleInfoBox" style="display:none;padding:8px;background:rgba(156,39,176,.08);border-radius:10px;border:1px solid rgba(156,39,176,.2);font-size:.7rem;color:var(--text2);margin-bottom:8px">
+        🔘 <strong style="color:#9c27b0">بابل شيت:</strong> الطالب يختار إجابته على ورقة البابل شيت — وأنت تصحح هنا يدوياً أو بالمسح الضوئي. كل سؤال بيتحرك بين النماذج (أ في A ممكن تكون ج في B).
+      </div>
+      <div id="modelAssignBox" style="display:none">
+        <div style="font-size:.72rem;color:var(--text2);margin-bottom:6px">📌 تحديد نموذج لكل سؤال (اختياري — اتركه "عشوائي" للتوزيع التلقائي):</div>
+        <div id="modelAssignList"></div>
+      </div>
+    </div>
+
+    <div class="form-card">
       <div class="fc-title">❓ الأسئلة</div>
       <div id="qWrap"></div>
       <button class="add-q-btn" onclick="addQ()">➕ إضافة سؤال</button>
@@ -1476,6 +1670,117 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
       <button class="save-btn" onclick="saveDraft()" style="flex:1;background:rgba(33,150,243,.12);border-color:rgba(33,150,243,.25);color:var(--geo2)">📁 حفظ مسودة</button>
       <button class="save-btn" onclick="saveExam()" style="flex:1.4">💾 حفظ وإنشاء QR</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══ BUBBLE SCAN ═══ -->
+<div id="bubbleScanScreen" class="screen" style="overflow-y:auto">
+  <div class="app-hdr">
+    <button class="hdr-back" id="bsBackBtn" onclick="bubbleBack()">←</button>
+    <div class="hdr-info">
+      <div class="hdr-title" id="bsTitle">🔘 بابل شيت</div>
+      <div class="hdr-sub" id="bsSub">اختبار الطالب بنظام البابل شيت</div>
+    </div>
+    <button class="hdr-back" onclick="showBubbleHistory()" title="سجل الطلاب" style="font-size:.75rem;padding:4px 8px">📋</button>
+  </div>
+  <div class="cr-body">
+
+    <!-- STEP 1: بيانات الطالب + الامتحان -->
+    <div id="bsStep1">
+      <div class="form-card">
+        <div class="fc-title">📋 اختر الامتحان</div>
+        <select class="inp" id="bubbleExamSelect" onchange="bubbleScanExamChanged()">
+          <option value="">— اختر امتحاناً —</option>
+        </select>
+        <div id="bubbleModelSelectBox" style="display:none;margin-top:10px">
+          <div style="font-size:.75rem;font-weight:700;color:var(--text2);margin-bottom:7px">رقم النموذج:</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+            <button type="button" id="bsModelA" onclick="setBubbleModel('A')" class="bs-model-btn bs-sel">A</button>
+            <button type="button" id="bsModelB" onclick="setBubbleModel('B')" class="bs-model-btn">B</button>
+            <button type="button" id="bsModelC" onclick="setBubbleModel('C')" class="bs-model-btn">C</button>
+            <button type="button" id="bsModelD" onclick="setBubbleModel('D')" class="bs-model-btn">D</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="fc-title">👤 بيانات الطالب</div>
+        <input class="inp" id="bsStudentName" placeholder="اسم الطالب الكامل">
+        <input class="inp" id="bsStudentSubject" placeholder="اسم المادة">
+        <input class="inp" id="bsStudentGroup" placeholder="المجموعة (مثل: A — اختياري)">
+        <input class="inp" id="bsStudentPhone" placeholder="رقم الهاتف أو رقم الجلوس" type="tel">
+      </div>
+      <div style="padding:0 4px 16px">
+        <button class="save-btn" onclick="startBubbleExam()" style="width:100%;font-size:1rem">
+          ▶ ابدأ الاختبار
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: الأسئلة مع دوائر البابل شيت -->
+    <div id="bsStep2" style="display:none">
+      <!-- Progress bar -->
+      <div style="padding:0 0 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:.75rem;color:var(--text2)" id="bsQProgress">سؤال 1 من 10</span>
+          <span style="font-size:.75rem;font-weight:700;color:var(--geo2)" id="bsAnsweredCount">0 تمت الإجابة</span>
+        </div>
+        <div style="height:5px;border-radius:4px;background:var(--bg3);overflow:hidden">
+          <div id="bsProgressBar" style="height:100%;background:linear-gradient(90deg,#9c27b0,#2196f3);width:0%;transition:width .3s;border-radius:4px"></div>
+        </div>
+      </div>
+
+      <!-- Question card -->
+      <div class="form-card" id="bsQuestionCard">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <div id="bsQNum" style="min-width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#9c27b0,#673ab7);color:#fff;font-size:.82rem;font-weight:900;display:flex;align-items:center;justify-content:center">1</div>
+          <div id="bsQText" style="font-size:.92rem;font-weight:600;color:var(--text);line-height:1.5;flex:1"></div>
+        </div>
+        <!-- Question image if any -->
+        <div id="bsQImg" style="display:none;margin-bottom:10px">
+          <img id="bsQImgEl" style="max-width:100%;border-radius:10px;max-height:200px;object-fit:contain">
+        </div>
+        <!-- Bubble answer options — large circles like real bubble sheet -->
+        <div id="bsOptions" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+
+      <!-- Navigation -->
+      <div style="display:flex;gap:8px;padding:0 0 8px">
+        <button onclick="bsNavPrev()" id="bsPrevBtn" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:.9rem;cursor:pointer;font-family:Tajawal,sans-serif">→ السابق</button>
+        <button onclick="bsNavNext()" id="bsNextBtn" style="flex:1;padding:12px;border-radius:12px;border:1px solid rgba(156,39,176,.4);background:rgba(156,39,176,.1);color:#9c27b0;font-size:.9rem;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif">التالي ←</button>
+      </div>
+
+      <!-- Mini bubble sheet overview -->
+      <div class="form-card">
+        <div style="font-size:.75rem;font-weight:700;color:var(--text2);margin-bottom:8px">📊 نظرة عامة — اضغط على رقم للانتقال</div>
+        <div id="bsOverview" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+        <button onclick="finishBubbleExam()" id="bsFinishBtn" style="width:100%;margin-top:12px;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;font-family:Tajawal,sans-serif;display:none">
+          ✅ إنهاء وتصحيح الامتحان
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3: النتيجة -->
+    <div id="bsStep3" style="display:none">
+      <div class="form-card" id="bsResultCard">
+        <div id="bsResultBody"></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="save-btn" onclick="bsNewStudent()" style="flex:1;background:rgba(33,150,243,.12);border-color:rgba(33,150,243,.3);color:var(--geo2)">➕ طالب جديد</button>
+          <button class="save-btn" onclick="showBubbleHistory()" style="flex:1">📋 السجل</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: سجل الطلاب -->
+    <div id="bsStep4" style="display:none">
+      <div class="form-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="fc-title" style="margin-bottom:0">📋 سجل نتائج البابل شيت</div>
+          <button onclick="bsNewStudent()" style="font-size:.7rem;padding:5px 10px;border-radius:8px;border:1px solid rgba(33,150,243,.3);background:rgba(33,150,243,.1);color:var(--geo2);cursor:pointer;font-family:Tajawal,sans-serif">➕ جديد</button>
+        </div>
+        <div id="bubbleHistoryList"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1500,6 +1805,7 @@ self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim());}
     <!-- Exam Open/Close Toggle -->
     <div style="padding:0 0 10px 0">
       <button id="examOpenToggleBtn" onclick="toggleExamOpenFromShare()" style="width:100%;padding:11px;border-radius:12px;border:1px solid rgba(39,174,96,.3);background:rgba(39,174,96,.1);color:#27ae60;font-family:Tajawal,sans-serif;font-size:.85rem;font-weight:700;cursor:pointer">🔓 مفتوح — اضغط لإغلاق</button>
+      <div id="qrCloseInfo" style="display:none;text-align:center;font-size:.72rem;font-weight:700;margin-top:6px;padding:5px;border-radius:8px;background:rgba(255,152,0,.08)"></div>
     </div>
 
     <!-- Participants List -->
@@ -1620,6 +1926,15 @@ function pickLoginAvatar(input){
 // ════
 // DATA
 // ══════════════════════════════════════════
+// ── Result encouragement messages ──
+var RQ={
+  perfect:['أنت نجم! 🌟','ما شاء الله عليك!','استمر هكذا!'],
+  great:['أداء رائع!','تقدم ممتاز!','مستعد للامتحان!'],
+  good:['جيد جداً!','مراجعة بسيطة وستتميز!','أنت في الطريق الصحيح!'],
+  ok:['راجع الفصول الضعيفة!','ستتحسن مع التكرار!','لا تستسلم!'],
+  retry:['التكرار هو المفتاح!','راجع من الأول!','أنت قادر على التحسن!']
+};
+
 var HM=[
   {n:'الحملة الفرنسية على مصر والشام',s:'1798-1801م • نابليون • أبو قير • حجر رشيد'},
   {n:'بناء الدولة الحديثة في مصر',s:'محمد علي • توطيد السلطة • إسماعيل'},
@@ -2161,9 +2476,13 @@ function showCamStatus(ok, msg){
 // ══════════════════════════════════════════
 var pickedRole=null;
 var userGender='', userStream='', teacherSubject='', appLang='ar';
+var teacherSubjects=[], teacherGrades=[];
+// Exam type/model system
+var currentExamType='normal', currentModelCount=1;
+var questionModelAssign={}; // qIdx -> 'A'|'B'|'C'|'D'|'any'
 
 var LANG={
-  ar:{loginTitle:'منصة ثالثة ثانوي',loginSub:'تاريخ • جغرافيا • اختبارات ذكية',
+  ar:{loginTitle:'منصة تعليمية',loginSub:'اختبارات ذكية لكل المراحل',
     lblName:'👤 الاسم الكامل',lblPhone:'📱 رقم الهاتف',lblGender:'⚥ الجنس',
     genderM:'ولد',genderF:'بنت',lblRole:'👤 أنت؟',roleSLabel:'طالب',roleSDesc:'حل الاختبارات',
     roleTLabel:'معلم',roleTDesc:'إنشاء الاختبارات',lblStream:'📚 الشعبة',
@@ -2172,7 +2491,7 @@ var LANG={
     subRiada:'علمي رياضة',subRiadaDesc:'رياضة • فيزياء • كيمياء',
     lblTeacherSubject:'📖 مادتك',subjHist:'تاريخ',subjGeo:'جغرافيا',
     loginBtn:'دخول ←',langBtn:'🌐 English'},
-  en:{loginTitle:'Third Secondary Platform',loginSub:'History • Geography • Smart Quizzes',
+  en:{loginTitle:'Educational Platform',loginSub:'Smart Quizzes for All Grades',
     lblName:'👤 Full Name',lblPhone:'📱 Phone Number',lblGender:'⚥ Gender',
     genderM:'Boy',genderF:'Girl',lblRole:'👤 Who are you?',roleSLabel:'Student',roleSDesc:'Take quizzes',
     roleTLabel:'Teacher',roleTDesc:'Create quizzes',lblStream:'📚 Stream',
@@ -2229,22 +2548,97 @@ function pickSubStream(ss){
 
   checkLogin();
 }
-function pickTeacherSubject(subj){
-  teacherSubject=subj;
-  ['subjHist','subjGeo','subjArab','subjStats','subjPhys'].forEach(function(id){
-    var el=$(id); if(el) el.className='role-card';
+function toggleTeacherSubject(subj){
+  var idx=teacherSubjects.indexOf(subj);
+  if(idx===-1){teacherSubjects.push(subj);}else{teacherSubjects.splice(idx,1);}
+  teacherSubject=teacherSubjects[0]||'';
+  var ids={h:'subjHist',g:'subjGeo',a:'subjArab',s:'subjStats',p:'subjPhys',c:'subjChem',b:'subjBio',m:'subjMath',en:'subjEng'};
+  Object.keys(ids).forEach(function(k){
+    var el=$(ids[k]);if(el)el.className='role-card'+(teacherSubjects.indexOf(k)>-1?' sel-t':'');
   });
-  var map={h:'subjHist',g:'subjGeo',a:'subjArab',s:'subjStats',p:'subjPhys'};
-  if(map[subj] && $(map[subj])) $(map[subj]).className='role-card sel-t';
   checkLogin();
 }
+function pickTeacherSubject(subj){ toggleTeacherSubject(subj); } // legacy compat
+function toggleTeacherGrade(g){
+  var idx=teacherGrades.indexOf(g);
+  if(idx===-1){teacherGrades.push(g);}else{teacherGrades.splice(idx,1);}
+  document.querySelectorAll('#teacherGradeRow .role-card').forEach(function(el){
+    var gv=el.id.replace('tg_','');
+    el.className='role-card'+(teacherGrades.indexOf(gv)>-1?' sel-t':'');
+  });
+  checkLogin();
+}
+// Stage/Grade/Term state
+var pickedStage='', pickedGrade='', pickedTerm=0;
+
+var GRADES={
+  ibtidai:[{v:'g4',l:'رابعة ابتدائي'},{v:'g5',l:'خامسة ابتدائي'},{v:'g6',l:'سادسة ابتدائي'}],
+  iedadi:[{v:'g7',l:'أولى إعدادي'},{v:'g8',l:'ثانية إعدادي'},{v:'g9',l:'ثالثة إعدادي'}],
+  thanawy:[{v:'g10',l:'أولى ثانوي'},{v:'g11',l:'ثانية ثانوي'},{v:'g12',l:'ثالثة ثانوي'}]
+};
+
+function pickStage(s){
+  pickedStage=s; pickedGrade=''; pickedTerm=0;
+  ['ibtidai','iedadi','thanawy'].forEach(function(x){
+    var el=$('stageI'+x.charAt(0).toUpperCase()+x.slice(1));
+    if(el) el.className='role-card'+(s===x?' sel-s':'');
+  });
+  var grades=GRADES[s]||[];
+  var html='';
+  for(var i=0;i<grades.length;i++){
+    var gv=grades[i].v, gl=grades[i].l;
+    html+='<div class="role-card" id="grade_'+gv+'" onclick="pickGradeCard(this.dataset.g)" data-g="'+gv+'" ontouchstart=""><div class="rn" style="font-size:.8rem">'+gl+'</div></div>';
+  }
+  $('gradeRow').innerHTML=html;
+  $('gradeSection').style.display='block';
+  $('termSection').style.display='none';
+  $('streamSection').style.display='none';
+  checkLogin();
+}
+
+function pickGradeCard(g){
+  pickedGrade=g; pickedTerm=0;
+  document.querySelectorAll('#gradeRow .role-card').forEach(function(el){
+    el.className='role-card'+(el.id==='grade_'+g?' sel-s':'');
+  });
+  // g12 = ثالثة ثانوي: no term needed, show stream
+  if(g==='g12'){
+    $('termSection').style.display='none';
+    pickedTerm=1;
+    $('streamSection').style.display='block';
+  } else {
+    $('termSection').style.display='block';
+    $('streamSection').style.display='none';
+    userStream=''; // reset stream for non-g12
+  }
+  checkLogin();
+}
+
+function pickTerm(t){
+  pickedTerm=t;
+  $('term1Card').className='role-card'+(t===1?' sel-s':'');
+  $('term2Card').className='role-card'+(t===2?' sel-s':'');
+  // Show stream only for ثالثة ثانوي, otherwise hide
+  if(pickedGrade==='g12'){
+    $('streamSection').style.display='block';
+  } else {
+    $('streamSection').style.display='none';
+  }
+  checkLogin();
+}
+
 function pickRole(r){
   pickedRole=r;
   $('roleS').className='role-card'+(r==='s'?' sel-s':'');
   $('roleT').className='role-card'+(r==='t'?' sel-t':'');
-  $('streamSection').style.display=r==='s'?'block':'none';
+  // Show stage for students, subject for teachers
+  $('stageSection').style.display=r==='s'?'block':'none';
+  $('gradeSection').style.display='none';
+  $('termSection').style.display='none';
+  $('streamSection').style.display='none';
+  $('subStreamSection').style.display='none';
   $('teacherSubjectSection').style.display=r==='t'?'block':'none';
-  if(r==='t'){userStream='';}
+  if(r==='t'){userStream=''; pickedStage=''; pickedGrade=''; pickedTerm=0;}
   else{teacherSubject='';if($('subjHist'))$('subjHist').className='role-card';if($('subjGeo'))$('subjGeo').className='role-card';}
   checkLogin();
 }
@@ -2261,11 +2655,20 @@ $('phoneInp').addEventListener('input',function(){
 
 
 function checkLogin(){
-  // Just update button opacity - no side effects, no auto-select
   var n=$('nameInp').value.trim();
   var p=$('phoneInp').value.trim();
+  var stuOk=false;
+  if(pickedRole==='s'){
+    if(pickedGrade==='g12'){
+      stuOk=!!pickedGrade && !!userStream;
+    } else {
+      stuOk=!!pickedGrade && pickedTerm>0;
+    }
+    stuOk=stuOk && !!pickedStage;
+  }
+  var teacherOk=(teacherSubjects.length>0)||!!teacherSubject;
   var allOk=(n.length>=2 && p.length>=10 && !!pickedRole && !!userGender &&
-    (pickedRole==='s' ? !!userStream : pickedRole==='t' ? !!teacherSubject : false));
+    (pickedRole==='s' ? stuOk : pickedRole==='t' ? teacherOk : false));
   var btn=$('btnLogin');
   if(btn){ btn.style.opacity=allOk?'1':'0.6'; }
 }
@@ -2289,8 +2692,8 @@ function doLogin(){
   if(!phone||phone.length<10){ toast('⚠️ اكتب رقم هاتفك صح (10 أرقام على الأقل)','err'); $('phoneInp').focus(); return; }
   if(!userGender){ toast('⚠️ اختر الجنس أولاً','err'); return; }
   if(!r){ toast('⚠️ اختر إذا كنت طالب أم معلم','err'); return; }
-  if(r==='s'&&!userStream){ toast('⚠️ اختر شعبتك الدراسية','err'); return; }
-  if(r==='t'&&!teacherSubject){ toast('⚠️ اختر مادتك التدريسية','err'); return; }
+  if(r==='s'&&pickedGrade==='g12'&&!userStream){ toast('⚠️ اختر شعبتك الدراسية','err'); return; }
+  if(r==='t'&&teacherSubjects.length===0&&!teacherSubject){ toast('⚠️ اختر مادتك التدريسية','err'); return; }
   if(r==='s'){
     // Check phone-name lock
     var lock=checkNameLock(phone,name);
@@ -2313,7 +2716,7 @@ function doLogin(){
     localStorage.removeItem('y3_avatar_login_pending');
   }catch(e){}
   // Save session for auto-login
-  try{localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,role:role,gender:userGender,stream:userStream,teacherSubject:teacherSubject,lang:appLang}));}catch(e){}
+  try{localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,role:role,gender:userGender,stream:userStream,teacherSubject:teacherSubject,teacherSubjects:teacherSubjects,teacherGrades:teacherGrades,grade:pickedGrade,stage:pickedStage,term:pickedTerm,lang:appLang}));}catch(e){}
   // Save role + name to identity (permanent lock)
   try{
     var ident=JSON.parse(localStorage.getItem('y3_identity_'+phone)||'{}');
@@ -2348,7 +2751,7 @@ function doLogin(){
       idata.teacherSubject=teacherSubject;
       localStorage.setItem(ikey,JSON.stringify(idata));
       localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,
-        role:'t',gender:userGender,stream:userStream,teacherSubject:teacherSubject,lang:appLang}));
+        role:'t',gender:userGender,stream:userStream,teacherSubject:teacherSubject,teacherSubjects:teacherSubjects,teacherGrades:teacherGrades,lang:appLang}));
     }catch(e){}
     renderTeacherStudents();
     goScreen('teacherHome');
@@ -2364,7 +2767,7 @@ function logout(){
   chatInitialized=false;chatCfg=null;chatOpen=false;chatUnread=0;
   var panel=$('chatPanel');if(panel)panel.classList.remove('open');
   role=null;userName='';userPhone='';pickedRole=null;
-  userGender=null;userStream=null;teacherSubject=null;
+  userGender=null;userStream=null;teacherSubject=null;teacherSubjects=[];teacherGrades=[];
   $('roleS').className='role-card';$('roleT').className='role-card';
   ['genderM','genderF'].forEach(function(id){var e=$(id);if(e)e.className='role-card';});
   ['streamAdabi','streamElmi','subElmiOlom','subElmiRiada'].forEach(function(id){var e=$(id);if(e)e.className='role-card';});
@@ -2436,14 +2839,18 @@ function finishAfterCheat(){
 // STUDENT
 // ══════════════════════════════════════════
 function updateStreamUI(){
-  // Update student home title based on stream
-  var titles={'adabi':'📜 منصة الأدبي','olom':'🔬 منصة العلمي علوم','riada':'📐 منصة العلمي رياضة'};
+  // Update student home title based on grade and stream
+  var gradeNames={g4:'رابعة ابتدائي',g5:'خامسة ابتدائي',g6:'سادسة ابتدائي',
+    g7:'أولى إعدادي',g8:'ثانية إعدادي',g9:'ثالثة إعدادي',
+    g10:'أولى ثانوي',g11:'ثانية ثانوي',g12:'ثالثة ثانوي'};
+  var streamNames={adabi:'أدبي',olom:'علمي علوم',riada:'علمي رياضة'};
+  var gName=gradeNames[pickedGrade]||'';
+  var sName=streamNames[userStream]||'';
+  var fullTitle=gName?(gName+(sName?' — '+sName:'')):'منصة الطالب';
   var el=$('studentHomeTitle');
-  if(el) el.textContent=titles[userStream]||'🎓 منصة الطالب';
-  // Update stream badge in header if exists
+  if(el) el.textContent='🎓 '+fullTitle;
   var badge=$('streamBadge');
-  var labels={'adabi':'أدبي','olom':'علمي علوم','riada':'علمي رياضة'};
-  if(badge) badge.textContent=labels[userStream]||'';
+  if(badge) badge.textContent=gName||(sName||'');
 }
 
 function buildLists(){
@@ -2461,15 +2868,27 @@ function buildLists(){
   // Physics tab - show for elmi only
   var showStats=(role==='s'&&userStream==='adabi');
   var showArab=(role==='s')||(role==='t'&&teacherSubject==='a');
-  var tabH=$('tab-h'), tabG=$('tab-g'), tabP=$('tab-p'), tabS=$('tab-s'), tabA=$('tab-a');
+  var showEnglish=(role==='s'&&pickedGrade==='g12')||(role==='t'&&teacherSubjects.indexOf('en')>-1);
+  var tabH=$('tab-h'), tabG=$('tab-g'), tabP=$('tab-p'), tabS=$('tab-s'), tabA=$('tab-a'), tabEN=$('tab-en');
   if(tabH) tabH.style.display = showHist?'':'none';
   if(tabG) tabG.style.display = showGeo?'':'none';
   if(tabS) tabS.style.display = showStats?'':'none';
   var showPhysTab = showPhys||(role==='t'&&teacherSubject==='p');
   if(tabP) tabP.style.display = showPhysTab?'':'none';
   if(tabA) tabA.style.display = showArab?'':'none';
+  if(tabEN) tabEN.style.display = showEnglish?'':'none';
+  var tabBS=$('tab-bs');
+  var showBubble=(role==='s');
+  if(tabBS) tabBS.style.display=showBubble?'':'none';
+  if(showBubble) stuBubblePopulateExams();
+  // Pre-fill student name from session
+  if(role==='s'&&userName){
+    var sn=$('stuBsName');if(sn&&!sn.value)sn.value=userName;
+    var sp=$('stuBsPhone');if(sp&&!sp.value)sp.value=userPhone||'';
+  }
   if(role==='s'){
-    if(isElmi){ swTab('p'); buildPhysList(); }
+    if(pickedGrade==='g12'){ swTab('en'); buildEnglishList(); }
+    else if(isElmi){ swTab('p'); buildPhysList(); }
     else if(showHist){ swTab('h'); }
     else { swTab('a'); }
   }
@@ -2478,6 +2897,7 @@ function buildLists(){
   if(role==='t'&&teacherSubject==='p'){ if($('tab-p')){ swTab('p'); buildPhysList(); } }
   if(showStats) buildStatsList();
   if(showArab) buildArabicList();
+  if(showEnglish) buildEnglishList();
   if(showHist){
     var h=$('histList');h.innerHTML='';
     HM.forEach(function(m,i){
@@ -2499,7 +2919,7 @@ function buildLists(){
 }
 
 function swTab(t){
-  ['h','g','q','c','p','s','a'].forEach(function(x){
+  ['h','g','q','c','p','s','a','en','bs'].forEach(function(x){
     var tb=$('tab-'+x),pn=$('pnl-'+x);
     if(tb)tb.className='stab';
     if(pn)pn.className='panel';
@@ -2861,10 +3281,47 @@ function loadCustomExam(exam){
     toast('🔒 هذا الامتحان مغلق حالياً — انتظر المعلم يفتحه','err');
     return;
   }
+  // Check auto-close time
+  if(exam.closeAt&&exam.closeAt>0&&Date.now()>exam.closeAt){
+    toast('🔒 انتهى وقت هذا الامتحان وأُغلق تلقائياً','err');
+    return;
+  }
+  // If bubble sheet exam — open bubble sheet flow instead
+  if(exam.examType==='bubble'){
+    closeExamPopup();
+    stuBubbleExam=exam;
+    stuBubbleModel='A';
+    // Fill student info
+    if($('stuBsName')&&userName) $('stuBsName').value=userName;
+    if($('stuBsPhone')&&userPhone) $('stuBsPhone').value=userPhone;
+    // Show model selector if 4 models
+    if($('stuBubbleModelBox')) $('stuBubbleModelBox').style.display=(exam.modelCount===4)?'block':'none';
+    stuBubbleUpdateModelBtns();
+    // Go to bubble scan screen directly
+    bsQs=getBubbleModelQs(exam,'A').filter(function(q){return q.type!=='essay';});
+    bubbleStudentAnswers=bsQs.map(function(){return -1;});
+    bsCurQ=0;
+    bsRenderQ(0);
+    bsRenderOverview();
+    bsGo(2);
+    if($('bsSub'))$('bsSub').textContent=(userName||'طالب')+' — '+bsQs.length+' سؤال';
+    goScreen('bubbleScanScreen');
+    return;
+  }
   S.subj='c';
   S.examCode=exam.code||exam.title||('ex_'+Date.now());
-  S.qs=(exam.qs||[]).map(function(q){return Object.assign({},q,{_g:false});});
-  S.label='📋 '+exam.title;
+  // Handle 4-model exam: assign student to a model by phone hash
+  var assignedModel=null;
+  if(exam.modelCount===4&&exam.models){
+    assignedModel=getStudentModel(userPhone||'0000');
+    S.qs=(exam.models[assignedModel]||exam.qs||[]).map(function(q){return Object.assign({},q,{_g:false});});
+    S.studentModel=assignedModel;
+    setTimeout(function(){toast('📄 نموذجك: '+assignedModel,'ok');},400);
+  } else {
+    S.qs=(exam.qs||[]).map(function(q){return Object.assign({},q,{_g:false});});
+    S.studentModel=null;
+  }
+  S.label='📋 '+exam.title+(assignedModel?' — نموذج '+assignedModel:'');
   currentExam=exam;
   $('gTitle').textContent=S.label;
   // Show refSheet button if exam has reference sheet
@@ -3090,7 +3547,471 @@ function delExam(i){if(!confirm('حذف الاختبار؟'))return;savedExams.s
 function reshowQr(i){buildQrScreen(savedExams[i]);goScreen('qrShare');}
 
 var qIdx=0;
-function clearBuilder(){$('qWrap').innerHTML='';qIdx=0;$('exTitle').value='';if($('createExam'))$('createExam').dataset.draftId='';}
+function clearBuilder(){
+  $('qWrap').innerHTML='';qIdx=0;$('exTitle').value='';
+  if($('createExam'))$('createExam').dataset.draftId='';
+  // Reset model system
+  currentExamType='normal';currentModelCount=1;questionModelAssign={};
+  setExamType('normal');setModelCount(1);
+}
+
+// ── Exam Type (normal / bubble) ──
+function setExamType(t){
+  currentExamType=t;
+  var nb=$('examTypeNormal'),bb=$('examTypeBubble');
+  if(nb)nb.className='qtype-btn'+(t==='normal'?' sel':'');
+  if(bb)bb.className='qtype-btn'+(t==='bubble'?' sel':'');
+  var mcb=$('modelCountBox'); if(mcb)mcb.style.display='block';
+  var bib=$('bubbleInfoBox'); if(bib)bib.style.display=(t==='bubble'?'block':'none');
+}
+
+// ── Model Count (1 or 4) ──
+function setModelCount(n){
+  currentModelCount=n;
+  var b1=$('modelCount1'),b4=$('modelCount4');
+  if(b1)b1.className='qtype-btn'+(n===1?' sel':'');
+  if(b4)b4.className='qtype-btn'+(n===4?' sel':'');
+  var mab=$('modelAssignBox'); if(mab)mab.style.display=(n===4?'block':'none');
+  if(n===4) renderModelAssignList();
+}
+
+// ── Per-question model assignment UI ──
+function renderModelAssignList(){
+  var wrap=$('modelAssignList'); if(!wrap)return;
+  var blocks=document.querySelectorAll('.q-block');
+  if(!blocks.length){wrap.innerHTML='<div style="color:var(--text2);font-size:.7rem">أضف أسئلة أولاً</div>';return;}
+  var html='';
+  blocks.forEach(function(block,i){
+    var id=block.id.replace('qb','');
+    var qtxt=($('qt'+id)||{}).value||('سؤال #'+(i+1));
+    var cur=questionModelAssign[id]||'any';
+    html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;padding:7px;background:var(--bg3);border-radius:9px">' +
+      '<div style="flex:1;font-size:.7rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escHtml(qtxt.substring(0,30)||('س'+(i+1)))+'</div>' +
+      '<div style="display:flex;gap:4px">' +
+      ['any','A','B','C','D'].map(function(m){
+        return '<button type="button" onclick="assignQModel(\''+id+'\',\''+m+'\')" style="padding:3px 7px;border-radius:6px;font-size:.65rem;cursor:pointer;font-family:Tajawal,sans-serif;border:1px solid '+(cur===m?'#9c27b0':'var(--border)')+';background:'+(cur===m?'rgba(156,39,176,.2)':'var(--bg2)')+';color:'+(cur===m?'#9c27b0':'var(--text2)')+'">'+(m==='any'?'عشوائي':m)+'</button>';
+      }).join('') +
+      '</div></div>';
+  });
+  wrap.innerHTML=html;
+}
+
+function assignQModel(qid,model){
+  questionModelAssign[qid]=model;
+  renderModelAssignList();
+}
+
+// ── Distribute questions across 4 models ──
+function distributeModels(qs,assigns){
+  // assigns: {idx -> 'A'|'B'|'C'|'D'|'any'}
+  var models={A:[],B:[],C:[],D:[]};
+  var free=[]; // questions without fixed assignment
+  qs.forEach(function(q,i){
+    var m=assigns[i]||'any';
+    if(m==='A'||m==='B'||m==='C'||m==='D'){
+      models[m].push(Object.assign({},q,{_origIdx:i}));
+    } else {
+      free.push({q:q,i:i});
+    }
+  });
+  // Shuffle free questions and distribute evenly
+  shuf(free);
+  var letters=['A','B','C','D'];
+  free.forEach(function(item,j){
+    models[letters[j%4]].push(Object.assign({},item.q,{_origIdx:item.i}));
+  });
+  // Each model: questions in random order (the "movement" between models)
+  letters.forEach(function(l){shuf(models[l]);});
+  return models;
+}
+
+// ── Get student model by phone hash ──
+function getStudentModel(phone){
+  var sum=0;
+  for(var i=0;i<phone.length;i++)sum+=phone.charCodeAt(i);
+  return ['A','B','C','D'][sum%4];
+}
+
+// ══════════════════════════════════════════
+// BUBBLE SCAN SYSTEM
+// ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// BUBBLE SHEET SYSTEM — نظام البابل شيت
+// ══════════════════════════════════════════
+var bubbleScanExam=null, bubbleScanModel='A', bubbleStudentAnswers=[];
+var bsCurQ=0, bsQs=[];
+var BS_AR=['أ','ب','ج','د','هـ'];
+
+function openBubbleScan(){
+  // Teacher: go directly to results history
+  bsGo(4);
+  goScreen('bubbleScanScreen');
+  showBubbleHistory();
+}
+
+function bsGo(n){
+  for(var i=1;i<=4;i++){var el=$('bsStep'+i);if(el)el.style.display=(i===n)?'block':'none';}
+  var T={1:'🔘 بابل شيت',2:'📝 الاختبار',3:'📊 النتيجة',4:'📋 السجل'};
+  var S2={1:'أدخل بيانات الطالب',2:'',3:'نتيجة الطالب',4:'سجل الطلاب'};
+  if($('bsTitle'))$('bsTitle').textContent=T[n]||'بابل شيت';
+  if($('bsSub'))$('bsSub').textContent=S2[n]||'';
+}
+
+function bubbleBack(){
+  var cur=0;
+  for(var i=1;i<=4;i++){var el=$('bsStep'+i);if(el&&el.style.display!=='none')cur=i;}
+  if(cur<=1)goScreen('teacherHome');
+  else if(cur===2){if(confirm('إلغاء الاختبار والرجوع؟'))bsGo(1);}
+  else bsGo(1);
+}
+
+function bubbleScanExamChanged(){
+  var sel=$('bubbleExamSelect');
+  var idx=parseInt(sel.value);
+  if(isNaN(idx)||!savedExams[idx]){bubbleScanExam=null;return;}
+  bubbleScanExam=savedExams[idx];
+  var is4=(bubbleScanExam.modelCount===4);
+  $('bubbleModelSelectBox').style.display=is4?'block':'none';
+  bubbleScanModel='A'; bsUpdateModelBtns();
+}
+
+function setBubbleModel(m){
+  bubbleScanModel=m; bsUpdateModelBtns();
+}
+
+function bsUpdateModelBtns(){
+  ['A','B','C','D'].forEach(function(x){
+    var b=$('bsModel'+x); if(!b)return;
+    var on=(x===bubbleScanModel);
+    b.style.background=on?'rgba(156,39,176,.2)':'var(--bg2)';
+    b.style.borderColor=on?'#9c27b0':'var(--border)';
+    b.style.color=on?'#9c27b0':'var(--text2)';
+    b.style.fontWeight=on?'900':'400';
+  });
+}
+
+function getBubbleModelQs(ex,model){
+  if(ex.modelCount===4&&ex.models&&ex.models[model])return ex.models[model];
+  return ex.qs||[];
+}
+
+function startBubbleExam(){
+  if(!bubbleScanExam){toast('اختر امتحاناً أولاً','err');return;}
+  var name=($('bsStudentName').value||'').trim();
+  if(!name){toast('أدخل اسم الطالب','err');$('bsStudentName').focus();return;}
+  bsQs=getBubbleModelQs(bubbleScanExam,bubbleScanModel).filter(function(q){return q.type!=='essay';});
+  if(!bsQs.length){toast('لا توجد أسئلة','err');return;}
+  bubbleStudentAnswers=bsQs.map(function(){return -1;});
+  bsCurQ=0;
+  bsRenderQ(0);
+  bsRenderOverview();
+  bsGo(2);
+  var sub=$('bsSub');
+  if(sub)sub.textContent=name+' — '+bsQs.length+' سؤال';
+}
+
+function bsRenderQ(idx){
+  bsCurQ=idx;
+  var q=bsQs[idx]; if(!q)return;
+  var total=bsQs.length;
+  var answered=bubbleStudentAnswers.filter(function(a){return a>-1;}).length;
+
+  // Progress
+  if($('bsQProgress'))$('bsQProgress').textContent='سؤال '+(idx+1)+' من '+total;
+  if($('bsAnsweredCount'))$('bsAnsweredCount').textContent=answered+' / '+total+' ✓';
+  if($('bsProgressBar'))$('bsProgressBar').style.width=Math.round(answered/total*100)+'%';
+
+  // Q number circle
+  if($('bsQNum'))$('bsQNum').textContent=idx+1;
+
+  // Q text
+  if($('bsQText'))$('bsQText').innerHTML=escHtml(q.q||'');
+
+  // Q image
+  var imgDiv=$('bsQImg'),imgEl=$('bsQImgEl');
+  if(imgDiv)imgDiv.style.display=(q.img?'block':'none');
+  if(imgEl&&q.img)imgEl.src=q.img;
+
+  // Options — each is a big bubble circle + option text
+  var optCount=q.o&&q.o.length?Math.min(5,q.o.length):4;
+  var curAns=bubbleStudentAnswers[idx];
+  var html='';
+  for(var i=0;i<optCount;i++){
+    var sel=(curAns===i);
+    var lbl=BS_AR[i];
+    var txt=q.o&&q.o[i]?escHtml(q.o[i]):'';
+    html+=
+      '<button type="button" onclick="bsPick('+idx+','+i+')" '+
+      'style="display:flex;align-items:center;gap:14px;width:100%;padding:13px 14px;border-radius:14px;'+
+      'border:2px solid '+(sel?'#9c27b0':'var(--border)')+';'+
+      'background:'+(sel?'rgba(156,39,176,.1)':'var(--bg3)')+';'+
+      'cursor:pointer;font-family:Tajawal,sans-serif;text-align:right;transition:all .15s;margin-bottom:8px">'+
+        // Bubble circle
+        '<div style="width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;'+
+        'font-size:.85rem;font-weight:900;border:2.5px solid '+(sel?'#9c27b0':'rgba(255,255,255,.15)')+';'+
+        'background:'+(sel?'#9c27b0':'transparent')+';color:'+(sel?'#fff':'var(--text2)')+'">'+lbl+'</div>'+
+        // Option text
+        '<div style="flex:1;font-size:.9rem;color:var(--text);line-height:1.45">'+txt+'</div>'+
+      '</button>';
+  }
+  if($('bsOptions'))$('bsOptions').innerHTML=html;
+
+  // Nav
+  var prev=$('bsPrevBtn'),next=$('bsNextBtn'),fin=$('bsFinishBtn');
+  if(prev){prev.disabled=(idx===0);prev.style.opacity=(idx===0)?'0.4':'1';}
+  if(next)next.style.display=(idx===total-1)?'none':'block';
+  var allDone=bubbleStudentAnswers.every(function(a){return a>-1;});
+  if(fin){
+    fin.style.display=(allDone||(idx===total-1))?'block':'none';
+    fin.style.background=allDone?'linear-gradient(135deg,#27ae60,#2ecc71)':'linear-gradient(135deg,#e67e22,#f39c12)';
+    fin.textContent=allDone?'✅ إنهاء وتصحيح':'⚠️ إنهاء ('+(total-answered)+' بدون إجابة)';
+  }
+
+  bsUpdateOverview();
+}
+
+function bsPick(qi,oi){
+  bubbleStudentAnswers[qi]=oi;
+  bsRenderQ(qi);
+  // auto advance after short delay
+  if(qi<bsQs.length-1){
+    setTimeout(function(){bsNavNext();},380);
+  }
+}
+
+function bsNavNext(){if(bsCurQ<bsQs.length-1)bsRenderQ(bsCurQ+1);}
+function bsNavPrev(){if(bsCurQ>0)bsRenderQ(bsCurQ-1);}
+
+function bsRenderOverview(){
+  var wrap=$('bsOverview'); if(!wrap)return;
+  var html='';
+  bsQs.forEach(function(q,i){
+    html+='<div id="bsov_'+i+'" onclick="bsRenderQ('+i+')" '+
+      'style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;'+
+      'font-size:.65rem;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);transition:all .15s">'+(i+1)+'</div>';
+  });
+  wrap.innerHTML=html;
+}
+
+function bsUpdateOverview(){
+  bsQs.forEach(function(q,i){
+    var dot=$('bsov_'+i); if(!dot)return;
+    var done=(bubbleStudentAnswers[i]>-1);
+    var cur=(i===bsCurQ);
+    dot.style.background=done?'#9c27b0':(cur?'rgba(156,39,176,.15)':'var(--bg3)');
+    dot.style.borderColor=done?'#9c27b0':(cur?'#9c27b0':'var(--border)');
+    dot.style.color=done?'#fff':(cur?'#9c27b0':'var(--text2)');
+    dot.style.transform=cur?'scale(1.15)':'scale(1)';
+  });
+}
+
+function finishBubbleExam(){
+  var total=bsQs.length;
+  var answered=bubbleStudentAnswers.filter(function(a){return a>-1;}).length;
+  if(answered<total){
+    if(!confirm('فيه '+(total-answered)+' سؤال بدون إجابة — هل تكمل؟'))return;
+  }
+  var sName=($('bsStudentName').value||'').trim()||'طالب';
+  var sSubj=($('bsStudentSubject').value||'').trim()||'—';
+  var sGrp=($('bsStudentGroup').value||'').trim()||'—';
+  var sPhone=($('bsStudentPhone').value||'').trim()||'—';
+  var score=0,details=[];
+  bsQs.forEach(function(q,qi){
+    var given=bubbleStudentAnswers[qi];
+    if(given===-1){details.push({qi:qi,st:'skip',ca:q.a,gv:-1,qt:q.q});}
+    else{var ok=(given===q.a);if(ok)score++;details.push({qi:qi,st:ok?'ok':'wrong',ca:q.a,gv:given,qt:q.q});}
+  });
+  var pct=total?Math.round(score/total*100):0;
+  var grd=pct>=85?'ممتاز':pct>=75?'جيد جداً':pct>=65?'جيد':pct>=50?'مقبول':'ضعيف';
+  var gc=pct>=85?'#27ae60':pct>=65?'#f5c518':pct>=50?'#e67e22':'#e74c3c';
+
+  var html=
+    '<div style="text-align:center;padding:18px 0 14px">'+
+      '<div style="font-size:2.4rem;font-weight:900;color:'+gc+'">'+score+' / '+total+'</div>'+
+      '<div style="font-size:1.3rem;color:'+gc+';font-weight:700;margin:4px 0">'+grd+'</div>'+
+      '<div style="font-size:1rem;color:var(--text2)">'+pct+'%</div>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'+
+      bsInfoBox('👤','الطالب',sName)+bsInfoBox('📚','المادة',sSubj)+
+      bsInfoBox('👥','المجموعة',sGrp)+bsInfoBox('📱','الهاتف',sPhone)+
+    '</div>';
+
+  var wrongs=details.filter(function(d){return d.st!=='ok';});
+  if(wrongs.length){
+    html+='<div style="font-size:.78rem;font-weight:700;margin-bottom:8px;color:var(--text2)">❌ الأسئلة الخاطئة / غير المجاب ('+wrongs.length+'):</div>';
+    wrongs.forEach(function(d){
+      var skip=(d.st==='skip');
+      var givenLbl=d.gv>-1?(BS_AR[d.gv]||'؟'):'لم يجب';
+      var correctLbl=BS_AR[d.ca]||'؟';
+      html+='<div style="padding:9px 11px;background:var(--bg3);border-radius:10px;margin-bottom:6px;'+
+        'border-right:3px solid '+(skip?'#ff9800':'#e74c3c')+'">'+
+        '<div style="font-size:.72rem;color:var(--text2);margin-bottom:4px">س'+(d.qi+1)+': '+escHtml((d.qt||'').substring(0,70))+'</div>'+
+        '<div style="display:flex;gap:12px;font-size:.75rem">'+
+          '<span style="color:#e74c3c">إجابة الطالب: <b>'+givenLbl+'</b></span>'+
+          '<span style="color:#27ae60">الصح: <b>'+correctLbl+'</b></span>'+
+        '</div></div>';
+    });
+  } else {
+    html+='<div style="text-align:center;padding:12px;color:#27ae60;font-size:.9rem;font-weight:700">🎉 ممتاز! كل الإجابات صح</div>';
+  }
+
+  if($('bsResultBody'))$('bsResultBody').innerHTML=html;
+
+  // Save
+  try{
+    var key='y3_bres_'+(bubbleScanExam.code||bubbleScanExam.title);
+    var list=JSON.parse(localStorage.getItem(key)||'[]');
+    list.unshift({name:sName,subject:sSubj,group:sGrp,phone:sPhone,model:bubbleScanModel,
+      score:score,total:total,pct:pct,grade:grd,
+      date:new Date().toLocaleDateString('ar-EG'),
+      time:new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})});
+    localStorage.setItem(key,JSON.stringify(list));
+  }catch(e){}
+
+  bsGo(3);
+  toast('✅ '+score+'/'+total+' — '+grd,'ok');
+}
+
+function bsInfoBox(ic,lbl,val){
+  return '<div style="padding:10px;background:var(--bg3);border-radius:10px;font-size:.75rem">'+
+    '<div style="color:var(--text2);margin-bottom:2px">'+ic+' '+lbl+'</div>'+
+    '<div style="font-weight:700;color:var(--text)">'+escHtml(val)+'</div></div>';
+}
+
+function bsNewStudent(){
+  ['bsStudentName','bsStudentSubject','bsStudentGroup','bsStudentPhone'].forEach(function(id){
+    var el=$(id);if(el)el.value='';
+  });
+  bsGo(1);
+}
+
+// ── Student Bubble Sheet (from student home panel) ──
+var stuBubbleModel='A', stuBubbleExam=null;
+
+function stuBubblePopulateExams(){
+  var sel=$('stuBubbleExamSelect'); if(!sel) return;
+  // Get shared exams from teacher's savedExams localStorage keys
+  var allExams=[];
+  try{
+    // Look through all localStorage keys for saved exams
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i);
+      if(k&&k.startsWith('y3_exams_')){
+        var list=JSON.parse(localStorage.getItem(k)||'[]');
+        list.forEach(function(ex){ if(ex&&ex.title) allExams.push(ex); });
+      }
+    }
+  }catch(e){}
+  // Also use savedExams if available (same device)
+  if(typeof savedExams!=='undefined'&&savedExams&&savedExams.length){
+    savedExams.forEach(function(ex){
+      var dup=allExams.some(function(e){return e.code===ex.code||e.title===ex.title;});
+      if(!dup) allExams.push(ex);
+    });
+  }
+  sel.innerHTML='<option value="">— اختر امتحاناً —</option>';
+  allExams.forEach(function(ex,i){
+    var opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent=ex.title+' ('+ex.qs.length+' س'+(ex.modelCount===4?' • 4 نماذج':'')+')';
+    opt.dataset.exidx=i;
+    sel.appendChild(opt);
+  });
+  sel._allExams=allExams;
+}
+
+function stuBubbleExamChanged(){
+  var sel=$('stuBubbleExamSelect');
+  var idx=parseInt(sel.value);
+  var all=sel._allExams||[];
+  if(isNaN(idx)||!all[idx]){stuBubbleExam=null;$('stuBubbleModelBox').style.display='none';return;}
+  stuBubbleExam=all[idx];
+  var is4=(stuBubbleExam.modelCount===4);
+  $('stuBubbleModelBox').style.display=is4?'block':'none';
+  stuBubbleModel='A';
+  stuBubbleUpdateModelBtns();
+}
+
+function setStuBubbleModel(m){
+  stuBubbleModel=m;
+  stuBubbleUpdateModelBtns();
+}
+
+function stuBubbleUpdateModelBtns(){
+  ['A','B','C','D'].forEach(function(x){
+    var b=$('stuBsModel'+x); if(!b) return;
+    var on=(x===stuBubbleModel);
+    b.style.background=on?'rgba(156,39,176,.2)':'var(--bg2)';
+    b.style.borderColor=on?'#9c27b0':'var(--border)';
+    b.style.color=on?'#9c27b0':'var(--text2)';
+    b.style.fontWeight=on?'900':'400';
+  });
+}
+
+function startStuBubble(){
+  if(!stuBubbleExam){toast('اختر امتحاناً أولاً','err');return;}
+  var name=($('stuBsName').value||'').trim()||userName||'';
+  if(!name){toast('أدخل اسمك','err');$('stuBsName').focus();return;}
+  // Pre-fill from student session
+  if(!$('stuBsPhone').value&&userPhone) $('stuBsPhone').value=userPhone;
+  // Set bubble scan vars to use existing exam system
+  bubbleScanExam=stuBubbleExam;
+  bubbleScanModel=stuBubbleModel;
+  // Override student info fields
+  if($('bsStudentName')) $('bsStudentName').value=name;
+  if($('bsStudentSubject')) $('bsStudentSubject').value=($('stuBsSubject').value||'').trim();
+  if($('bsStudentGroup')) $('bsStudentGroup').value=($('stuBsGroup').value||'').trim();
+  if($('bsStudentPhone')) $('bsStudentPhone').value=($('stuBsPhone').value||userPhone||'').trim();
+  // Start exam directly
+  bsQs=getBubbleModelQs(bubbleScanExam,bubbleScanModel).filter(function(q){return q.type!=='essay';});
+  if(!bsQs.length){toast('لا توجد أسئلة','err');return;}
+  bubbleStudentAnswers=bsQs.map(function(){return -1;});
+  bsCurQ=0;
+  bsRenderQ(0);
+  bsRenderOverview();
+  bsGo(2);
+  if($('bsSub')) $('bsSub').textContent=name+' — '+bsQs.length+' سؤال';
+  goScreen('bubbleScanScreen');
+}
+
+function showBubbleHistory(){
+  var wrap=$('bubbleHistoryList'); if(!wrap)return;
+  var all=[];
+  (savedExams||[]).forEach(function(ex){
+    try{
+      var key='y3_bres_'+(ex.code||ex.title);
+      var list=JSON.parse(localStorage.getItem(key)||'[]');
+      list.forEach(function(r){r._exam=ex.title;all.push(r);});
+    }catch(e){}
+  });
+  if(!all.length){wrap.innerHTML='<div style="text-align:center;color:var(--text2);padding:24px;font-size:.8rem">لا توجد نتائج بعد</div>';bsGo(4);return;}
+  var gc={ممتاز:'#27ae60','جيد جداً':'#4caf50',جيد:'#f5c518',مقبول:'#e67e22',ضعيف:'#e74c3c'};
+  var html='';
+  all.forEach(function(r){
+    var c=gc[r.grade]||'var(--text2)';
+    html+='<div style="padding:11px 12px;background:var(--bg3);border-radius:11px;margin-bottom:7px;border-right:3px solid '+c+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+        '<div style="font-size:.85rem;font-weight:700;color:var(--text)">'+escHtml(r.name||'—')+'</div>'+
+        '<div style="font-size:1rem;font-weight:900;color:'+c+'">'+r.score+'/'+r.total+' <span style="font-size:.7rem">('+r.pct+'%)</span></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;font-size:.67rem;color:var(--text2)">'+
+        '<span>📚 '+escHtml(r.subject||'—')+'</span>'+
+        '<span>👥 '+escHtml(r.group||'—')+'</span>'+
+        '<span>📱 '+escHtml(r.phone||'—')+'</span>'+
+        (r.model&&r.model!=='A'?'<span style="color:#9c27b0">نموذج '+r.model+'</span>':'')+
+        '<span>🕐 '+escHtml(r.date||'')+(r.time?' '+r.time:'')+'</span>'+
+      '</div></div>';
+  });
+  wrap.innerHTML=html;
+  bsGo(4);
+}
+
+// Legacy stubs
+function gradeBubbleSheet(){finishBubbleExam();}
+function saveAndNewBubble(){bsNewStudent();}
+function renderBubbleGrid(){}
+function toggleBubbleAns(){}
+
 function addQ(prefill){
   var id=qIdx++;var ar=['أ','ب','ج','د'];
   var qType=prefill&&prefill.type?prefill.type:'mcq'; // mcq or essay
@@ -3238,9 +4159,20 @@ function saveExam(){
   var refSheet=hasRef?($('exRefSheet').value||'').trim():'';
   var openTog=$('tog_examOpen');
   var examOpen=openTog?openTog.getAttribute('data-on')==='1':true;
+  var closeAfterHours=parseInt($('exCloseHour')?$('exCloseHour').value:0)||0;
+  var closeAt=0;
+  if(closeAfterHours>0) closeAt=Date.now()+(closeAfterHours*3600*1000);
   var exam={title:title,subj:$('exSubj').value,timeLimit:timeLimit,qs:qs,vis:vis,
     date:new Date().toLocaleDateString('ar-EG'),createdBy:userName,creatorPhone:userPhone,
-    examDuration:examDuration,refSheet:refSheet,examOpen:examOpen,participants:[]};
+    examDuration:examDuration,refSheet:refSheet,examOpen:examOpen,participants:[],
+    examType:currentExamType,modelCount:currentModelCount,
+    closeAfterHours:closeAfterHours,closeAt:closeAt};
+  // Build model distribution if 4-model exam
+  if(currentModelCount===4){
+    var assigns={};
+    qs.forEach(function(q,i){assigns[i]=questionModelAssign[i]||'any';});
+    exam.models=distributeModels(qs,assigns);
+  }
   exam.code=generateCode(exam); // The FULL self-contained code (works on any device)
   exam.link=buildExamLink(exam);
   savedExams.push(exam);
@@ -3258,8 +4190,17 @@ function generateCode(exam){
       d:exam.examDuration||0,
       ref:exam.refSheet||'',
       open:exam.examOpen!==false?1:0,
+      ca:exam.closeAt||0,
       cp:exam.creatorPhone||'',
+      et:exam.examType||'normal',
+      mc:exam.modelCount||1,
       q:(exam.qs||[]).map(function(q){return [q.q,q.o,q.a,q.h||'',q.e||'',q.img||''];})};
+    if(exam.modelCount===4&&exam.models){
+      mini.mo={};
+      ['A','B','C','D'].forEach(function(l){
+        mini.mo[l]=(exam.models[l]||[]).map(function(q){return [q.q,q.o,q.a,q.h||'',q.e||'',q.img||''];});
+      });
+    }
     var json=JSON.stringify(mini);
     var b64=btoa(unescape(encodeURIComponent(json)));
     return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
@@ -3274,10 +4215,20 @@ function decodeCode(code){
     var json=decodeURIComponent(escape(atob(b64)));
     var mini=JSON.parse(json);
     if(!mini||!mini.q||!mini.q.length) return null;
+    var models=null;
+    if(mini.mo){
+      models={};
+      ['A','B','C','D'].forEach(function(l){
+        models[l]=(mini.mo[l]||[]).map(function(r){return {q:r[0],o:r[1],a:r[2],h:r[3]||'',e:r[4]||'',img:r[5]||''};});
+      });
+    }
     return {
       title:mini.t||'امتحان',subj:mini.s||'h',timeLimit:mini.l||30,
       examDuration:mini.d||0,refSheet:mini.ref||'',
       examOpen:mini.open!==0,creatorPhone:mini.cp||'',
+      closeAt:mini.ca||0,
+      examType:mini.et||'normal',modelCount:mini.mc||1,
+      models:models,
       participants:mini.participants||[],
       qs:mini.q.map(function(r){return {q:r[0],o:r[1],a:r[2],h:r[3]||'',e:r[4]||'',img:r[5]||''};}),
       code:code
@@ -3292,22 +4243,38 @@ function buildExamLink(exam){
 
 function buildQrScreen(exam){
   currentExam=exam;
-  $('qrTitle').textContent='\u2705 '+exam.title;
-  // Set open/close button state
+  var isBubble=exam.examType==='bubble';
+  $('qrTitle').textContent=(isBubble?'🔘':'✅')+' '+exam.title+(isBubble?' — بابل شيت':'');
+  // Check auto-close
+  var isAutoLocked=exam.closeAt&&exam.closeAt>0&&Date.now()>exam.closeAt;
   var openBtn=$('examOpenToggleBtn');
   if(openBtn){
-    var isOpen=exam.examOpen!==false;
-    openBtn.textContent=isOpen?'🔓 مفتوح — اضغط لإغلاق':'🔒 مغلق — اضغط لفتح';
+    var isOpen=(exam.examOpen!==false)&&!isAutoLocked;
+    openBtn.textContent=isAutoLocked?'🔒 أُغلق تلقائياً':(isOpen?'🔓 مفتوح — اضغط لإغلاق':'🔒 مغلق — اضغط لفتح');
     openBtn.style.background=isOpen?'rgba(39,174,96,.1)':'rgba(192,57,43,.1)';
     openBtn.style.color=isOpen?'#27ae60':'var(--hist2)';
     openBtn.style.borderColor=isOpen?'rgba(39,174,96,.3)':'rgba(192,57,43,.3)';
+    openBtn.disabled=!!isAutoLocked;
   }
-
+  // Auto-close info
+  var infoEl=$('qrCloseInfo');
+  if(infoEl){
+    if(exam.closeAt&&exam.closeAt>0){
+      var now=Date.now(),diffM=Math.round((exam.closeAt-now)/60000);
+      if(now>exam.closeAt){
+        infoEl.textContent='🔒 أُغلق تلقائياً';infoEl.style.color='#e74c3c';
+      } else {
+        var dt=diffM<60?(diffM+' د'):(Math.floor(diffM/60)+'س '+(diffM%60?diffM%60+'د':''));
+        infoEl.textContent='⏳ ينتهي بعد '+dt;infoEl.style.color='#e67e22';
+      }
+      infoEl.style.display='block';
+    } else { if(infoEl) infoEl.style.display='none'; }
+  }
   $('examCodeShort').textContent=exam.code.substring(0,32)+'...';
   $('examCodeLong').textContent=exam.code;
   var link=exam.link||buildExamLink(exam);
   $('qrLinkBox').textContent=link;
-  $('qrDiv').innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:.8rem">\u231b جاري توليد QR...</div>';
+  $('qrDiv').innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:.8rem">⌛ جاري توليد QR...</div>';
   var qrText=exam.code.length<=900?exam.code:link;
   generateQR(qrText,$('qrDiv'));
 }
@@ -3805,11 +4772,25 @@ function renderMyExamsPub(){
   savedExams.forEach(function(ex,i){
     var resCount=getExamResultsCount(ex.code||ex.title);
     var resHtml=resCount>0?'<div class="ex-results-badge">👥 '+resCount+' طالب حلّه</div>':'';
+    var isBubble=ex.examType==='bubble';
+    var typeBadge=isBubble?'<span style="font-size:.63rem;padding:2px 7px;border-radius:6px;background:rgba(156,39,176,.15);color:#9c27b0;font-weight:700">🔘 بابل</span> ':'';
+    var closeBadge='';
+    if(ex.closeAt&&ex.closeAt>0){
+      var now=Date.now();
+      if(now>ex.closeAt){
+        closeBadge='<span style="font-size:.63rem;padding:2px 7px;border-radius:6px;background:rgba(231,76,60,.12);color:#e74c3c;font-weight:700">🔒 أُغلق تلقائياً</span>';
+      } else {
+        var diffM=Math.round((ex.closeAt-now)/60000);
+        var diffTxt=diffM<60?(diffM+'د'):(Math.floor(diffM/60)+'س'+(diffM%60?diffM%60+'د':''));
+        closeBadge='<span style="font-size:.63rem;padding:2px 7px;border-radius:6px;background:rgba(255,152,0,.12);color:#e67e22;font-weight:700">⏳ '+diffTxt+' متبقي</span>';
+      }
+    }
     el.innerHTML+='<div class="ex-card">'+
       '<div class="ex-card-top">'+
-        '<div class="ex-card-icon">📝</div>'+
+        '<div class="ex-card-icon">'+(isBubble?'🔘':'📝')+'</div>'+
         '<div class="ex-card-info">'+
           '<div class="ex-card-title">'+ex.title+'</div>'+
+          '<div style="display:flex;gap:4px;flex-wrap:wrap;margin:3px 0">'+typeBadge+closeBadge+'</div>'+
           '<div class="ex-card-meta">'+(ex.qs?ex.qs.length:0)+' سؤال • '+(ex.timeLimit||30)+'ث • '+(ex.date||'')+'</div>'+
           resHtml+
         '</div>'+
@@ -4240,7 +5221,7 @@ function sendBackupNow(auto){
   var url=URL.createObjectURL(blob);
   var date=new Date().toLocaleDateString('ar-EG');
   // Generate mailto link
-  var subject=encodeURIComponent('نسخ احتياطي — منصة ثالثة ثانوي — '+date);
+  var subject=encodeURIComponent('نسخ احتياطي — منصة تعليمية — '+date);
   var body=encodeURIComponent('نسخة احتياطية - '+userName+' - '+date);
   // Download the file + open mail
   var a=document.createElement('a');
@@ -4698,6 +5679,10 @@ function stuView(phone){
   }
   html+='</div>';
   showPopup('تفاصيل الطالب', html);
+}
+function closePopup(){
+  var el=$('genericPopup');
+  if(el) el.remove();
 }
 function showPopup(title, html){
   var existing=$('genericPopup');
@@ -5588,6 +6573,13 @@ try{ checkLogin(); }catch(e){}
     userGender=sess.gender||(savedIdent&&savedIdent.gender)||'m';
     userStream=sess.stream||(savedIdent&&savedIdent.stream)||(restoredRole==='t'?'':'adabi');
     teacherSubject=sess.teacherSubject||(savedIdent&&savedIdent.teacherSubject)||(restoredRole==='t'?'h':'');
+    teacherSubjects=sess.teacherSubjects||(teacherSubject?[teacherSubject]:[]);
+    teacherGrades=sess.teacherGrades||[];
+    pickedGrade=sess.grade||''; pickedStage=sess.stage||''; pickedTerm=sess.term||0;
+    // Fallback: old sessions with stream but no grade → assume g12
+    if(restoredRole==='s' && !pickedGrade && (userStream==='adabi'||userStream==='olom'||userStream==='riada')){
+      pickedGrade='g12'; pickedStage='thanawy'; pickedTerm=1;
+    }
     // If restored as teacher, ensure role stays 't' in identity
     if(restoredRole==='t'){
       try{
@@ -5597,7 +6589,7 @@ try{ checkLogin(); }catch(e){}
       }catch(e){}
     }
     // Update session with corrected role
-    try{localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,role:restoredRole,gender:userGender,stream:userStream,teacherSubject:teacherSubject}));}catch(e){}
+    try{localStorage.setItem('y3_session',JSON.stringify({name:userName,phone:userPhone,role:restoredRole,gender:userGender,stream:userStream,teacherSubject:teacherSubject,teacherSubjects:teacherSubjects,teacherGrades:teacherGrades,grade:pickedGrade,stage:pickedStage,term:pickedTerm}));}catch(e){}
     appLang=sess.lang||'ar';
     try{applyLang();}catch(e){}
     loadStats(); loadDrafts();
@@ -5692,7 +6684,14 @@ function removeOpt(id){
 
 // ══ Start social features after login ══
 function initSocialFeatures(){
-  if(IS_LOCAL) return; // لا تشغّل الشبكة لما الملف يشتغل محلياً
+  // Always try to connect socket (even from file://)
+  if(!_socket && !IS_LOCAL) initSocket();
+  else if(!_socket) initSocket(); // try anyway for socket
+  if(IS_LOCAL){
+    // Still try socket but skip other social features
+    setTimeout(checkCallServerStatus, 3000);
+    return;
+  }
   var cfg=chatCfg||loadChatConfig();
   if(cfg){
     startPresence();
@@ -7083,7 +8082,7 @@ function backupNow(){
   a.href=url; a.download=filename; a.click();
   URL.revokeObjectURL(url);
   // Open email client with instructions
-  var subject=encodeURIComponent('نسخة احتياطية - منصة ثالثة ثانوي - '+date);
+  var subject=encodeURIComponent('نسخة احتياطية - منصة تعليمية - '+date);
   var body=encodeURIComponent('نسخة احتياطية - '+userName+' - '+date+' - ارفق الملف المحمل');
   window.open('mailto:'+email+'?subject='+subject+'&body='+body);
   // Save last backup date
@@ -7791,6 +8790,409 @@ function quickStatsExam(mode){
   resetPlay();
 }
 // ══ لغة عربية ══
+// ══════════════════════════════════════════
+// ENGLISH — ثالثة ثانوي (أدبي + علمي)
+// ══════════════════════════════════════════
+// EN_T1 = Term 1: Units 1-6 + Story ch.1-6
+// EN_T2 = Term 2: Units 7-12 + Story ch.7-12
+// EN_GR = Grammar (all 18 topics)
+
+var EN_UNITS = [
+  // Term 1
+  {key:'u1', term:1, type:'unit', n:'Unit 1: Inside the World of Care', s:'Healthcare • Volunteering • Helping others', color:'#2196f3'},
+  {key:'u2', term:1, type:'unit', n:'Unit 2: The Power of Machines',    s:'Technology • Inventions • Engineering',    color:'#9c27b0'},
+  {key:'u3', term:1, type:'unit', n:'Unit 3: Protect Nature, Protect Future', s:'Environment • Conservation • Ecology', color:'#4caf50'},
+  {key:'u4', term:1, type:'unit', n:'Unit 4: Marine Life',              s:'Ocean • Sea creatures • Conservation',     color:'#00bcd4'},
+  {key:'u5', term:1, type:'unit', n:'Unit 5: From Muscles to Mindset',  s:'Sports • Fitness • Mental health',         color:'#ff9800'},
+  {key:'u6', term:1, type:'unit', n:'Unit 6: Let\'s Hang Out!',         s:'Social life • Hobbies • Leisure',          color:'#e91e63'},
+  // Story Term 1
+  {key:'s1', term:1, type:'story', n:'Story: The Count of Monte Cristo — Introduction', s:'المقدمة — Edmund Dantès', color:'#795548'},
+  {key:'s2', term:1, type:'story', n:'Story: Chapter 1 — Betrayal',     s:'Dantès — Fernand — Danglars',              color:'#795548'},
+  {key:'s3', term:1, type:'story', n:'Story: Chapter 2 — Prison',       s:'Château d\'If — Abbé Faria',               color:'#795548'},
+  {key:'s4', term:1, type:'story', n:'Story: Chapter 3 — The Treasure', s:'Monte Cristo Island — The treasure',       color:'#795548'},
+  {key:'s5', term:1, type:'story', n:'Story: Chapter 4 — The Count',    s:'The Count of Monte Cristo identity',       color:'#795548'},
+  {key:'s6', term:1, type:'story', n:'Story: Chapter 5 — Revenge Begins', s:'Paris — Society — Plans',               color:'#795548'},
+  {key:'s6b',term:1, type:'story', n:'Story: Chapter 6 — Justice',      s:'Valentine — Haydée — Morrel',              color:'#795548'},
+  // Term 2
+  {key:'u7', term:2, type:'unit', n:'Unit 7: At the Airport',           s:'Travel • Airports • Customs',              color:'#2196f3'},
+  {key:'u8', term:2, type:'unit', n:'Unit 8: A Journey Through Time',   s:'History • Civilisations • Time travel',    color:'#9c27b0'},
+  {key:'u9', term:2, type:'unit', n:'Unit 9: The Universe\'s Mysteries', s:'Space • Astronomy • Science',             color:'#4caf50'},
+  {key:'u10',term:2, type:'unit', n:'Unit 10: Peoples\' Hospitality and Kindness', s:'Culture • Traditions • Kindness', color:'#00bcd4'},
+  {key:'u11',term:2, type:'unit', n:'Unit 11: Literature',              s:'Books • Authors • Poetry',                  color:'#ff9800'},
+  {key:'u12',term:2, type:'unit', n:'Unit 12: University Life',         s:'University • Study • Future',               color:'#e91e63'},
+  // Story Term 2
+  {key:'s7', term:2, type:'story', n:'Story: Chapter 7 — The Carnival', s:'Venice — Mercedes — Disguise',            color:'#795548'},
+  {key:'s8', term:2, type:'story', n:'Story: Chapter 8 — The Trap',     s:'Villefort — Morcerf — Danglars',           color:'#795548'},
+  {key:'s9', term:2, type:'story', n:'Story: Chapter 9 — The Truth',    s:'Revelations — Exposure',                   color:'#795548'},
+  {key:'s10',term:2, type:'story', n:'Story: Chapter 10 — Consequences', s:'Villefort — Morcerf family',             color:'#795548'},
+  {key:'s11',term:2, type:'story', n:'Story: Chapter 11 — Rescue',      s:'Valentine — Maximilien — Haydée',         color:'#795548'},
+  {key:'s12',term:2, type:'story', n:'Story: Chapter 12 — Farewell',    s:'The end — Freedom — Love',                 color:'#795548'},
+];
+
+// Grammar topics
+var EN_GR_TOPICS = [
+  {key:'gr1',  n:'1. Parts of Speech',                    s:'Nouns • Pronouns • Verbs • Adjectives • Adverbs • Prepositions • Conjunctions'},
+  {key:'gr2',  n:'2. Sentence Structure',                  s:'Subject • Verb • Object • Complement'},
+  {key:'gr3',  n:'3. Definite and Indefinite Articles',    s:'The • A • An — Rules of usage'},
+  {key:'gr4',  n:'4. Countable / Uncountable Nouns',       s:'Count nouns • Mass nouns • Quantifiers'},
+  {key:'gr5',  n:'5. Tenses — Simple',                     s:'Present Simple • Past Simple • Future Simple'},
+  {key:'gr6',  n:'6. Tenses — Continuous',                 s:'Present Continuous • Past Continuous • Future Continuous'},
+  {key:'gr7',  n:'7. Tenses — Perfect & Perfect Continuous', s:'Present Perfect • Past Perfect • Future Perfect'},
+  {key:'gr8',  n:'8. Passive Voice',                       s:'Active → Passive • All tenses'},
+  {key:'gr9',  n:'9. Direct and Indirect Speech',          s:'Reporting verbs • Backshift • Time expressions'},
+  {key:'gr10', n:'10. Conditional Sentences',              s:'Zero • First • Second • Third conditionals'},
+  {key:'gr11', n:'11. Verb Patterns',                      s:'Infinitive • Gerund • Bare infinitive'},
+  {key:'gr12', n:'12. Modal Verbs',                        s:'Can • Could • May • Might • Must • Should • Would'},
+  {key:'gr13', n:'13. Subject-Verb Agreement',             s:'Singular • Plural • Collective nouns'},
+  {key:'gr14', n:'14. Quantifiers',                        s:'Some • Any • Much • Many • Few • Little • A lot of'},
+  {key:'gr15', n:'15. Relative Clauses',                   s:'Who • Which • That • Whose • Whom — Defining & Non-defining'},
+  {key:'gr16', n:'16. Comparison',                         s:'Comparative • Superlative • As...as • Double comparative'},
+  {key:'gr17', n:'17. Question Tags',                      s:'Auxiliary verb • Positive/Negative tags'},
+  {key:'gr18', n:'18. The Causative',                      s:'Have/Get something done'},
+  {key:'gr19', n:'19. So / Such / Enough / Too',           s:'Degree adverbs — So + adj, Such + noun'},
+  {key:'gr20', n:'20. Seem / Mean / Suppose',              s:'Modal-like verbs of opinion and assumption'},
+];
+
+// English Questions Bank
+var ENQ = {
+// ── Unit 1: Inside the World of Care ──
+u1:[
+  {q:'The word "volunteer" means someone who ___ without being paid.',o:['demands payment','works freely to help others','avoids responsibility','studies medicine'],a:1,h:'Volunteer = free help',e:'A volunteer is a person who freely gives their time or services to help others without expecting payment.'},
+  {q:'Which sentence uses "dedicate" correctly?',o:['She dedicated her car to the garage.','He dedicated his life to helping the poor.','They dedicated the food badly.','We dedicated the door shut.'],a:1,h:'Dedicate = commit to a purpose',e:'"Dedicate" means to commit time, effort, or oneself to a particular task or purpose.'},
+  {q:'A "patient" in a hospital is ___ .',o:['a doctor','a nurse','a person receiving medical treatment','the hospital manager'],a:2,h:'Patient = person being treated',e:'A patient is a person who is receiving or registered to receive medical treatment in a hospital or from a doctor.'},
+  {q:'Choose the correct form: "She ___ (work) as a nurse for five years now."',o:['works','worked','has been working','had worked'],a:2,h:'Present Perfect Continuous',e:'We use the Present Perfect Continuous (has/have + been + -ing) for actions that started in the past and continue to the present.'},
+  {q:'The phrase "make a difference" means to ___ .',o:['create confusion','have a positive impact on something','calculate numbers','disagree with others'],a:1,h:'Make a difference = positive impact',e:'"Make a difference" is an idiom meaning to have a significant positive effect or impact on something or someone.'},
+  {q:'"Compassion" means ___ .',o:['cruelty','indifference','sympathy and concern for others','anger and frustration'],a:2,h:'Compassion = caring for others',e:'Compassion means a feeling of deep sympathy and sorrow for another\'s suffering, with a desire to help.'},
+  {q:'Which is the correct passive form of "Doctors treat patients"?',o:['Patients are treated by doctors.','Patients treat doctors.','Patients were treating doctors.','Doctors are treated by patients.'],a:0,h:'Passive = be + past participle',e:'To form the passive voice: Object + be (present) + past participle + by + subject.'},
+  {q:'The prefix "un-" in "unhealthy" means ___ .',o:['very','not','before','again'],a:1,h:'un- = not/opposite',e:'The prefix "un-" is added to adjectives to create their opposite meaning. Unhealthy = not healthy.'},
+],
+// ── Unit 2: The Power of Machines ──
+u2:[
+  {q:'"Invention" means ___ .',o:['copying an old idea','creating something new for the first time','destroying a machine','repairing broken equipment'],a:1,h:'Invention = new creation',e:'An invention is a new device, method, or process developed through study and experimentation.'},
+  {q:'The correct comparative form of "useful" is ___ .',o:['more useful','usefuler','most useful','usefuller'],a:0,h:'Long adjectives use "more"',e:'For adjectives with two or more syllables, we use "more" to form the comparative: more useful.'},
+  {q:'"Steam engine" revolutionised ___ .',o:['the internet','transport and industry in the 19th century','modern computers','space travel'],a:1,h:'Steam engine → Industrial Revolution',e:'The steam engine, invented by James Watt, revolutionised transport and industry during the Industrial Revolution in the 18th–19th centuries.'},
+  {q:'Choose the correct sentence:',o:['The machine broke down yesterday.','The machine broke up yesterday.','The machine broke into yesterday.','The machine broke out yesterday.'],a:0,h:'Break down = stop working',e:'"Break down" is a phrasal verb meaning to stop functioning. "The machine broke down yesterday" is correct.'},
+  {q:'"Efficient" means ___ .',o:['wasting a lot of energy','achieving maximum results with minimum waste','very expensive','completely broken'],a:1,h:'Efficient = maximum output, minimum waste',e:'Efficient means achieving maximum productivity with minimum waste of effort or resources.'},
+  {q:'Which sentence is in the Past Passive?',o:['The robot builds cars.','The robot built cars.','Cars were built by robots.','Robots are building cars.'],a:2,h:'Past Passive = was/were + past participle',e:'Past passive is formed with was/were + past participle. "Cars were built by robots" is the past passive.'},
+  {q:'"Technology" is best defined as ___ .',o:['natural plants','the application of science for practical purposes','ancient history','artistic drawing'],a:1,h:'Technology = applied science',e:'Technology refers to the application of scientific knowledge for practical purposes, especially in industry.'},
+  {q:'The phrasal verb "figure out" means to ___ .',o:['ignore a problem','understand or solve something','create a figure','draw a chart'],a:1,h:'Figure out = understand/solve',e:'"Figure out" is a phrasal verb meaning to understand or find the answer to something after thinking carefully.'},
+],
+// ── Unit 3: Protect Nature ──
+u3:[
+  {q:'"Endangered" species are those ___ .',o:['living in zoos','at risk of extinction','very common worldwide','discovered recently'],a:1,h:'Endangered = at risk of dying out',e:'An endangered species is a species of animals or plants that is seriously at risk of extinction.'},
+  {q:'"Conservation" means ___ .',o:['destroying forests','the protection and preservation of the environment','building factories','hunting wild animals'],a:1,h:'Conservation = protection of nature',e:'Conservation is the action of conserving something, especially the environment — protecting it from destruction or change.'},
+  {q:'Which is correct? "We must ___ pollution."',o:['reduce','reducing','reduced','to reduced'],a:0,h:'Must + base form (infinitive)',e:'Modal verbs (must, can, should, etc.) are followed by the base form of the verb without "to".'},
+  {q:'"Deforestation" means ___ .',o:['planting new trees','clearing forests by cutting down trees','studying forests','protecting wildlife'],a:1,h:'De- = removal, forestation = forests',e:'Deforestation is the action of clearing a wide area of trees, destroying forests permanently.'},
+  {q:'Choose the correct conditional: "If we ___ (not protect) nature, many species will die."',o:["don't protect","didn't protect","hadn't protected","won't protect"],a:0,h:'First conditional: If + present simple, will...',e:'First conditional expresses real future possibilities. If + present simple, will + base verb.'},
+  {q:'"Renewable energy" is energy from sources that ___ .',o:['run out eventually','can be replenished naturally','are very expensive','require nuclear reactions'],a:1,h:'Renewable = naturally replenished',e:'Renewable energy comes from sources that are naturally replenished — like solar, wind, and water power.'},
+  {q:'The suffix "-tion" in "conservation" makes the word a ___ .',o:['verb','adjective','noun','adverb'],a:2,h:'-tion creates nouns',e:'The suffix "-tion" (also "-sion", "-ation") is added to verbs to create nouns. Conserve → conservation.'},
+  {q:'"Habitat" means ___ .',o:['a type of food','the natural environment where an organism lives','a tool for research','a human settlement'],a:1,h:'Habitat = natural home of organism',e:'A habitat is the natural home or environment of an animal, plant, or other organism.'},
+],
+// ── Unit 4: Marine Life ──
+u4:[
+  {q:'"Marine" means relating to ___ .',o:['mountains','forests','the sea','the sky'],a:2,h:'Marine = of the sea',e:'"Marine" is an adjective relating to the sea. Marine life = life in the sea.'},
+  {q:'The largest animal on Earth is the ___ .',o:['elephant','giraffe','blue whale','great white shark'],a:2,h:'Blue whale = largest animal ever',e:'The blue whale is the largest animal known to have ever existed on Earth, reaching lengths of up to 30 metres.'},
+  {q:'"Coral reef" is important because it ___ .',o:['causes floods','is home to 25% of all marine species','produces oil','makes the ocean salty'],a:1,h:'Coral reefs = biodiversity hotspots',e:'Coral reefs are among the most biodiverse ecosystems on Earth, providing habitat for about 25% of all marine species.'},
+  {q:'Choose the correct relative clause: "The fish ___ we saw was colourful."',o:['who','whom','which','whose'],a:2,h:'Which = for things/animals',e:'We use "which" or "that" (not "who") for animals and things in relative clauses.'},
+  {q:'"Extinct" means ___ .',o:['very common','no longer existing as a species','discovered recently','living underwater'],a:1,h:'Extinct = no longer exists',e:'An extinct species is one that has no living members — it no longer exists anywhere on Earth.'},
+  {q:'The passive: "Scientists study marine life" → ___ ',o:['Marine life is studied by scientists.','Marine life studies scientists.','Scientists are studying marine life.','Marine life was studying scientists.'],a:0,h:'Passive = Object + is/are + past participle',e:'Present passive: subject + is/are + past participle + by + agent.'},
+  {q:'"Predator" is an animal that ___ .',o:['eats only plants','is hunted by others','hunts and eats other animals','lives in rivers only'],a:2,h:'Predator = hunts prey',e:'A predator is an animal that naturally preys on others — it hunts and eats other animals (its prey).'},
+  {q:'Which sentence uses "despite" correctly?',o:['Despite of the storm, we swam.','Despite the storm, we went diving.','Despite we were tired, we continued.','Despite to swim, he was afraid.'],a:1,h:'Despite + noun/gerund (no "of")',e:'"Despite" is followed directly by a noun or gerund (verb+-ing), never by "of" or a full clause with a verb.'},
+],
+// ── Unit 5: From Muscles to Mindset ──
+u5:[
+  {q:'"Discipline" in sports means ___ .',o:['punishing others','self-control and regular training','resting all day','avoiding competition'],a:1,h:'Discipline = self-control & practice',e:'Discipline in sports refers to training yourself to follow rules and maintain a consistent practice routine.'},
+  {q:'Choose the correct form: "He ___ (train) for the Olympics since 2022."',o:['trains','trained','has been training','had trained'],a:2,h:'Since = Present Perfect Continuous',e:'"Since" with a starting point in the past indicates an action continuing to the present → Present Perfect Continuous.'},
+  {q:'"Perseverance" means ___ .',o:['giving up easily','continued effort despite difficulties','winning all competitions','avoiding challenges'],a:1,h:'Perseverance = keep trying',e:'Perseverance means continuing in a course of action even in the face of difficulty or with little or no prospect of success.'},
+  {q:'The gerund form of "compete" is ___ .',o:['competed','to compete','competition','competing'],a:3,h:'Gerund = verb + -ing',e:'A gerund is the -ing form of a verb used as a noun. Compete → competing. Example: He loves competing.'},
+  {q:'"Athletics" includes ___ .',o:['swimming and diving','running, jumping, and throwing events','chess and board games','fishing and sailing'],a:1,h:'Athletics = track & field',e:'Athletics refers to track and field events including running, jumping, throwing, and walking competitions.'},
+  {q:'Which modal expresses obligation? "You ___ warm up before exercising."',o:['might','could','must','would'],a:2,h:'Must = strong obligation',e:'"Must" expresses strong obligation or necessity. You must warm up = it is necessary/obligatory.'},
+  {q:'"Stamina" means the ability to ___ .',o:['lift heavy weights only','sustain prolonged physical or mental effort','run very fast','jump very high'],a:1,h:'Stamina = endurance',e:'Stamina is the ability to sustain prolonged physical or mental effort — endurance over time.'},
+  {q:'The antonym of "victory" is ___ .',o:['triumph','success','defeat','achievement'],a:2,h:'Antonym = opposite word',e:'An antonym is a word opposite in meaning. The antonym of victory (winning) is defeat (losing).'},
+],
+// ── Unit 6: Let's Hang Out! ──
+u6:[
+  {q:'"Leisure" means time spent ___ .',o:['at work','studying hard','relaxing or doing enjoyable activities','sleeping only'],a:2,h:'Leisure = free time / recreation',e:'Leisure refers to free time, when you are not working and can do activities you enjoy.'},
+  {q:'Choose the correct preposition: "I am interested ___ music."',o:['at','on','in','for'],a:2,h:'Interested in',e:'"Interested" is always followed by the preposition "in". I am interested in music.'},
+  {q:'"Socialise" means to ___ .',o:['work alone','avoid people','interact and spend time with others socially','study independently'],a:2,h:'Socialise = be with other people',e:'To socialise means to mix socially with other people, taking part in social activities.'},
+  {q:'Which is an example of a "hobby"?',o:['Sleeping all day','Doing compulsory homework','Painting as an enjoyable activity','Going to hospital'],a:2,h:'Hobby = enjoyable free-time activity',e:'A hobby is a regular activity done in one\'s leisure time for pleasure. Painting, reading, and cooking are examples.'},
+  {q:'The question tag for "She doesn\'t like dancing, ___ ?"',o:['does she?','doesn\'t she?','did she?','is she?'],a:0,h:'Negative statement → positive tag',e:'Question tags: negative statement + positive tag. She doesn\'t like dancing, does she?'},
+  {q:'"Entertainment" means ___ .',o:['hard physical work','activities that provide amusement or enjoyment','punishment for bad behaviour','studying scientific topics'],a:1,h:'Entertainment = amusement',e:'Entertainment refers to activities that provide amusement or enjoyment for people.'},
+  {q:'Choose the correct form: "What about ___ (go) to the cinema tonight?"',o:['go','went','going','to go'],a:2,h:'What about + gerund (-ing)',e:'"What about" and "How about" are followed by a gerund (verb + -ing) to make suggestions.'},
+  {q:'"Enthusiastic" means ___ .',o:['bored and tired','showing intense enjoyment or interest','feeling very sad','being very quiet'],a:1,h:'Enthusiastic = showing great interest',e:'Enthusiastic means having or showing intense and eager enjoyment, interest, or approval.'},
+],
+// ── Story Ch.1 ──
+s2:[
+  {q:'Where does "The Count of Monte Cristo" begin?',o:['Paris','London','Marseille','Rome'],a:2,h:'Marseille — Mediterranean port city',e:'The novel begins in Marseille, a port city in the south of France, where Edmond Dantès arrives as captain of a ship.'},
+  {q:'What was Edmond Dantès\'s job at the beginning of the story?',o:['A soldier','A sailor / captain of a ship','A banker','A nobleman'],a:1,h:'Captain of the Pharaon',e:'Edmond Dantès was a young sailor who had just become the captain of the merchant ship, the Pharaon.'},
+  {q:'Who betrayed Edmond Dantès?',o:['Abbé Faria','Mercédès','Fernand and Danglars','Morrel'],a:2,h:'Jealousy and greed led to betrayal',e:'Fernand Mondego (who was jealous of Dantès\' relationship with Mercédès) and Danglars (jealous of his promotion) wrote a false letter accusing him of being a Bonapartist agent.'},
+  {q:'What was Edmond accused of?',o:['Theft','Murder','Being a spy/traitor (Bonapartist agent)','Fraud'],a:2,h:'False political accusation',e:'Edmond was falsely accused of being a messenger for Napoleon Bonaparte — a political traitor — based on a letter he was asked to deliver.'},
+  {q:'Who was Mercédès?',o:['Edmond\'s sister','The ship\'s owner','Edmond\'s fiancée','A prison guard'],a:2,h:'Mercédès = his love',e:'Mercédès was Edmond Dantès\'s fiancée, the woman he loved and planned to marry before his imprisonment.'},
+],
+// ── Story Ch.2 ──
+s3:[
+  {q:'Which prison was Edmond Dantès sent to?',o:['The Tower of London','Château d\'If','Alcatraz','The Bastille'],a:1,h:'Château d\'If — island fortress prison',e:'Edmond was imprisoned in the Château d\'If, a fortress on an island off the coast of Marseille, used as a political prison.'},
+  {q:'Who became Edmond\'s most important friend in prison?',o:['The prison warden','Fernand','Abbé Faria','Danglars'],a:2,h:'The wise old priest',e:'Abbé Faria was an Italian priest and scholar imprisoned in Château d\'If who became Edmond\'s mentor, teacher, and closest friend.'},
+  {q:'What did Abbé Faria teach Edmond in prison?',o:['How to fight','Languages, sciences, history, and philosophy','How to escape immediately','How to cook'],a:1,h:'Faria = a walking encyclopaedia',e:'Abbé Faria was extremely learned and taught Edmond multiple languages, mathematics, science, history, philosophy, and the arts.'},
+  {q:'How many years did Edmond spend in Château d\'If?',o:['5 years','10 years','About 13 years','20 years'],a:2,h:'He entered young, left older',e:'Edmond spent approximately 13 years imprisoned in Château d\'If before his dramatic escape.'},
+],
+// ── Story Ch.3–6 (combined key s4) ──
+s4:[
+  {q:'Where was the treasure hidden?',o:['In Paris','Under the sea','On the island of Monte Cristo','In a Marseille bank'],a:2,h:'The island gives the story its name',e:'Abbé Faria told Edmond that a vast treasure was hidden on the uninhabited island of Monte Cristo in the Mediterranean Sea.'},
+  {q:'How did Edmond escape from Château d\'If?',o:['He bribed the guards','He swam across the sea','He hid in a body bag (replacing the dead Abbé Faria)','He dug a tunnel through the wall'],a:2,h:'A daring escape using a burial shroud',e:'When Abbé Faria died, Edmond sewed himself into the burial shroud (body bag) in place of Faria\'s body and was thrown into the sea, then escaped.'},
+  {q:'What identity did Edmond Dantès adopt for revenge?',o:['The Duke of Paris','The Count of Monte Cristo','Captain Morrel','Lord Fernand'],a:1,h:'Monte Cristo = the island + his treasure',e:'Using the treasure he found, Edmond Dantès created a new wealthy identity as "The Count of Monte Cristo" to carry out his plans for revenge.'},
+],
+// ── Story Ch.7-12 keys ──
+s7:[
+  {q:'In Chapter 7, where does the Count encounter his enemies at a grand event?',o:['London','Venice at the Carnival','Rome','Athens'],a:1,h:'The Carnival of Venice — disguise and drama',e:'The Count meets his enemies at the Venice Carnival, an event famous for masks and disguise — fitting for his concealed identity.'},
+  {q:'Who is Haydée in the story?',o:['A French noblewoman','The daughter of Ali Pasha, rescued by the Count','Danglars\'s wife','A prison guard'],a:1,h:'Haydée — the Count\'s companion',e:'Haydée is the daughter of Ali Pasha, a Greek ruler. She was sold into slavery and rescued by the Count, becoming his devoted companion.'},
+],
+s8:[
+  {q:'Which of the Count\'s enemies is exposed as having falsely sentenced Edmond?',o:['Danglars','Fernand','Villefort','The prison warden'],a:2,h:'Villefort — the corrupt prosecutor',e:'Villefort was the deputy prosecutor who knowingly sent Edmond to prison unjustly to protect his own political career and family secrets.'},
+  {q:'What brings about Fernand\'s (Morcerf\'s) downfall?',o:['He is caught stealing','His betrayal of Ali Pasha is publicly revealed','He loses all his money','He confesses to the police'],a:1,h:'Public exposure of a long-hidden crime',e:'The Count orchestrates the public revelation that Morcerf (Fernand) betrayed and sold Ali Pasha, destroying his reputation and family.'},
+],
+s12:[
+  {q:'How does the story of Monte Cristo end for Edmond?',o:['He is recaptured and imprisoned','He dies seeking revenge','He finds peace and sails away with Haydée','He returns to Marseille as a sailor'],a:2,h:'Justice served — a new beginning',e:'After exacting his revenge and ensuring justice, Edmond Dantès sails away with Haydée, finding peace and a new life together.'},
+  {q:'What is the main theme of "The Count of Monte Cristo"?',o:['The importance of wealth','Justice, revenge, and redemption','Love conquers all','Adventure at sea'],a:1,h:'Revenge with moral consequences',e:'The central themes are justice and revenge — Dantès\'s quest to punish those who wronged him — and ultimately, the question of whether revenge brings true redemption.'},
+],
+};
+
+// Grammar questions
+var EN_GRQ = {
+gr1:[
+  {q:'Identify the noun in: "The brave soldier crossed the river."',o:['brave','crossed','soldier','quickly'],a:2,h:'Noun = person, place, thing',e:'A noun is a word that names a person, place, thing, or idea. "Soldier" and "river" are nouns; "brave" is an adjective; "crossed" is a verb.'},
+  {q:'"Quickly" is an example of an ___ .',o:['adjective','noun','adverb','preposition'],a:2,h:'Adverb = modifies verbs/adjectives',e:'An adverb modifies a verb, adjective, or another adverb. "Quickly" modifies the verb — it tells us HOW someone does something.'},
+  {q:'Which word is a conjunction in: "I was tired but I continued."?',o:['tired','but','continued','was'],a:1,h:'Conjunction = joining word',e:'A conjunction joins words, phrases, or clauses. "But" is a coordinating conjunction showing contrast.'},
+  {q:'"Under the table" — "under" is a ___ .',o:['noun','verb','conjunction','preposition'],a:3,h:'Preposition shows position/relation',e:'A preposition shows the relationship between a noun/pronoun and other words. "Under" shows position/location.'},
+  {q:'"She" is an example of a ___ .',o:['noun','verb','pronoun','adjective'],a:2,h:'Pronoun replaces a noun',e:'A pronoun is a word used in place of a noun. "She" replaces a female person\'s name.'},
+],
+gr2:[
+  {q:'In "The cat sat on the mat", the subject is ___ .',o:['sat','on the mat','the cat','mat'],a:2,h:'Subject = who/what does the action',e:'The subject is who or what performs the action of the verb. "The cat" performs the action "sat".'},
+  {q:'Which sentence has a direct object?',o:['She slept.','He ran fast.','They built a house.','It rained heavily.'],a:2,h:'Direct object = receives the verb\'s action',e:'A direct object receives the action of the verb. In "They built a house", "a house" is the direct object.'},
+  {q:'"Happy" in "She looks happy" is a ___ .',o:['subject','verb','object','subject complement'],a:3,h:'Complement = describes the subject after linking verb',e:'A subject complement follows a linking verb (looks, is, seems) and describes the subject. "Happy" describes "She".'},
+],
+gr3:[
+  {q:'Use the correct article: "___ Nile is the longest river in Africa."',o:['A','An','The','No article'],a:2,h:'The = specific, unique things',e:'We use "the" with unique nouns (there is only one Nile), names of rivers, oceans, seas, and specific things.'},
+  {q:'"___ elephant is a large mammal." — which article?',o:['A','An','The','No article'],a:1,h:'An before vowel sounds',e:'"An" is used before words beginning with a vowel SOUND. "Elephant" starts with the vowel sound /e/, so we use "an".'},
+  {q:'When do we use NO article?',o:['With unique places','With names of rivers','With proper nouns (names of people, countries)','With specific known things'],a:2,h:'No article with proper nouns',e:'We use no article with proper nouns — names of people (Ahmed), most countries (Egypt), cities (Cairo), languages (Arabic).'},
+],
+gr5:[
+  {q:'Which sentence is in the Present Simple?',o:['She is eating lunch.','She eats lunch every day.','She ate lunch yesterday.','She has eaten lunch.'],a:1,h:'Present Simple = habits/routines',e:'Present Simple uses the base verb (or verb+s for he/she/it). It expresses habits, routines, facts, and general truths.'},
+  {q:'"Yesterday, they ___ (visit) the museum." — correct form?',o:['visit','visits','visited','are visiting'],a:2,h:'Yesterday = Past Simple',e:'Time expressions like "yesterday", "last week", "ago" signal Past Simple. Regular verbs add -ed.'},
+  {q:'Future Simple: "She ___ travel to London next year."',o:['will','would','is','has'],a:0,h:'Will + base verb = Future Simple',e:'Future Simple is formed with will + base form of the verb. It expresses future predictions, promises, and decisions.'},
+],
+gr6:[
+  {q:'"I ___ (study) when you called." — correct form?',o:['studied','was studying','am studying','have studied'],a:1,h:'Past Continuous = interrupted action',e:'Past Continuous (was/were + -ing) describes an action in progress when another action happened (interrupted it).'},
+  {q:'Which is correct Present Continuous?',o:['She cooks dinner now.','She is cooking dinner now.','She cooked dinner now.','She has cooked dinner now.'],a:1,h:'Present Continuous = action happening now',e:'Present Continuous = am/is/are + verb-ing. It describes actions happening at the moment of speaking.'},
+  {q:'Future Continuous: "This time tomorrow, he ___ fly to Dubai."',o:['is flying','flies','will be flying','was flying'],a:2,h:'Will be + -ing = Future Continuous',e:'Future Continuous (will be + -ing) describes an action that will be in progress at a specific time in the future.'},
+],
+gr7:[
+  {q:'"She ___ already ___ the report." (Present Perfect)',o:['has / written','have / wrote','had / written','was / writing'],a:0,h:'Present Perfect = has/have + past participle',e:'Present Perfect = has/have + past participle. Used for completed actions with present relevance. "Already" is a key signal.'},
+  {q:'"By 2030, scientists ___ a cure." (Future Perfect)',o:['will find','will have found','have found','found'],a:1,h:'Will have + past participle = Future Perfect',e:'Future Perfect = will have + past participle. It describes an action that will be completed before a specific time in the future.'},
+  {q:'Past Perfect Continuous: He ___ for hours before he gave up.',o:['tried','had been trying','was trying','has tried'],a:1,h:'Had been + -ing = Past Perfect Continuous',e:'Past Perfect Continuous (had been + -ing) describes a continuous action that happened before another past action.'},
+],
+gr8:[
+  {q:'Change to passive: "The chef cooks the meal."',o:['The meal is cooked by the chef.','The meal was cooked by the chef.','The chef is cooked the meal.','The meal cooked by the chef.'],a:0,h:'Present simple passive = is/are + past participle',e:'Present simple passive: Object + is/are + past participle + by + agent. The meal is cooked by the chef.'},
+  {q:'Which sentence is in the Past Passive?',o:['The door is opened.','The door was opened by the guard.','The guard opens the door.','The guard has opened the door.'],a:1,h:'Past passive = was/were + past participle',e:'Past passive = was/were + past participle (+ by + agent). "The door was opened by the guard."'},
+  {q:'The passive of "Someone will finish the project" is:',o:['The project will be finished.','The project is finished.','The project was finished.','The project will finish.'],a:0,h:'Future passive = will be + past participle',e:'Future passive: Object + will be + past participle. The agent (someone) is omitted as it\'s unknown/unimportant.'},
+],
+gr9:[
+  {q:'Change to indirect: He said, "I am tired."',o:['He said that he is tired.','He said that he was tired.','He said that I am tired.','He told that he was tired.'],a:1,h:'Backshift: am → was',e:'In indirect speech, present tenses shift back: am/is → was, are → were. The pronoun changes: I → he.'},
+  {q:'Which reporting verb is used for questions?',o:['said','told','asked','announced'],a:2,h:'Asked = reporting questions',e:'We use "asked" to report questions in indirect speech. He asked me where I lived.'},
+  {q:'Indirect: She said, "I will come tomorrow." →',o:['She said she will come tomorrow.','She said she would come the next day.','She told she comes tomorrow.','She says she would come the next day.'],a:1,h:'Will → would, tomorrow → the next day',e:'In indirect speech: will → would; tomorrow → the next day. The tense backtracks and time expressions change.'},
+],
+gr10:[
+  {q:'Which is a zero conditional sentence?',o:['If it rains, we will stay home.','If it rains, we would stay home.','If water reaches 100°C, it boils.','If I had known, I would have helped.'],a:2,h:'Zero conditional = always true facts',e:'Zero conditional: If + present simple, present simple. Used for facts that are always true: scientific facts, laws of nature.'},
+  {q:'Which is a second conditional sentence?',o:['If it rains, I will take an umbrella.','If it rained, I would take an umbrella.','If it had rained, I would have taken an umbrella.','If water freezes, it becomes ice.'],a:1,h:'Second conditional = unreal present/future',e:'Second conditional: If + past simple, would + base verb. Expresses imaginary or unlikely situations in the present or future.'},
+  {q:'"If I ___ (be) you, I ___ (apologise)." — correct form?',o:['am / will apologise','were / would apologise','was / would apologise','am / would apologise'],a:1,h:'Second conditional: were (not was for formality)',e:'In second conditionals, we use "were" for all persons (even I/he/she) in formal/written English: If I were you, I would apologise.'},
+],
+gr11:[
+  {q:'"I enjoy ___ (read)." — correct verb form?',o:['to read','read','reading','reads'],a:2,h:'Enjoy + gerund (-ing)',e:'The verb "enjoy" is always followed by a gerund (verb+-ing). Other verbs that take gerunds: finish, avoid, consider.'},
+  {q:'"She agreed ___ (help) us." — correct form?',o:['help','helping','to help','helps'],a:2,h:'Agree + infinitive (to + verb)',e:'"Agree" is followed by the full infinitive (to + base verb). Other verbs: decide, plan, want, hope, expect, promise.'},
+  {q:'"Let me ___ (explain)." — correct form?',o:['to explain','explaining','explained','explain'],a:3,h:'Let + object + bare infinitive',e:'Causative "let" takes a bare infinitive (without "to"). Let me explain. Make, let, and help can take bare infinitives.'},
+],
+gr12:[
+  {q:'"You ___ wear a seatbelt. It\'s the law." — correct modal?',o:['might','could','must','would'],a:2,h:'Must = strong obligation/law',e:'"Must" expresses strong obligation, necessity, or law. You must wear a seatbelt = it is required/compulsory.'},
+  {q:'"It ___ rain tomorrow — the sky is cloudy." — correct modal?',o:['must','might','should','will definitely'],a:1,h:'Might = possibility (not certain)',e:'"Might" expresses possibility — something that may happen but is not certain. The cloudy sky suggests rain is possible.'},
+  {q:'"You ___ talk during the exam." — correct modal for prohibition?',o:['should not','might not','must not','would not'],a:2,h:'Must not = prohibition',e:'"Must not" (mustn\'t) expresses strong prohibition — it is forbidden. Different from "don\'t have to" which means it\'s not necessary.'},
+],
+gr13:[
+  {q:'"The team ___ playing well." — correct verb?',o:['are','were','is','have'],a:2,h:'Collective noun (team) = singular verb',e:'Collective nouns (team, family, class, government) are usually treated as singular and take a singular verb.'},
+  {q:'"Neither the students nor the teacher ___ ready." — correct verb?',o:['was','were','is','are'],a:0,h:'Neither...nor: verb agrees with nearest subject',e:'With "neither...nor" and "either...or", the verb agrees with the subject nearest to it. "The teacher" is singular → was.'},
+],
+gr14:[
+  {q:'"There is ___ water left." — correct quantifier?',o:['many','few','little','a few'],a:2,h:'Little = small amount of uncountable noun',e:'"Little" is used with uncountable nouns (water, time, money) to mean a small amount. "Few" is for countable nouns.'},
+  {q:'"___ students passed the exam." — correct quantifier (most students)?',o:['A little','A few','Much','Little'],a:1,h:'A few = some countable nouns',e:'"A few" means some/a small number and is used with countable nouns. "A few students" = some students (positive meaning).'},
+],
+gr15:[
+  {q:'"The man ___ won the prize is my father." — correct relative pronoun?',o:['which','whose','who','whom'],a:2,h:'Who = for people (subject)',e:'"Who" is used as the subject relative pronoun for people. "The man who won the prize" — "who" refers to "the man".'},
+  {q:'A non-defining relative clause ___ .',o:['is essential to the meaning','is placed between commas and adds extra information','cannot be removed from the sentence','uses "that" not "which"'],a:1,h:'Non-defining = extra info in commas',e:'Non-defining relative clauses give extra (non-essential) information about a noun. They are placed between commas and can be removed without changing the main meaning.'},
+],
+gr16:[
+  {q:'"This book is ___ than that one." (interesting)',o:['more interesting','interestinger','most interesting','the most interesting'],a:0,h:'Long adj: more + adjective (comparative)',e:'For long adjectives (2+ syllables), the comparative is formed with "more": more interesting. We don\'t add -er.'},
+  {q:'"She is ___ student in the class." (good)',o:['gooder','more good','the best','better'],a:2,h:'Good → best (irregular superlative)',e:'"Good" has an irregular comparative (better) and superlative (the best). The superlative uses "the" before it.'},
+  {q:'"The ___ he studies, the ___ marks he gets." — correct form?',o:['harder/better','more hard/more good','hardest/best','hard/good'],a:0,h:'Double comparative: the + comparative, the + comparative',e:'The double comparative structure uses "the + comparative adjective/adverb" for both parts: The harder he studies, the better marks he gets.'},
+],
+gr17:[
+  {q:'"They have finished, ___ ?" — correct question tag?',o:['have they?','haven\'t they?','did they?','didn\'t they?'],a:1,h:'Positive statement → negative tag',e:'Question tags: positive statement + negative tag. "They have finished" is positive → the tag is "haven\'t they?"'},
+  {q:'"You can\'t drive, ___ ?" — correct tag?',o:['can\'t you?','can you?','could you?','couldn\'t you?'],a:1,h:'Negative statement → positive tag',e:'Negative statement + positive tag: "You can\'t drive, can you?" The auxiliary verb used in the tag matches the main clause.'},
+],
+gr18:[
+  {q:'"I ___ my car repaired yesterday." — correct causative?',o:['made','got','did','let'],a:1,h:'Get + object + past participle',e:'The causative with "get": subject + got + object + past participle. I got my car repaired = I arranged for someone to repair it.'},
+  {q:'"She ___ her portrait painted by a famous artist." — correct causative?',o:['got','did','made herself','is'],a:0,h:'Have/Get + object + past participle',e:'Causative "have": She had her portrait painted. Causative "get": She got her portrait painted. Both mean she arranged for someone to paint it.'},
+],
+gr19:[
+  {q:'"She is ___ tired to continue." — correct intensifier?',o:['so','such','too','very'],a:2,h:'Too + adj = more than acceptable',e:'"Too" means "more than acceptable/possible". She is too tired to continue = the tiredness prevents her from continuing.'},
+  {q:'"It was ___ a boring film that we left early." — correct intensifier?',o:['too','so','such','very'],a:2,h:'Such + a + adjective + noun',e:'"Such" is used before a noun phrase (a/an + adjective + noun). "So" is used before an adjective alone (without a noun).'},
+],
+gr20:[
+  {q:'"It ___ (seem) that he is late." — correct form?',o:['seems','is seeming','seemed','seem'],a:0,h:'Seem = stative verb (no continuous)',e:'"Seem" is a stative verb — it describes a state, not an action — so it is not used in continuous tenses. It seems that...'},
+  {q:'"I ___ (mean) to say that, but it came out wrong." — correct form?',o:['was not meaning','not mean','didn\'t mean','am not meaning'],a:2,h:'Didn\'t mean = Past Simple negative',e:'"Mean" in the sense of "intend" is a stative verb. To negate in the past, use "didn\'t + base verb": I didn\'t mean to say that.'},
+],
+};
+
+// English metadata
+var EN_SECTIONS = [
+  {label:'📘 الترم الأول — الوحدات', term:1, type:'unit'},
+  {label:'📖 الترم الأول — القصة', term:1, type:'story'},
+  {label:'📗 الترم الثاني — الوحدات', term:2, type:'unit'},
+  {label:'📖 الترم الثاني — القصة', term:2, type:'story'},
+  {label:'📐 Grammar — المهارات', term:0, type:'grammar'},
+];
+
+function buildEnglishList(){
+  var list=$('englishList'); if(!list) return;
+  list.innerHTML='';
+  // Group units by term + type
+  var groups={};
+  EN_UNITS.forEach(function(u){
+    var gk=u.term+'_'+u.type;
+    if(!groups[gk]) groups[gk]=[];
+    groups[gk].push(u);
+  });
+  // Render Term 1 Units
+  list.innerHTML+='<div class="sec-hd">📘 الترم الأول — الوحدات</div>';
+  (groups['1_unit']||[]).forEach(function(u,i){
+    var cnt=(ENQ[u.key]||[]).length;
+    list.innerHTML+='<div class="ch-card" style="border-color:'+u.color+'33;cursor:pointer" onclick="startEnglishChap(\''+u.key+'\')">'+
+      '<div class="ch-num" style="color:'+u.color+';font-size:.72rem">U'+(i+1)+'</div>'+
+      '<div class="ch-inf"><div class="ch-name">'+u.n+'</div><div class="ch-sub">'+u.s+'</div></div>'+
+      '<div class="ch-q" style="background:'+u.color+'18;color:'+u.color+'">'+cnt+' س</div></div>';
+  });
+  // Term 1 Story
+  list.innerHTML+='<div class="sec-hd" style="margin-top:10px">📖 الترم الأول — القصة</div>';
+  (groups['1_story']||[]).forEach(function(u,i){
+    var cnt=(ENQ[u.key]||[]).length;
+    list.innerHTML+='<div class="ch-card" style="border-color:#79554833;cursor:pointer" onclick="startEnglishChap(\''+u.key+'\')">'+
+      '<div class="ch-num" style="color:#795548;font-size:.72rem">Ch'+(i)+'</div>'+
+      '<div class="ch-inf"><div class="ch-name">'+u.n+'</div><div class="ch-sub">'+u.s+'</div></div>'+
+      '<div class="ch-q" style="background:#79554818;color:#795548">'+cnt+' س</div></div>';
+  });
+  // Term 2 Units
+  list.innerHTML+='<div class="sec-hd" style="margin-top:10px">📗 الترم الثاني — الوحدات</div>';
+  (groups['2_unit']||[]).forEach(function(u,i){
+    var cnt=(ENQ[u.key]||[]).length;
+    list.innerHTML+='<div class="ch-card" style="border-color:'+u.color+'33;cursor:pointer" onclick="startEnglishChap(\''+u.key+'\')">'+
+      '<div class="ch-num" style="color:'+u.color+';font-size:.72rem">U'+(i+7)+'</div>'+
+      '<div class="ch-inf"><div class="ch-name">'+u.n+'</div><div class="ch-sub">'+u.s+'</div></div>'+
+      '<div class="ch-q" style="background:'+u.color+'18;color:'+u.color+'">'+cnt+' س</div></div>';
+  });
+  // Term 2 Story
+  list.innerHTML+='<div class="sec-hd" style="margin-top:10px">📖 الترم الثاني — القصة</div>';
+  (groups['2_story']||[]).forEach(function(u,i){
+    var cnt=(ENQ[u.key]||[]).length;
+    list.innerHTML+='<div class="ch-card" style="border-color:#79554833;cursor:pointer" onclick="startEnglishChap(\''+u.key+'\')">'+
+      '<div class="ch-num" style="color:#795548;font-size:.72rem">Ch'+(i+7)+'</div>'+
+      '<div class="ch-inf"><div class="ch-name">'+u.n+'</div><div class="ch-sub">'+u.s+'</div></div>'+
+      '<div class="ch-q" style="background:#79554818;color:#795548">'+cnt+' س</div></div>';
+  });
+  // Grammar
+  list.innerHTML+='<div class="sec-hd" style="margin-top:10px">📐 Grammar — القواعد والمهارات</div>';
+  EN_GR_TOPICS.forEach(function(t,i){
+    var cnt=(EN_GRQ[t.key]||[]).length;
+    list.innerHTML+='<div class="ch-card" style="border-color:#4caf5033;cursor:pointer" onclick="startEnglishGrammar(\''+t.key+'\')">'+
+      '<div class="ch-num" style="color:#4caf50;font-size:.68rem">'+(i+1)+'</div>'+
+      '<div class="ch-inf"><div class="ch-name">'+t.n+'</div><div class="ch-sub">'+t.s+'</div></div>'+
+      '<div class="ch-q" style="background:#4caf5018;color:#4caf50">'+cnt+' س</div></div>';
+  });
+}
+
+function startEnglishChap(key){
+  var qs=(ENQ[key]||[]);
+  if(!qs.length){ toast('لا توجد أسئلة في هذا الجزء بعد','err'); return; }
+  var meta=EN_UNITS.filter(function(u){return u.key===key;})[0]||{n:key,color:'#2196f3'};
+  S.subj='en'; S.chapKey=key; S.chapSrc=ENQ;
+  var base=qs.map(function(q){return Object.assign({},q);});
+  S.basePool=base;
+  S.qs=shuf(base.map(function(q){return Object.assign({},q);}));
+  S.label='🇬🇧 '+meta.n;
+  S.cur=0;S.score=0;S.correct=0;S.streak=0;S.wrongs=[];
+  currentExam=null;
+  $('gTitle').textContent=S.label;
+  $('stopInfBtn').style.display='flex';
+  $('finishExamBtn').style.display='none';
+  goScreen('gameScreen');
+  loadQ();
+}
+
+function startEnglishGrammar(key){
+  var qs=(EN_GRQ[key]||[]);
+  if(!qs.length){ toast('لا توجد أسئلة في هذا الموضوع بعد','err'); return; }
+  var meta=EN_GR_TOPICS.filter(function(t){return t.key===key;})[0]||{n:key};
+  S.subj='en'; S.chapKey=key; S.chapSrc=EN_GRQ;
+  var base=qs.map(function(q){return Object.assign({},q);});
+  S.basePool=base;
+  S.qs=shuf(base.map(function(q){return Object.assign({},q);}));
+  S.label='📐 Grammar: '+meta.n;
+  S.cur=0;S.score=0;S.correct=0;S.streak=0;S.wrongs=[];
+  currentExam=null;
+  $('gTitle').textContent=S.label;
+  $('stopInfBtn').style.display='flex';
+  $('finishExamBtn').style.display='none';
+  goScreen('gameScreen');
+  loadQ();
+}
+
+function quickEnglishExam(section, mode){
+  var pool=[];
+  if(section==='t1'){
+    EN_UNITS.filter(function(u){return u.term===1;}).forEach(function(u){
+      pool=pool.concat((ENQ[u.key]||[]).map(function(q){return Object.assign({},q);}));
+    });
+  } else if(section==='t2'){
+    EN_UNITS.filter(function(u){return u.term===2;}).forEach(function(u){
+      pool=pool.concat((ENQ[u.key]||[]).map(function(q){return Object.assign({},q);}));
+    });
+  } else if(section==='gr'){
+    EN_GR_TOPICS.forEach(function(t){
+      pool=pool.concat((EN_GRQ[t.key]||[]).map(function(q){return Object.assign({},q);}));
+    });
+  } else { // all
+    EN_UNITS.forEach(function(u){
+      pool=pool.concat((ENQ[u.key]||[]).map(function(q){return Object.assign({},q);}));
+    });
+    EN_GR_TOPICS.forEach(function(t){
+      pool=pool.concat((EN_GRQ[t.key]||[]).map(function(q){return Object.assign({},q);}));
+    });
+  }
+  pool=shuf(pool);
+  if(mode==='hard') pool=pool.slice(0,20);
+  else pool=pool.slice(0,25);
+  if(!pool.length){ toast('لا توجد أسئلة بعد','err'); return; }
+  S.subj='en'; S.chapKey=0; S.chapSrc={};
+  S.basePool=pool;
+  S.qs=shuf(pool.map(function(q){return Object.assign({},q);}));
+  var labels={t1:'📘 ترم أول — إنجليزي',t2:'📗 ترم ثاني — إنجليزي',gr:'📐 Grammar — إنجليزي',all:'🇬🇧 اختبار إنجليزي شامل'};
+  S.label=labels[section]||(mode==='hard'?'🔥 تحدي سريع — إنجليزي':'🇬🇧 اختبار إنجليزي');
+  S.cur=0;S.score=0;S.correct=0;S.streak=0;S.wrongs=[];
+  currentExam=null;
+  $('gTitle').textContent=S.label;
+  $('stopInfBtn').style.display='flex';
+  $('finishExamBtn').style.display='none';
+  goScreen('gameScreen');
+  loadQ();
+}
+
 function buildArabicList(){
   var list=$('arabicList'); if(!list) return;
   var ar=['١','٢','٣','٤','٥','٦','٧','٨'];
@@ -8144,7 +9546,7 @@ function loadNotifSettingsUI(){
 }
 
 // ══════════════════════════════════════════
-// WEBRTC IN-APP CALLS (Socket.IO signaling)
+// WEBRTC IN-APP CALLS (PeerJS — no server needed)
 // ══════════════════════════════════════════
 var _pc = null;
 var _localStream = null;
@@ -8156,276 +9558,176 @@ var _callTimer = null;
 var _callSecs = 0;
 var _muted = false;
 var _speakerOff = false;
+var _peer = null;        // PeerJS instance
+var _peerReady = false;
+var _activeCall = null;  // PeerJS MediaConnection
+
+// Legacy socket vars (kept for compat)
 var _socket = null;
 var _socketReady = false;
+var SOCKET_SERVER = '';
 
 var STUN_CFG = {
   iceServers: [
-    {urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']}
+    {urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']},
+    {urls: 'stun:stun.cloudflare.com:3478'},
+    {urls: 'turn:openrelay.metered.ca:80', username:'openrelayproject', credential:'openrelayproject'},
+    {urls: 'turn:openrelay.metered.ca:443', username:'openrelayproject', credential:'openrelayproject'}
   ]
 };
 
-// ── Socket.IO server URL (configurable) ──
-var SOCKET_SERVER = 'https://educational-platform-production-1a1d.up.railway.app'; // ثابت دايماً
+// ── Build a safe PeerJS ID from phone number ──
+function makePeerId(phone){
+  return 'edu_' + String(phone).replace(/\D/g,'').slice(-10);
+}
 
+// ── Init PeerJS ──
 function initSocket(){
-  if(_socket) return;
-  if(typeof io === 'undefined'){
-    // Load socket.io dynamically
+  if(_peer && !_peer.destroyed) return;
+  if(typeof Peer === 'undefined'){
     var s=document.createElement('script');
-    s.src='https://cdn.socket.io/4.4.1/socket.io.min.js';
-    s.onload=function(){connectSocket();};
+    s.src='https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js';
+    s.onload=function(){ connectPeer(); };
+    s.onerror=function(){ checkCallServerStatus(); };
     document.head.appendChild(s);
   } else {
-    connectSocket();
+    connectPeer();
   }
 }
 
-function connectSocket(){
+function connectPeer(){
+  if(!userPhone){ setTimeout(connectPeer, 2000); return; }
   try{
-    _socket=io(SOCKET_SERVER, {transports:['websocket','polling'],timeout:8000});
-    _socket.on('connect',function(){
-      _socketReady=true;
-      // Join personal room (phone number)
-      _socket.emit('join', userPhone);
-      console.log('Socket connected');
+    var pid=makePeerId(userPhone);
+    _peer=new Peer(pid, {
+      config: STUN_CFG,
+      debug: 0
     });
-    _socket.on('disconnect',function(){_socketReady=false;});
-    _socket.on('offer', handleSocketOffer);
-    _socket.on('answer', handleSocketAnswer);
-    _socket.on('ice-candidate', handleSocketIce);
-    _socket.on('incoming', handleIncomingCall);
-    _socket.on('reject', function(){endCall(true);toast('❌ رفض الاتصال','err');});
-    _socket.on('end', function(){endCall(true);});
-    _socket.on('accept', function(){if(_callRole==='caller') createOffer();});
-  }catch(e){console.warn('Socket error',e);}
+    _peer.on('open', function(id){
+      _peerReady=true;
+      _socketReady=true;
+      console.log('PeerJS ready, ID:', id);
+      checkCallServerStatus();
+    });
+    _peer.on('error', function(e){
+      // If ID taken, use unique variant
+      if(e.type==='unavailable-id'){
+        _peer.destroy();
+        var pid2=makePeerId(userPhone)+'_'+Date.now().toString(36).slice(-4);
+        _peer=new Peer(pid2,{config:STUN_CFG,debug:0});
+        _peer.on('open',function(){_peerReady=true;_socketReady=true;checkCallServerStatus();});
+        _peer.on('call',handleIncomingPeerCall);
+      }
+      _peerReady=false; _socketReady=false;
+      checkCallServerStatus();
+    });
+    _peer.on('disconnected',function(){
+      _peerReady=false; _socketReady=false;
+      checkCallServerStatus();
+      setTimeout(function(){ if(_peer&&!_peer.destroyed) _peer.reconnect(); },3000);
+    });
+    // Handle incoming calls
+    _peer.on('call', handleIncomingPeerCall);
+    // Handle incoming data (for signaling reject/end)
+    _peer.on('connection', handlePeerData);
+  }catch(e){ console.warn('PeerJS error',e); checkCallServerStatus(); }
 }
 
-function emitToRoom(evt, data){
-  if(!_socket||!_callRoom) return;
-  _socket.emit(evt, {to:_callRoom, data:data, from:userPhone, fromName:userName});
-}
-
-// ── Incoming signal handlers ──
-function handleSocketOffer(pkg){
-  if(!pkg||pkg.to!==userPhone) return;
-  handleOffer(pkg.data, pkg.callType||'audio');
-}
-function handleSocketAnswer(pkg){
-  if(!pkg||pkg.to!==userPhone) return;
-  if(_pc) _pc.setRemoteDescription(new RTCSessionDescription(pkg.data)).catch(function(){});
-}
-function handleSocketIce(pkg){
-  if(!pkg||pkg.to!==userPhone) return;
-  if(_pc&&pkg.data) _pc.addIceCandidate(new RTCIceCandidate(pkg.data)).catch(function(){});
-}
-function handleIncomingCall(pkg){
-  if(!pkg||pkg.to!==userPhone) return;
-  if(_callRole) return; // already in call
-  _callPeer={phone:pkg.from, name:pkg.fromName||pkg.from};
-  _callType=pkg.callType||'audio';
+function handleIncomingPeerCall(mediaConn){
+  _activeCall=mediaConn;
+  var meta=mediaConn.metadata||{};
+  _callPeer={phone:meta.from||mediaConn.peer, name:meta.name||mediaConn.peer};
+  _callRoom=mediaConn.peer;
   _callRole='callee';
-  _callRoom=pkg.from; // reply to caller's phone
-  playNotifSound('inputRequired');
-  showCallOverlay('incoming');
+  _callType=meta.callType||'audio';
+  showCallUI(true);
 }
 
-// ── Start outgoing call ──
-function startCall(phone, name, type){
-  if(IS_LOCAL){toast('المكالمات تحتاج إنترنت','err');return;}
-  if(!userPhone||userPhone==='guest'){toast('يجب تسجيل الدخول أولاً','err');return;}
-  _callType=type||'audio';
-  _callPeer={phone:phone, name:name};
-  _callRole='caller';
-  _callRoom=phone; // send to callee's phone room
-  // Close any popup
-  var pop=$('popupOverlay'); if(pop) pop.style.display='none';
-  showCallOverlay('outgoing');
-  initSocket();
-  // Notify callee
-  setTimeout(function(){
-    if(_socket&&_socketReady){
-      _socket.emit('incoming',{to:phone, from:userPhone, fromName:userName, callType:_callType});
-    } else {
-      toast('⚠️ لم يتصل بالسيرفر بعد — حاول مرة ثانية','err');
-      endCall(true);
-    }
-  }, _socketReady?0:2000);
-  // Get media
-  getMedia(function(stream){
-    _localStream=stream;
-    if(_callType==='video'){
-      var lv=$('localVideo'); if(lv){lv.srcObject=stream;}
-      $('callVideoArea').style.display='block';
-    }
+function handlePeerData(conn){
+  conn.on('data',function(d){
+    if(!d) return;
+    if(d.type==='reject'){ endCall(true); toast('❌ رفض الاتصال','err'); }
+    if(d.type==='end'){ endCall(true); }
   });
+}
+
+function sendPeerSignal(type){
+  try{
+    if(!_peer||!_callRoom) return;
+    var conn=_peer.connect(_callRoom,{reliable:true});
+    conn.on('open',function(){ conn.send({type:type,from:userPhone}); });
+  }catch(e){}
+}
+
+// ── Start a call ──
+function startCall(phone, name, type){
+  if(!_peerReady){ toast('⚠️ جاري الاتصال بالشبكة، انتظر لحظة','err'); return; }
+  _callType=type||'audio';
+  _callRole='caller';
+  _callPeer={phone:phone, name:name};
+  _callRoom=makePeerId(phone);
+
+  navigator.mediaDevices.getUserMedia(_callType==='video'?{audio:true,video:true}:{audio:true})
+  .then(function(stream){
+    _localStream=stream;
+    var call=_peer.call(_callRoom, stream, {
+      metadata:{from:userPhone, name:userName, callType:_callType}
+    });
+    _activeCall=call;
+    call.on('stream', function(remoteStream){ playRemoteStream(remoteStream); });
+    call.on('close', function(){ endCall(true); });
+    call.on('error', function(){ endCall(true); toast('❌ فشل الاتصال','err'); });
+    showCallUI(false);
+    startCallTimer();
+  })
+  .catch(function(){ toast('❌ تعذّر الوصول للميكروفون','err'); });
 }
 
 // ── Accept incoming call ──
 function acceptCall(){
-  $('incomingCallBtns').style.display='none';
-  $('callControls').style.display='flex';
-  $('callStatus').textContent='جاري الاتصال...';
-  if(_socket) _socket.emit('accept',{to:_callRoom, from:userPhone});
-  getMedia(function(stream){
+  if(!_activeCall){ return; }
+  navigator.mediaDevices.getUserMedia(_callType==='video'?{audio:true,video:true}:{audio:true})
+  .then(function(stream){
     _localStream=stream;
-    if(_callType==='video'){
-      var lv=$('localVideo'); if(lv){lv.srcObject=stream;}
-      $('callVideoArea').style.display='block';
-    }
-    setupPeerConnection();
-  });
-}
-
-// ── Create offer (caller side) ──
-function createOffer(){
-  setupPeerConnection();
-  _pc.createOffer().then(function(offer){
-    return _pc.setLocalDescription(offer);
-  }).then(function(){
-    var offerData=_pc.localDescription.toJSON();
-    offerData.callType=_callType;
-    if(_socket) _socket.emit('offer',{to:_callRoom, from:userPhone, data:offerData, callType:_callType});
-  }).catch(function(e){console.warn(e);});
-}
-
-// ── Handle offer (callee side) ──
-function handleOffer(offer, type){
-  _callType=type||'audio';
-  setupPeerConnection();
-  _pc.setRemoteDescription(new RTCSessionDescription(offer)).then(function(){
-    return _pc.createAnswer();
-  }).then(function(answer){
-    return _pc.setLocalDescription(answer);
-  }).then(function(){
-    if(_socket) _socket.emit('answer',{to:_callRoom, from:userPhone, data:_pc.localDescription.toJSON()});
-  }).catch(function(e){console.warn(e);});
-}
-
-// ── RTCPeerConnection ──
-function setupPeerConnection(){
-  if(_pc) _pc.close();
-  _pc=new RTCPeerConnection(STUN_CFG);
-  if(_localStream) _localStream.getTracks().forEach(function(t){_pc.addTrack(t,_localStream);});
-  _pc.ontrack=function(e){
-    var rv=$('remoteVideo');
-    if(rv&&e.streams[0]){
-      rv.srcObject=e.streams[0];
-      if(_callType==='video'){
-        $('callVideoArea').style.display='block';
-        var aoi=$('audioOnlyIcon'); if(aoi) aoi.style.display='none';
-      } else {
-        // Audio only - animate avatar green
-        var av=$('callAvatar');
-        if(av){av.style.animation='pulse 2s infinite';av.style.borderColor='rgba(39,174,96,.6)';}
-      }
-    }
-    $('callStatus').textContent='متصل ✅';
-    var av2=$('callAvatar'); if(av2) av2.style.animation='none';
+    _activeCall.answer(stream);
+    _activeCall.on('stream', function(remoteStream){ playRemoteStream(remoteStream); });
+    _activeCall.on('close', function(){ endCall(true); });
+    $('incomingCallBtns').style.display='none';
     startCallTimer();
-  };
-  _pc.onicecandidate=function(e){
-    if(e.candidate&&_socket)
-      _socket.emit('ice-candidate',{to:_callRoom, from:userPhone, data:e.candidate.toJSON()});
-  };
-  _pc.onconnectionstatechange=function(){
-    if(_pc&&(_pc.connectionState==='disconnected'||_pc.connectionState==='failed')) endCall(true);
-  };
+  })
+  .catch(function(){ toast('❌ تعذّر الوصول للميكروفون','err'); });
 }
 
-// ── Get media ──
-function getMedia(cb){
-  var isVideo=_callType==='video';
-  var constraints={audio:true, video:isVideo?{facingMode:'user',width:{ideal:1280},height:{ideal:720}}:false};
-  navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
-    // Show local video preview
-    var lv=isVideo?$('localVideo'):$('localVideoAudio');
-    if(lv) lv.srcObject=stream;
-    if(isVideo){
-      $('callVideoArea').style.display='block';
-      var aoi=$('audioOnlyIcon'); if(aoi) aoi.style.display='none';
-    }
-    cb(stream);
-  }).catch(function(err){
-    toast('🎤 تعذر الوصول للميكروفون/الكاميرا: '+err.message,'err');
-    endCall(true);
-  });
-}
-
-// ── Toggle camera on/off ──
-var _camOff=false;
-function toggleCam(){
-  _camOff=!_camOff;
-  if(_localStream) _localStream.getVideoTracks().forEach(function(t){t.enabled=!_camOff;});
-  var btn=$('camBtn'); if(btn) btn.textContent=_camOff?'🚫':'📷';
-  // Show/hide local preview
-  var lv=$('localVideo'); if(lv) lv.style.opacity=_camOff?'0':'1';
-}
-
-// ── Reject ──
 function rejectCall(){
-  if(_socket&&_callRoom) _socket.emit('reject',{to:_callRoom, from:userPhone});
+  sendPeerSignal('reject');
   endCall(true);
+}
+
+function playRemoteStream(stream){
+  var audio=document.getElementById('remoteAudio');
+  if(!audio){ audio=document.createElement('audio'); audio.id='remoteAudio'; audio.autoplay=true; document.body.appendChild(audio); }
+  audio.srcObject=stream;
 }
 
 // ── End call ──
 function endCall(silent){
-  if(!silent&&_socket&&_callRoom) _socket.emit('end',{to:_callRoom, from:userPhone});
+  if(!silent) sendPeerSignal('end');
+  if(_activeCall){ try{_activeCall.close();}catch(e){} _activeCall=null; }
+  if(_localStream){ _localStream.getTracks().forEach(function(t){t.stop();}); _localStream=null; }
   clearInterval(_callTimer); _callTimer=null; _callSecs=0;
-  if(_pc){_pc.close();_pc=null;}
-  if(_localStream){_localStream.getTracks().forEach(function(t){t.stop();});_localStream=null;}
-  ['remoteVideo','localVideo','localVideoAudio'].forEach(function(id){
-    var el=$(id); if(el) el.srcObject=null;
-  });
-  _camOff=false; _muted=false;
-  var muteBtn=$('muteBtn'); if(muteBtn) muteBtn.textContent='🎤';
-  var camBtn=$('camBtn'); if(camBtn) camBtn.textContent='📷';
   _callRoom=null; _callRole=null; _callPeer=null;
-  var ov=$('callOverlay'); if(ov) ov.style.display='none';
+  var cs=$('callScreen'); if(cs) cs.style.display='none';
 }
 
-// ── Show call overlay ──
-function showCallOverlay(mode){
-  var ov=$('callOverlay'); if(!ov) return;
-  ov.style.display='flex';
+function showCallUI(incoming){
+  var cs=$('callScreen'); if(!cs) return;
+  cs.style.display='flex';
   $('callName').textContent=_callPeer?(_callPeer.name||_callPeer.phone):'';
-  $('callTimer').style.display='none';
-  // Show correct media area
-  var isVideo=_callType==='video';
-  $('callVideoArea').style.display='none';
-  var aoi=$('audioOnlyIcon');
-  if(aoi) aoi.style.display=isVideo?'none':'flex';
-  var badge=$('callTypeBadge');
-  if(badge) badge.textContent=isVideo?'📹 فيديو':'📞 صوت';
-  if(mode==='incoming'){
-    $('callStatus').textContent=(isVideo?'📹':'📞')+' مكالمة واردة';
-    $('callControls').style.display='none';
-    $('incomingCallBtns').style.display='flex';
-    // Animate avatar
-    var av=$('callAvatar'); if(av) av.style.animation='ring 0.6s infinite';
-  } else {
-    $('callStatus').textContent='جاري الاتصال...';
-    $('callControls').style.display='flex';
-    $('incomingCallBtns').style.display='none';
-    var av=$('callAvatar'); if(av) av.style.animation='pulse 2s infinite';
-  }
-  // Hide cam button for audio calls
-  var camBtn=$('camBtn');
-  if(camBtn) camBtn.style.display=isVideo?'flex':'none';
+  $('callStatus').textContent=incoming?'مكالمة واردة...':'جاري الاتصال...';
+  var ibtns=$('incomingCallBtns');
+  if(ibtns) ibtns.style.display=incoming?'flex':'none';
 }
 
-// ── Timer ──
-function startCallTimer(){
-  $('callTimer').style.display='block';
-  _callSecs=0;
-  _callTimer=setInterval(function(){
-    _callSecs++;
-    var m=Math.floor(_callSecs/60), s=_callSecs%60;
-    $('callTimer').textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
-  },1000);
-}
-
-// ── Controls ──
 function toggleMute(){
   _muted=!_muted;
   if(_localStream) _localStream.getAudioTracks().forEach(function(t){t.enabled=!_muted;});
@@ -8436,11 +9738,20 @@ function toggleSpeaker(){
   var btn=$('speakerBtn'); if(btn) btn.textContent=_speakerOff?'🔈':'🔊';
 }
 
-// ── Init socket on login ──
+// ── Init on login ──
 function startIncomingCallPoll(){
-  if(IS_LOCAL) return;
   initSocket();
 }
+
+// Legacy stubs
+function emitToRoom(){}
+function handleSocketOffer(){}
+function handleSocketAnswer(){}
+function handleSocketIce(){}
+function handleIncomingCall(){}
+function createOffer(){}
+function connectSocket(){}
+
 
 </script>
 
