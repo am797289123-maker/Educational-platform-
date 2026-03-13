@@ -5560,6 +5560,7 @@ function renderTeacherStudents(){
     var banBtn=s.banned
       ?'<button class="sa-btn sa-allow" onclick="stuBan(\''+s.phone+'\',false)">✅ سماح</button>'
       :'<button class="sa-btn sa-ban" onclick="stuBan(\''+s.phone+'\',true)">🚫 حظر</button>';
+    var cl=s.phone.replace(/'/g,''); var nm2=(s.name||'').replace(/'/g,'').replace(/"/g,'');
     el.innerHTML+='<div class="stu-card'+(s.banned?' stu-banned':'')+'">'+
       '<div class="stu-avatar" style="background:linear-gradient(135deg,'+(s.banned?'#c0392b,#7f1f10':'var(--hist2),var(--geo2)')+')">'+initials+'</div>'+
       '<div class="stu-info" style="width:100%;min-width:0">'+
@@ -5573,9 +5574,11 @@ function renderTeacherStudents(){
           '<span>📊 '+acc+'%</span>'+
           '<span style="color:var(--text2)">'+s.lastSeen+'</span>'+
         '</div>'+
-        '<div class="stu-actions">'+banBtn+
-          '<button class="sa-btn" onclick="stuView(\''+s.phone+'\')">📋 تفاصيل</button>'+
-          '<button class="sa-btn sa-del" onclick="stuRemove(\''+s.phone+'\',\''+s.name+'\')">🗑 حذف</button>'+
+        '<div class="stu-actions" style="flex-wrap:wrap;gap:5px">'+banBtn+
+          '<button class="sa-btn" onclick="stuView(\''+cl+'\')">📋 تفاصيل</button>'+
+          '<button class="sa-btn sa-del" onclick="stuRemove(\''+cl+'\',\''+nm2+'\')">🗑 حذف</button>'+
+          (!s.banned?'<button class="sa-btn" onclick="startCall(\''+cl+'\',\''+nm2+'\',\'audio\')\" style="background:rgba(39,174,96,.12);border-color:rgba(39,174,96,.35);color:#27ae60">📞 صوت</button>':'')+
+          (!s.banned?'<button class="sa-btn" onclick="startCall(\''+cl+'\',\''+nm2+'\',\'video\')\" style="background:rgba(33,150,243,.12);border-color:rgba(33,150,243,.35);color:var(--geo2)">📹 فيديو</button>':'')+
         '</div>'+
       '</div>'+
     '</div>';
@@ -6684,11 +6687,9 @@ function removeOpt(id){
 
 // ══ Start social features after login ══
 function initSocialFeatures(){
-  // Always try to connect socket (even from file://)
-  if(!_socket && !IS_LOCAL) initSocket();
-  else if(!_socket) initSocket(); // try anyway for socket
+  // Always try to connect PeerJS (even from file://)
+  if(!_peer || _peer.destroyed) initSocket();
   if(IS_LOCAL){
-    // Still try socket but skip other social features
     setTimeout(checkCallServerStatus, 3000);
     return;
   }
@@ -9661,7 +9662,16 @@ function sendPeerSignal(type){
 
 // ── Start a call ──
 function startCall(phone, name, type){
-  if(!_peerReady){ toast('⚠️ جاري الاتصال بالشبكة، انتظر لحظة','err'); return; }
+  // Auto-init peer if not done yet
+  if(!_peer || _peer.destroyed){
+    initSocket();
+    toast('⏳ جاري الاتصال بالشبكة، حاول مرة أخرى بعد ثانيتين','err');
+    return;
+  }
+  if(!_peerReady){
+    toast('⏳ الشبكة لم تتصل بعد، انتظر لحظة وحاول مجدداً','err');
+    return;
+  }
   _callType=type||'audio';
   _callRole='caller';
   _callPeer={phone:phone, name:name};
@@ -9740,7 +9750,8 @@ function toggleSpeaker(){
 
 // ── Init on login ──
 function startIncomingCallPoll(){
-  initSocket();
+  // Always init PeerJS regardless of IS_LOCAL (file://)
+  if(!_peer || _peer.destroyed) initSocket();
 }
 
 // Legacy stubs
